@@ -1,0 +1,12 @@
+@font-face {
+    font-family: "android-101";
+    src: url("./Android\ 101.ttf") format("truetype");
+}
+@import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
+
+a {
+    text-decoration:none;
+    color: white;
+}
