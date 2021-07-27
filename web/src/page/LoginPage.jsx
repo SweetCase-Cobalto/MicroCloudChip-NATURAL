@@ -1,16 +1,29 @@
 import styled from 'styled-components';
+import {Helmet} from "react-helmet";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../asset/font/font.css';
 
 // imgs
 import LogoImg from '../asset/img/logo.svg';
 
-const LoginPage = () => {
+const LoginPage = ({ history }) => {
     
     const hostToStr = "127.0.0.1";
 
+    // Checking if is First Setting
+    // TODO Redux 저장 권유
+    let isFirst = true;
+    if(isFirst) {
+        // 처음 세팅으로 이동
+        history.push("/firstsetting/setadmin");
+    }
+
     return (
         <Layer>
+            <Helmet>
+                <title>MicroCloudChip-NATURAL</title>
+            </Helmet>
             <Container>
                 <center>
                     <img src={LogoImg} alt="logo" width="60%" style={{ marginBottom: "15px" }}/>
@@ -38,6 +51,8 @@ const Layer = styled.div`
     height: 100vh;
     padding-top: 10%;
     color: #1DB21D;
+    font-family: DungGeunMo;
+    font-size: 1.6em;
 `
 const Container = styled.div`
     position: relative;
