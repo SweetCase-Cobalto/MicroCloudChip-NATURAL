@@ -30,13 +30,13 @@ const FirstSettingSetAdminPage = ({ history }) => {
 
                         <EditSection>
                             <EditLabel>PSWD</EditLabel>
-                            <EditText type="text" />
+                            <EditText type="password" />
                         </EditSection>
 
                         
                         <EditSection>
                             <EditLabel>PSWD(RE)</EditLabel>
-                            <EditText type="text" />
+                            <EditText type="password" />
                         </EditSection>
 
                         <Btn type="submit">NEXT</Btn>
