@@ -13,11 +13,6 @@ const LoginPage = ({ history }) => {
 
     // Checking if is First Setting
     // TODO Redux 저장 권유
-    let isFirst = true;
-    if(isFirst) {
-        // 처음 세팅으로 이동
-        history.push("/firstsetting/setadmin");
-    }
 
     return (
         <Layer>
