@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="150" height="150" viewBox="0 0 150 150">
+  <defs>
+    <filter id="사각형_7" x="50" y="34" width="80" height="62" filterUnits="userSpaceOnUse">
+      <feOffset dx="2" dy="2" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1" result="blur"/>
+      <feFlood flood-opacity="0.478"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="사각형_7-2" x="36" y="43" width="80" height="62" filterUnits="userSpaceOnUse">
+      <feOffset dx="2" dy="2" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1" result="blur-2"/>
+      <feFlood flood-opacity="0.478"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="사각형_7-3" x="24" y="52" width="80" height="62" filterUnits="userSpaceOnUse">
+      <feOffset dx="2" dy="2" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1" result="blur-3"/>
+      <feFlood flood-opacity="0.478"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="multiple-dirs" transform="translate(-544 -146)">
+    <g id="사각형_37" data-name="사각형 37" transform="translate(544 146)" fill="#fff" stroke="#707070" stroke-width="1">
+      <rect width="150" height="150" stroke="none"/>
+      <rect x="0.5" y="0.5" width="149" height="149" fill="none"/>
+    </g>
+    <g id="directory_icon" data-name="directory icon" transform="translate(595 173)">
+      <path id="패스_1" data-name="패스 1" d="M-1747-1167v64h74v-54.857h-42.286l-10.572-9.143Z" transform="translate(1747 1167)" fill="#1db21d" stroke="#126112" stroke-width="0.8"/>
+      <g transform="matrix(1, 0, 0, 1, -51, -27)" filter="url(#사각형_7)">
+        <g id="사각형_7-4" data-name="사각형 7" transform="translate(51 35)" fill="#58c658" stroke="#126112" stroke-width="0.8">
+          <rect width="74" height="56" stroke="none"/>
+          <rect x="0.4" y="0.4" width="73.2" height="55.2" fill="none"/>
+        </g>
+      </g>
+    </g>
+    <g id="directory_icon-2" data-name="directory icon" transform="translate(581 182)">
+      <path id="패스_1-2" data-name="패스 1" d="M-1747-1167v64h74v-54.857h-42.286l-10.572-9.143Z" transform="translate(1747 1167)" fill="#1db21d" stroke="#126112" stroke-width="0.8"/>
+      <g transform="matrix(1, 0, 0, 1, -37, -36)" filter="url(#사각형_7-2)">
+        <g id="사각형_7-5" data-name="사각형 7" transform="translate(37 44)" fill="#58c658" stroke="#126112" stroke-width="0.8">
+          <rect width="74" height="56" stroke="none"/>
+          <rect x="0.4" y="0.4" width="73.2" height="55.2" fill="none"/>
+        </g>
+      </g>
+    </g>
+    <g id="directory_icon-3" data-name="directory icon" transform="translate(569 191)">
+      <path id="패스_1-3" data-name="패스 1" d="M-1747-1167v64h74v-54.857h-42.286l-10.572-9.143Z" transform="translate(1747 1167)" fill="#1db21d" stroke="#126112" stroke-width="0.8"/>
+      <g transform="matrix(1, 0, 0, 1, -25, -45)" filter="url(#사각형_7-3)">
+        <g id="사각형_7-6" data-name="사각형 7" transform="translate(25 53)" fill="#58c658" stroke="#126112" stroke-width="0.8">
+          <rect width="74" height="56" stroke="none"/>
+          <rect x="0.4" y="0.4" width="73.2" height="55.2" fill="none"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

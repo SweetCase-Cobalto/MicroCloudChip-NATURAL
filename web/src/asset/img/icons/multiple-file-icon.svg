@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="150" height="150" viewBox="0 0 150 150">
+  <defs>
+    <filter id="사각형_29" x="26" y="14" width="74" height="102" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1" result="blur"/>
+      <feFlood flood-opacity="0.451"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="사각형_29-2" x="41" y="26" width="75" height="102" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1" result="blur-2"/>
+      <feFlood flood-opacity="0.451"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="사각형_29-3" x="52" y="37" width="74" height="102" filterUnits="userSpaceOnUse">
+      <feOffset dx="1" dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1" result="blur-3"/>
+      <feFlood flood-opacity="0.451"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="multiple-file" transform="translate(-544 -146)">
+    <g id="사각형_37" data-name="사각형 37" transform="translate(544 146)" fill="#fff" stroke="#707070" stroke-width="1">
+      <rect width="150" height="150" stroke="none"/>
+      <rect x="0.5" y="0.5" width="149" height="149" fill="none"/>
+    </g>
+    <g id="unknown" transform="translate(572 162)">
+      <g transform="matrix(1, 0, 0, 1, -28, -16)" filter="url(#사각형_29)">
+        <g id="사각형_29-4" data-name="사각형 29" transform="translate(28 16)" fill="#d9ebd9" stroke="#707070" stroke-width="0.3">
+          <rect width="68" height="96" stroke="none"/>
+          <rect x="0.15" y="0.15" width="67.7" height="95.7" fill="none"/>
+        </g>
+      </g>
+      <rect id="사각형_30" data-name="사각형 30" width="68" height="3" transform="translate(0 93)" fill="#58c658"/>
+    </g>
+    <g id="unknown-2" data-name="unknown" transform="translate(587.487 174.39)">
+      <g transform="matrix(1, 0, 0, 1, -43.49, -28.39)" filter="url(#사각형_29-2)">
+        <g id="사각형_29-5" data-name="사각형 29" transform="translate(43 28)" fill="#d9ebd9" stroke="#707070" stroke-width="0.3">
+          <rect width="69" height="96" stroke="none"/>
+          <rect x="0.15" y="0.15" width="68.7" height="95.7" fill="none"/>
+        </g>
+      </g>
+      <rect id="사각형_30-2" data-name="사각형 30" width="69" height="3" transform="translate(-0.487 92.61)" fill="#58c658"/>
+    </g>
+    <g id="unknown-3" data-name="unknown" transform="translate(598.328 185.231)">
+      <g transform="matrix(1, 0, 0, 1, -54.33, -39.23)" filter="url(#사각형_29-3)">
+        <g id="사각형_29-6" data-name="사각형 29" transform="translate(54 39)" fill="#d9ebd9" stroke="#707070" stroke-width="0.3">
+          <rect width="68" height="96" stroke="none"/>
+          <rect x="0.15" y="0.15" width="67.7" height="95.7" fill="none"/>
+        </g>
+      </g>
+      <rect id="사각형_30-3" data-name="사각형 30" width="68" height="3" transform="translate(-0.328 92.769)" fill="#58c658"/>
+    </g>
+  </g>
+</svg>

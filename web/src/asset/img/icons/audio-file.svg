@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="56" viewBox="0 0 40 56">
+  <g id="audio" transform="translate(-248 -147)">
+    <g id="사각형_32" data-name="사각형 32" transform="translate(248 147)" fill="#d9ebd9" stroke="#707070" stroke-width="0.3">
+      <rect width="40" height="56" stroke="none"/>
+      <rect x="0.15" y="0.15" width="39.7" height="55.7" fill="none"/>
+    </g>
+    <rect id="사각형_33" data-name="사각형 33" width="40" height="2" transform="translate(248 201)" fill="#58c658"/>
+    <g id="그룹_3" data-name="그룹 3" transform="translate(74 22.987)">
+      <ellipse id="타원_3" data-name="타원 3" cx="5.02" cy="3.651" rx="5.02" ry="3.651" transform="matrix(0.978, -0.208, 0.208, 0.978, 184, 156.871)" fill="#379d37"/>
+      <rect id="사각형_34" data-name="사각형 34" width="0.73" height="22.818" transform="translate(194.04 136)" fill="#379d37"/>
+      <path id="패스_2" data-name="패스 2" d="M-1621.2-1073s6.45,1.977,8.874,6.668-7.193,11.65-7.193,11.65,5.239-5.942,4.066-9.813-5.747-3.4-5.747-3.4Z" transform="translate(1815.97 1209)" fill="#379d37"/>
+    </g>
+  </g>
+</svg>
