@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import Navbar from "../components/Navbar";
-import {Image, Form, Button} from "react-bootstrap";
 import Footer from "../components/Footer";
 import AccountUpdaterForm from "../components/formComponents/AccountUpdaterForm";
+import { Helmet } from "react-helmet";
 
 import '../asset/font/font.css'
 
@@ -10,6 +10,9 @@ const SettingsPage = () => {
 
     return (
         <div>
+            <Helmet>
+                <title>Settings</title>
+            </Helmet>
             <Navbar />
             <Layer>
                 <h3 style={{ fontWeight: "bold" }}>관리자 계정</h3>

@@ -14,6 +14,11 @@ const LoginPage = ({ history }) => {
     // Checking if is First Setting
     // TODO Redux 저장 권유
 
+    const loginBtnEvent = () => {
+
+        history.push('/storage/root');
+    }
+
     return (
         <Layer>
             <Helmet>
@@ -23,7 +28,7 @@ const LoginPage = ({ history }) => {
                 <center>
                     <img src={LogoImg} alt="logo" width="60%" style={{ marginBottom: "15px" }}/>
                     <p>server: {hostToStr}</p>
-                    <LoginSection>
+                    <LoginSection onSubmit={loginBtnEvent}>
                         <EditSection>
                             <EditLabel>NAME</EditLabel>
                             <EditText type="text" />
