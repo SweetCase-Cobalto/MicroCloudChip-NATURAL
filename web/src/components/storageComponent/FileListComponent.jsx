@@ -1,9 +1,25 @@
 import styled from "styled-components";
 import { Button, Dropdown } from "react-bootstrap";
 
+import FileItemInList from "./FileItemInList";
+import CustomCheckbox from "../atomComponents/CustomCheckbox";
+
 const FileListComponent = (props) => {
 
     let allRootArr = props.allRootArr;
+    let datas = props.fileListData;
+
+    const FileItemsComponent = datas.map((f, index) => 
+      <div key={index} style={{ display: "flex", marginBottom: "20px" }}>
+          <CustomCheckbox color="#137813" />
+          <FileItemInList 
+            isDir={f['isDir']}
+            filename={f['filename']}
+            fileType={f['file-type']}
+          />
+      </div>  
+    );
+
     return (
         <Layout>
             <h3 style={{ fontWeight: "bold" }}>{allRootArr}</h3>
@@ -21,7 +37,10 @@ const FileListComponent = (props) => {
                 </Dropdown>
             </div>
 
-            <div style={{ backgroundColor: "gray", width: "100%", height:"1px", marginTop: "20px", marginBottom: "20px" }} />
+            <div style={{ backgroundColor: "gray", width: "100%", height:"1.4px", marginTop: "20px", marginBottom: "20px" }} />
+            <div>
+                {FileItemsComponent}
+            </div>
         </Layout>
     );
 }

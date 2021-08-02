@@ -17,9 +17,35 @@ const StoragePage = (props, {history}) => {
     let capacityStorage = 100
     let usedStroage = 15
 
-
     // example file list
     let allRootArr = window.location.pathname.split('/').slice(2);
+
+
+    
+    // File List Example
+    const testFileListCase = [
+        {
+            "filename": "file1.txt",
+            "modify-date": "2021-01-01 4:13am",
+            "isDir": false,
+            "file-type": "text",
+            "size-str": "1KB"
+        },
+        {
+            "filename": "mymusic.mp3",
+            "modify-date": "2021-01-01 4:13am",
+            "file-type": "audio",
+            "size-str": "3MB",
+            "isDir": false,
+        },
+        {
+            "filename": "mydir",
+            "modify-date": "2021-01-01 4:13am",
+            "file-type": "none",
+            "size-str": "11",
+            "isDir": true,
+        }
+    ]
 
     return (
         <div>
@@ -40,6 +66,7 @@ const StoragePage = (props, {history}) => {
                 />
                 <FileListComponent 
                     allRootArr={allRootArr}
+                    fileListData={testFileListCase}
                 />
                 <FileStatusComponent />
             </Layout>
