@@ -1,0 +1,7 @@
+{
+    "DATABASE": {
+        "type": "mysql",
+        "default": {
+        }
+    }
+}

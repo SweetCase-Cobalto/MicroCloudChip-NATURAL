@@ -1,6 +1,5 @@
 #!/usr/bin/perl
-# Print
-
+use JSON qw(decode_json);
 use warnings;
 use strict;
 use feature qw( switch );
@@ -58,6 +57,95 @@ sub check_is_app_port_available {
     }
 }
 
+sub rdbms_select_process() {
+    my $is_mysql = 0;
+    my %mysql_config = (
+        "IS_EXTERNAL" => 0,
+        "ENGINE" => "django.db.backends.mysql",
+        "NAME" => "",
+        "USER" => "",
+        "PASSWORD" => "",
+        "HOST" => "",
+        "PORT" => 3306
+    );
+    while(1) {
+        printf "[3] Do You Use External Database? (Only MySQL)[y/n] (default: n to internal database) >> ";
+        my $answer = "";
+        chomp($answer = <STDIN>);
+
+        if(length($answer) == 0 || $answer eq 'n') {
+            printf "ok, you use internal database (SQLite)\n";
+            last;
+        } elsif($answer eq 'y') {
+            print "you want to use external database (MySQL) lets set mysql settings.\n";
+            $is_mysql = 1;
+            last;
+        }
+    }
+    
+    $mysql_config{"IS_EXTERNAL"} = $is_mysql;
+
+    # If Select externel database
+    if($is_mysql) {
+
+        my $buf = ""; # input buffer
+
+        # Host
+        while(1) {
+            printf "[3-1] Host >> ";
+            chomp($buf = <STDIN>);
+            if(length($buf) > 0) {
+                $mysql_config{"HOST"} = $buf;
+                last;
+            }
+        }
+        
+        # User
+        while(1) {
+            printf "[3-2] Database >> ";
+            chomp($buf = <STDIN>);
+            if(length($buf) > 0) {
+                $mysql_config{"NAME"} = $buf;
+                last;
+            }
+        }
+
+        # Port
+        while(1) {
+            printf "[3-3] Port(Default 3306) >> ";
+            chomp($buf = <STDIN>);
+            if(length($buf) > 0 && check_is_app_port_available($buf)) {
+                $mysql_config{"PORT"} = int($buf);
+                last;
+            } elsif(length($buf) == 0) {
+                last;
+            }
+        }
+
+        # User
+        while(1) {
+            printf "[3-4] Username >> ";
+            chomp($buf = <STDIN>);
+            if(length($buf) > 0) {
+                $mysql_config{"USER"} = $buf;
+                last;
+            }
+        }
+
+        # Password
+        while(1) {
+            printf "[3-5] Password >> ";
+            chomp($buf = <STDIN>);
+            if(length($buf) > 0) {
+                $mysql_config{"PASSWORD"} = $buf;
+                last;
+            }
+        }
+    }
+
+    return %mysql_config
+}
+
 sub process_install {
     # Variables
     # StorageRoot
@@ -111,6 +199,10 @@ sub process_install {
 
     # TODO 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
 
+    # select sql
+    my %rdbms_config = rdbms_select_process();
+
+    # Config Data를 바탕으로 데이터 처리
 }
 sub process_format {
     print "준비중이에오\n";
