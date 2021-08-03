@@ -13,13 +13,17 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import json
 import os
+import sys
 
 # Config is Test
 config = None
 # Load Config File
-with open('server/config.json') as f:
-    config = json.load(f)
-
+try:
+    with open('server/config.json', 'r') as f:
+        config = json.load(f)
+except Exception as e:
+    print("Config data is not setting, please back to `bin` directory and run command `perl install.pl install` ")
+    exit(0)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -83,12 +87,32 @@ WSGI_APPLICATION = 'server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DATABASES = None
+try:
+    if config["database"]["rdbms"]["type"] == "sqlite":
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+    elif config["database"]["rdbms"]["type"] == "mysql":
+        DATABASES = {
+            'default': {
+                'ENGINE': config["database"]["rdbms"]["engine"],
+                'NAME': config["database"]["rdbms"]["name"],
+                'USER': config["database"]["rdbms"]["user"],
+                'PASSWORD': config["database"]["rdbms"]["password"],
+                'HOST': config["database"]["rdbms"]["host"],
+                'PORT': str(config["database"]["rdbms"]["port"])
+            }
+        }
+except Exception as e:
+    print(e)
+    print("config data has illeagal data")
+    print("please back to bin directory and run `perl install.pl install` again ")
+    exit(0)
+
 
 
 # Password validation

@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-use JSON qw(decode_json);
 use warnings;
 use strict;
 use feature qw( switch );
@@ -146,6 +145,10 @@ sub rdbms_select_process() {
     return %mysql_config
 }
 
+sub install_dependency_packages() {
+    system "sudo apt install -y python3-dev libmysqlclient-dev gcc";
+}
+
 sub process_install {
     # Variables
     # StorageRoot
@@ -246,8 +249,13 @@ sub process_install {
 ";
     }
 
-    
+    print "Write Config Data\n";
+    print "Install Dependency Packages\n";
 
+    # 의존성 패키지 설치
+    install_dependency_packages();
+
+    
     # TODO 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
 
 }
