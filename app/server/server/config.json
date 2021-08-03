@@ -1,7 +1,7 @@
+
 {
-    "DATABASE": {
-        "type": "mysql",
-        "default": {
-        }
+    "system": {
+        "storage-root": /home/vector/microcloudchip
     }
 }
+    

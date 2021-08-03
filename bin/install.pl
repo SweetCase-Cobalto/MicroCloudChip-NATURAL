@@ -197,12 +197,29 @@ sub process_install {
         }
     }
 
-    # TODO 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
-
+    
     # select sql
     my %rdbms_config = rdbms_select_process();
 
     # Config Data를 바탕으로 데이터 처리
+    my %server_config = (
+        "APP_ROOT" => $app_root,
+        "APP_PORT" => $app_port
+    );
+
+    # Write To Config.json
+    open(FILE_CFG, ">../app/server/server/config.json");
+    print FILE_CFG "
+{
+    \"system\": {
+        \"storage-root\": $app_root
+    }
+}
+    ";
+    
+
+    # TODO 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
+
 }
 sub process_format {
     print "준비중이에오\n";
