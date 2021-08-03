@@ -207,15 +207,45 @@ sub process_install {
         "APP_PORT" => $app_port
     );
 
+
     # Write To Config.json
     open(FILE_CFG, ">../app/server/server/config.json");
+    if($rdbms_config{"IS_EXTERNAL"}) {
     print FILE_CFG "
 {
     \"system\": {
-        \"storage-root\": $app_root
+        \"storage-root\": \"$app_root\",
+        \"port\": $app_port
+    },
+    \"database\": {
+        \"rdbms\": {
+            \"type\": \"mysql\",
+            \"engine\": \"$rdbms_config{\"ENGINE\"}\",
+            \"name\": \"$rdbms_config{\"NAME\"}\",
+            \"user\": \"$rdbms_config{\"USER\"}\",
+            \"password\": \"$rdbms_config{\"PASSWORD\"}\",
+            \"host\": \"$rdbms_config{\"HOST\"}\",
+            \"port\": $rdbms_config{\"PORT\"}
+        }
     }
 }
     ";
+    } else {
+        print FILE_CFG "
+{
+    \"system\": {
+        \"storage-root\": \"$app_root\",
+        \"port\": $app_port
+    },
+    \"database\": {
+        \"rdbms\": {
+            \"type\": \"sqlite\"
+        }
+    }
+}
+";
+    }
+
     
 
     # TODO 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.

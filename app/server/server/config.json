@@ -1,7 +1,19 @@
 
 {
     "system": {
-        "storage-root": /home/vector/microcloudchip
+        "storage-root": "/home/vector/microcloudchip",
+        "port": 8000
+    },
+    "database": {
+        "rdbms": {
+            "type": "mysql",
+            "engine": "django.db.backends.mysql",
+            "name": "databas",
+            "user": "user",
+            "password": "pasword",
+            "host": "host",
+            "port": 8888
+        }
     }
 }
     
