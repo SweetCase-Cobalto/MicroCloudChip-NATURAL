@@ -1,3 +1,7 @@
+// example user image
+
+import usrIcon from '../asset/img/icons/user-icon.svg';
+
 export const LOGIN = "CONNECTED_USER_REDUCER/LOGIN";
 export const LOGOUT=  "CONNECTED_USER_REDUCER/LOGOUT";
 
@@ -7,7 +11,9 @@ const initialState = {
     userName: "",
     email: "",
     isAdmin: false,
-    maximumVolume: -1
+    maximumVolume: -1,
+    usrImgLink: "",
+    usedVolume: -1
 }
 
 // Events
@@ -26,7 +32,9 @@ export const userLogin = (user, pswd) => {
             userName: "admin",
             email: "seokbong60@gmail.com",
             isAdmin: true,
-            maximumVolume: 100
+            maximumVolume: 100,
+            usrImgLink: usrIcon,
+            usedVolume: 34
         }
     }
 }
@@ -39,7 +47,9 @@ export const userLogout = () => {
             userName: "",
             email: "",
             isAdmin: false,
-            maximumVolume: -1
+            maximumVolume: -1,
+            usrImgLink: usrIcon,
+            usedVolume: -1
         }
     }
 }
@@ -52,7 +62,9 @@ export const ConnectedUserReducer = (state = initialState, action) => {
                 userName: action.data.userName,
                 email: action.data.email,
                 isAdmin: action.data.isAdmin,
-                maximumVolume: action.data.maximumVolume
+                maximumVolume: action.data.maximumVolume,
+                usedVolume: action.data.usedVolume,
+                usrImgLink: action.data.usrImgLink
             }
         default:
             return state;

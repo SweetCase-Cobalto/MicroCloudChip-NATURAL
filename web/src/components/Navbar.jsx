@@ -1,11 +1,19 @@
 import styled from "styled-components"
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import { userLogout } from "../reducers/ConnectedUserReducer";
 
 import NavIcon from "../asset/img/nav-icon.svg"
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const Navbar = () => {
+const Navbar = (props) => {
+
+    const logoutEvent = () => {
+        props.userLogout();
+        window.location.assign("/");
+    }
+
     return (
         <Layout>
             <img src={NavIcon} width="30px" height="30px" style={{ margin: "10px" }} alt="navbar icon" />
@@ -13,11 +21,14 @@ const Navbar = () => {
             <TextItemLayer>Shared</TextItemLayer>
             <TextItemLayer>Accounts</TextItemLayer>
             <TextItemLayer><Link to="/settings">Settings</Link></TextItemLayer>
-            <TextItemLayer style={{ float: "right" }}>Logout</TextItemLayer>
+            <TextItemLayer style={{ float: "right", cursor: "pointer" }} onClick={logoutEvent}>Logout</TextItemLayer>
         </Layout>
     );
 }
-export default Navbar;
+const mapStateToProps = (state) => {
+    return state.ConnectedUserReducer;
+}
+export default connect(mapStateToProps, {userLogout})(Navbar);
 const Layout = styled.div`
     background-color: #137813;
     color: white;

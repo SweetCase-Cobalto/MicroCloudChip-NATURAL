@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import {Helmet} from "react-helmet";
 
-import { useHistory } from 'react-router';
-
 import { connect } from 'react-redux';
 import { userLogin } from '../reducers/ConnectedUserReducer';
 
@@ -18,7 +16,7 @@ const LoginPage = (props) => {
     // 로그인 여부 확인
     if(props.maximumVolume != -1) {
         // 로그인 성공
-       window.location.assign("/storage/root");
+        window.location.assign("/storage/root");
     }
 
     const loginBtnEvent = (e) => {

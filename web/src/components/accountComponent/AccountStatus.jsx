@@ -2,17 +2,15 @@ import styled from "styled-components";
 import { Image, ProgressBar } from "react-bootstrap";
 
 import { connect } from "react-redux";
-import { updateDirList } from "../../reducers/DirListReducer";
 
 const AccountStatus = (props) => {
 
-    console.log(props);
-    let name = props.accountName;
-    let email = props.accountEmail;
-    let type = props.accountType;
-    let capacityStorage = props.capacityStorage;
-    let usedStorage = props.usedStorage;
-    let usrIcon = props.userImgLink;
+    let name = props.userName;
+    let email = props.email;
+    let type = props.isAdmin ? "admin" : "client";
+    let capacityStorage = props.maximumVolume;
+    let usedStorage = props.usedVolume;
+    let usrIcon = props.usrImgLink;
 
     let gage = (usedStorage / capacityStorage) * 100;
 
