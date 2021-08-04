@@ -1,8 +1,12 @@
 import styled from "styled-components";
 import { Image, ProgressBar } from "react-bootstrap";
 
+import { connect } from "react-redux";
+import { updateDirList } from "../../reducers/DirListReducer";
+
 const AccountStatus = (props) => {
 
+    console.log(props);
     let name = props.accountName;
     let email = props.accountEmail;
     let type = props.accountType;
@@ -30,7 +34,11 @@ const AccountStatus = (props) => {
         </Layout>
     );
 }
-export default AccountStatus;
+
+const mapStateToProps = (state) => {
+    return state.ConnectedUserReducer;
+}
+export default connect(mapStateToProps)(AccountStatus);
 
 const Layout = styled.div`
     line-height: 0.4em;
