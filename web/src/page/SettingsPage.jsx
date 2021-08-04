@@ -5,7 +5,6 @@ import AccountUpdaterForm from "../components/formComponents/AccountUpdaterForm"
 import { Helmet } from "react-helmet";
 
 import '../asset/font/font.css'
-import { useDispatch, useSelector } from "react-redux";
 
 const SettingsPage = () => {
 

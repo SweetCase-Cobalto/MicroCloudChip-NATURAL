@@ -20,8 +20,6 @@ const StoragePage = (props, {history}) => {
     // example file list
     let allRootArr = window.location.pathname.split('/').slice(2);
 
-
-    
     // File List Example
     const testFileListCase = [
         {
@@ -46,7 +44,6 @@ const StoragePage = (props, {history}) => {
             "isDir": true,
         }
     ]
-
     return (
         <div>
             <Helmet>
@@ -64,8 +61,7 @@ const StoragePage = (props, {history}) => {
 
                     userImgLink={usrIcon}
                 />
-                <FileListComponent 
-                    allRootArr={allRootArr}
+                <FileListComponent
                     fileListData={testFileListCase}
                 />
                 <FileStatusComponent />
@@ -78,5 +74,8 @@ const Layout = styled.div`
     display: flex;
     margin-top: 150px;
 `
+
+
+
 
 export default StoragePage;

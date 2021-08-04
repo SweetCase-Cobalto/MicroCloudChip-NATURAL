@@ -7,15 +7,9 @@ import logger from 'redux-logger';
 import { Provider } from 'react-redux';
 
 import App from './App';
-import rootReducer from './reducers/index';
+import { rootReducer } from './reducers';
 
-const enhancer = 
-  process.env.NODE_ENV == "production"
-    ? compose(applyMiddleware())
-    : composeWithDevTools(applyMiddleware(logger));
-
-const store = createStore(rootReducer, enhancer);
-
+const store = createStore(rootReducer);
 
 ReactDOM.render(
   <Provider store={store}>
