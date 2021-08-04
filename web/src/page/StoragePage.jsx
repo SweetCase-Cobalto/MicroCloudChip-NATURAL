@@ -74,8 +74,4 @@ const Layout = styled.div`
     display: flex;
     margin-top: 150px;
 `
-
-
-
-
 export default StoragePage;

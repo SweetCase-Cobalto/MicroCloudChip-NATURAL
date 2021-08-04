@@ -1,22 +1,33 @@
 import styled from 'styled-components';
 import {Helmet} from "react-helmet";
 
+import { useHistory } from 'react-router';
+
+import { connect } from 'react-redux';
+import { userLogin } from '../reducers/ConnectedUserReducer';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../asset/font/font.css';
 
 // imgs
 import LogoImg from '../asset/img/logo.svg';
 
-const LoginPage = ({ history }) => {
+const LoginPage = (props) => {
     
     const hostToStr = "127.0.0.1";
+    // 로그인 여부 확인
+    if(props.maximumVolume != -1) {
+        // 로그인 성공
+       window.location.assign("/storage/root");
+    }
 
-    // Checking if is First Setting
-    // TODO Redux 저장 권유
+    const loginBtnEvent = (e) => {
+        e.preventDefault();
 
-    const loginBtnEvent = () => {
+        let username = e.target.username.value;
+        let password = e.target.password.value;
 
-        history.push('/storage/root');
+        props.userLogin(username, password);
     }
 
     return (
@@ -31,11 +42,11 @@ const LoginPage = ({ history }) => {
                     <LoginSection onSubmit={loginBtnEvent}>
                         <EditSection>
                             <EditLabel>NAME</EditLabel>
-                            <EditText type="text" />
+                            <EditText type="text" name="username" />
                         </EditSection>
                         <EditSection>
                             <EditLabel>PSWD</EditLabel>
-                            <EditText type="text" />
+                            <EditText type="password" name="password" />
                         </EditSection>
                         <LoginBtn>LOGIN</LoginBtn>
                     </LoginSection>
@@ -44,6 +55,15 @@ const LoginPage = ({ history }) => {
         </Layer>
     );
 }
+
+const mapStateToProps = (state) => {
+    return state.ConnectedUserReducer;
+};
+
+export default connect(mapStateToProps, {
+    userLogin
+})(LoginPage);
+
 const Layer = styled.div`
     background-color: #1E1E1E;
     padding-left: 35%;
@@ -83,4 +103,3 @@ const LoginBtn = styled.button`
     border-radius: 5px;
     border: none;
 `
-export default LoginPage;
