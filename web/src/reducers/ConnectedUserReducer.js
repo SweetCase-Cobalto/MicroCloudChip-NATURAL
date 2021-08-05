@@ -3,17 +3,20 @@
 import usrIcon from '../asset/img/icons/user-icon.svg';
 
 export const LOGIN = "CONNECTED_USER_REDUCER/LOGIN";
-export const LOGOUT=  "CONNECTED_USER_REDUCER/LOGOUT";
+export const LOGOUT = "CONNECTED_USER_REDUCER/LOGOUT";
 
+// 유저 정보를 수정한 다음 서버로부터 새로운 정보를 받아야 하는 경우 사용
+export const UPDATE_INFO = "CONNECTED_USER_REDUCER/UPDATE_INFO";
 
 // Initial
 const initialState = {
-    userName: "",
-    email: "",
-    isAdmin: false,
-    maximumVolume: -1,
-    usrImgLink: "",
-    usedVolume: -1
+    id: "",             // 고유 아이디
+    userName: "",       // 유저 이름(아이디)
+    email: "",          // 유저 아이디
+    isAdmin: false,     // 어드민 여부
+    usrImgLink: "",     // 유저 이미지 링크
+    usedVolume: -1,     // 사용 용량 (KB 단위)
+    maximumType: -1     // 최대 이용 용량 (KB  단위)
 }
 
 // Events
@@ -29,6 +32,7 @@ export const userLogin = (user, pswd) => {
     return {
         type: LOGIN,
         data: {
+            id: "abcdefg",
             userName: "admin",
             email: "seokbong60@gmail.com",
             isAdmin: true,
@@ -44,6 +48,7 @@ export const userLogout = () => {
     return {
         type: LOGOUT,
         data: {
+            id: "",
             userName: "",
             email: "",
             isAdmin: false,
@@ -53,8 +58,22 @@ export const userLogout = () => {
         }
     }
 }
+// 유저 데이터 수정
+export const updateMyInfo = (userName, localUsrImgLink, password) => {
+    // Connect With Server
 
-// Reducmer
+    let _localUsrImgLink = localUsrImgLink == "" ? usrIcon : localUsrImgLink;
+
+    return {
+        type: UPDATE_INFO,
+        data: {
+            userName: userName,
+            usrImgLink: _localUsrImgLink
+        }
+    }
+}
+
+// Reducer
 export const ConnectedUserReducer = (state = initialState, action) => {
     switch(action.type) {
         case LOGIN: case LOGOUT:
@@ -64,7 +83,14 @@ export const ConnectedUserReducer = (state = initialState, action) => {
                 isAdmin: action.data.isAdmin,
                 maximumVolume: action.data.maximumVolume,
                 usedVolume: action.data.usedVolume,
-                usrImgLink: action.data.usrImgLink
+                usrImgLink: action.data.usrImgLink,
+                id: action.data.id
+            }
+        case UPDATE_INFO:
+            return {
+                ...state,
+                userName: action.data.userName,
+                usrImgLink: action.data.usrImgLink,
             }
         default:
             return state;

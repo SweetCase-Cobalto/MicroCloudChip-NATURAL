@@ -1,24 +1,24 @@
 import styled from "styled-components";
 import {Image, Form, Button} from "react-bootstrap";
+import { connect } from "react-redux";
+import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 
 const AccountUpdaterForm = (props) => {
-
+    /*
+        계정을 수정하거나
+        생성 할 때 사용하는 폼
+    */
     // Component Title
     let idDisabled = false;
-    let actionType = props.actionType;
+    let actionType = props.actionType; // 수정 or 생성
 
     let btnTitle = "수정"
-
-    let target = props.target
-    switch(target) {
-        case "admin":
-            idDisabled = true;
-        case "client":
-            if(actionType == "add") {
-                btnTitle = "추가"
-            }
-        default:
-            break
+    if(props.isAdmin) {
+        idDisabled = true;
+    } else {
+        if(actionType == "add") {
+            btnTitle = "추가"
+        }
     }
 
     return (
@@ -56,8 +56,15 @@ const AccountUpdaterForm = (props) => {
             </EditForm>
         </EditLayer>
     );
-
 }
+
+const mapStateToProps = (state) => {
+    return state.ConnectedUserReducer;
+}
+export default connect(mapStateToProps, {
+    updateMyInfo
+})(AccountUpdaterForm);
+
 
 const EditLayer = styled.div`
     margin-top: 40px;
@@ -67,4 +74,3 @@ const EditForm = styled.form`
     padding-left: 40px;
     width: 100%;
 `
-export default AccountUpdaterForm;

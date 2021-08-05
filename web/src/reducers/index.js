@@ -4,6 +4,7 @@ import storage from "redux-persist/lib/storage";
 
 import { DirListReducer } from "./DirListReducer";
 import { ConnectedUserReducer } from "./ConnectedUserReducer";
+import { UserListReducer } from "./UserListReducer";
 
 // Redux Local Storage [Setting]
 const persistConfig = {
@@ -13,7 +14,7 @@ const persistConfig = {
 }
 
 const rootReducer = combineReducers({
-    DirListReducer, ConnectedUserReducer
+    DirListReducer, ConnectedUserReducer, UserListReducer
 });
 
 export default persistReducer(persistConfig, rootReducer);

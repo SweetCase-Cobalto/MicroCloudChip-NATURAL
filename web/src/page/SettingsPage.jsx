@@ -16,7 +16,7 @@ const SettingsPage = () => {
             <Navbar />
             <Layer>
                 <h3 style={{ fontWeight: "bold" }}>관리자 계정</h3>
-                <AccountUpdaterForm target="admin" />
+                <AccountUpdaterForm actionType="modify" />
             </Layer>
             <Footer />
         </div>

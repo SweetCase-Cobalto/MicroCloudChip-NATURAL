@@ -1,5 +1,3 @@
-import styled from "styled-components";
-
 // Icons
 import dirImg from '../../asset/img/icons/dir.svg';
 import audioFileImg from '../../asset/img/icons/audio-file.svg';
@@ -10,6 +8,10 @@ import txtFileImg from '../../asset/img/icons/txt-file.svg';
 import otherFileImg from '../../asset/img/icons/unknown-file.svg';
 import videoFileImg from '../../asset/img/icons/video-file.svg';
 
+
+import { useState } from "react";
+import { connect } from "react-redux";
+
 const FileItemInList = (props) => {
     
     /*
@@ -18,9 +20,23 @@ const FileItemInList = (props) => {
         isDir: bool
         fileType: text, exe, pdf, image, audio, video, other, none
     */
+   const [isMouseEntered, setIsMouseEntered] = useState(false);
    let filename = props.filename;
    let isDir = props.isDir;
    let fileType = props.fileType;
+
+   const onClickEvent = () => {
+       if(isDir) {
+           // 디렉토링 경우
+           // 해당 루트로 이동
+           let curUrl = props.curUrl;
+           let nextUrlToString = curUrl.join('/') + "/" + filename;
+           window.location.assign("/storage/"+nextUrlToString);
+       } else {
+           // TODO 파일 다운로드
+           // TODO 차기 버전은 특정 타입에 따라 다른 작업을 수행해야 함
+       }
+   }
 
    const FileImgLayer = () => {
         // 이미지 태그
@@ -49,18 +65,24 @@ const FileItemInList = (props) => {
    }
 
    return (
-        <div style={{ width: "100%" }} >   
+        <div style={{ width: "100%"}}>   
             <div style={{ display: "flex" }}>
                 <FileImgLayer />
-                <h5 style={{ paddingTop: "5px" }}>{filename}</h5>
+                <h5 style={{ 
+                        paddingTop: "5px", 
+                        cursor: "pointer", 
+                        textDecoration: isMouseEntered ? "underline" : "none"
+                    }}
+                    onClick={onClickEvent} 
+                    onMouseEnter={e => { setIsMouseEntered(true)}} 
+                    onMouseLeave={e => { setIsMouseEntered(false)}}
+                >{filename}</h5>
             </div>
             <div style={{ borderBottom: "1px solid gray"}} />
         </div>
    );
 }
-export default FileItemInList;
-
-const Layer = styled.div`
-    width: 100%;
-    height: 50px;
-`;
+const mapStateProps = (state) => {
+    return state.DirListReducer;
+}
+export default connect(mapStateProps)(FileItemInList);

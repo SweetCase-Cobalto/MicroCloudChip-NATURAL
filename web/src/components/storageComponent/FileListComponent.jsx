@@ -9,6 +9,7 @@ import { updateDirList } from "../../reducers/DirListReducer";
 const FileListComponent = (props) => {
     
     let allRootArr = window.location.pathname.split('/').slice(2);
+    let allRootArrToString = "";
     let datas = [];
 
     if(props.curUrl.length == 0) {
@@ -23,6 +24,7 @@ const FileListComponent = (props) => {
         
     } else {
         datas = props.fileList.concat(props.directoryList);
+        allRootArrToString = allRootArr.join('/');
 
         const FileItemsComponent = datas.map((f, index) => 
             <div key={index} style={{ display: "flex", marginBottom: "20px" }}>
@@ -37,7 +39,7 @@ const FileListComponent = (props) => {
 
         return (
             <Layout>
-                <h3 style={{ fontWeight: "bold" }}>{allRootArr}</h3>
+                <h3 style={{ fontWeight: "bold" }}>{allRootArrToString}</h3>
                 
                 <div style={{ marginTop: "20px", display: "flex" }}>
                     <Button variant="success" style={{ marginRight: "20px", padding: "0px 30px 0px 30px" }}>업로드</Button>
@@ -59,9 +61,6 @@ const FileListComponent = (props) => {
             </Layout>
         );
     }
-
-
-
 }
 const mapStateToProps = (state) => {
     return state.DirListReducer;
@@ -76,7 +75,6 @@ const Layout = styled.div`
 
     font-family: "Gothic A1";
     width: 65%;
-    height: 100vh;
 
     border: 1.2px solid #1DB21D;
     box-shadow: 2px 2px 3px gray;

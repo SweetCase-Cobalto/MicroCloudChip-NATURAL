@@ -4,7 +4,6 @@ import { Image, ProgressBar } from "react-bootstrap";
 import { connect } from "react-redux";
 
 const AccountStatus = (props) => {
-
     let name = props.userName;
     let email = props.email;
     let type = props.isAdmin ? "admin" : "client";

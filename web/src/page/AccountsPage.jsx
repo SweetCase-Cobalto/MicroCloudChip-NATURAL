@@ -1,33 +1,29 @@
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import {Helmet} from 'react-helmet'
+import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
 import AccountStatus from '../components/accountComponent/AccountStatus';
-import FileStatusComponent from '../components/storageComponent/FileStatusComponent';
-import FileListComponent from '../components/storageComponent/FileListComponent';
-
+import AccountListComponent from '../components/accountComponent/AccountListComponent';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const StoragePage = () => {
-
-    return (
+const AccountsPage = () => {
+    return(
         <div>
             <Helmet>
-                <title>Storage</title>
+                <title>Accounts</title>
             </Helmet>
             <Navbar />
             <Layout>
                 <AccountStatus />
-                <FileListComponent />
-                <FileStatusComponent />
+                <AccountListComponent />
             </Layout>
             <Footer />
         </div>
     );
 }
+export default AccountsPage;
 const Layout = styled.div`
     display: flex;
     margin-top: 150px;
 `
-export default StoragePage;

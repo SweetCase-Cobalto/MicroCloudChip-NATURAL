@@ -1,4 +1,4 @@
-export const UPDATE_DIRLIST = "DIRLISTREDUCER/UPDATE_DIRLIST";
+export const UPDATE_DIRLIST = "DIR_LIST_REDUCER/UPDATE_DIR_LIST";
 
 export const updateDirList = (newUrl) => {
 
@@ -9,25 +9,19 @@ export const updateDirList = (newUrl) => {
     let newFileList = [
         {
             "filename": "file1.txt",
-            "modify-date": "2021-01-01 4:13am",
             "isDir": false,
-            "file-type": "text",
-            "size-str": "1KB"
+            "file-type": "text"
         },
         {
             "filename": "mymusic.mp3",
-            "modify-date": "2021-01-01 4:13am",
             "file-type": "audio",
-            "size-str": "3MB",
             "isDir": false,
         }
     ]
     let newDirList = [
         {
             "filename": "mydir",
-            "modify-date": "2021-01-01 4:13am",
             "file-type": "none",
-            "size-str": "11",
             "isDir": true,
         }
     ]
