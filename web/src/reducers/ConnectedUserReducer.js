@@ -1,4 +1,4 @@
-// example user image
+// 현재 로그인 되어 있는 유저 정보
 
 import usrIcon from '../asset/img/icons/user-icon.svg';
 
@@ -18,15 +18,16 @@ const initialState = {
     usedVolume: -1,     // 사용 용량 (KB 단위)
     maximumType: -1     // 최대 이용 용량 (KB  단위)
 }
+// 로그인이 여부를 확인하는 방법은 usedVolume 또는 maximumType이 -1인 지 확인
 
 // Events
 /*
- * TODO login to server
+ * TODO: login to server
  * 서버 API를 연결할 경우
  * 모든 함수를 ASYNC 처리하고 axios 옆에 await 추가
 */
 export const userLogin = (user, pswd) => {
-    // Connect From API Server For check login data
+    // TODO: Connect From API Server For check login data
 
     // Test Case
     return {
@@ -43,7 +44,7 @@ export const userLogin = (user, pswd) => {
     }
 }
 export const userLogout = () => {
-    // Connect From api server for logout
+    // TODO: Connect From api server for logout
 
     return {
         type: LOGOUT,

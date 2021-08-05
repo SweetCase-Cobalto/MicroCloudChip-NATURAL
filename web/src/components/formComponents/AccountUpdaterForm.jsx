@@ -7,7 +7,11 @@ const AccountUpdaterForm = (props) => {
     /*
         계정을 수정하거나
         생성 할 때 사용하는 폼
+
+        TODO: 버튼 이벤트 함수 구현 필요
     */
+
+
     // Component Title
     let idDisabled = false;
     let actionType = props.actionType; // 수정 or 생성
@@ -28,7 +32,11 @@ const AccountUpdaterForm = (props) => {
             <EditForm>
                 <Form.Group style={{ marginBottom: "20px" }} >
                     <Form.Label>아이디</Form.Label>
-                    <Form.Control type="text" name="id" placeholder="6자 이상 12자 이하 영어만" disabled={idDisabled} />
+                    <Form.Control type="text" 
+                                    name="id" 
+                                    placeholder="6자 이상 12자 이하 영어만" 
+                                    disabled={idDisabled} 
+                                    value={actionType == "add" ? "" : props.userName} />
                 </Form.Group>
 
                 <div style={{ display: "flex", marginBottom: "20px" }}>
@@ -46,7 +54,11 @@ const AccountUpdaterForm = (props) => {
 
                 <Form.Group style={{ marginBottom: "30px" }} >
                     <Form.Label>이메일</Form.Label>
-                    <Form.Control type="email" name="email" placeholder="example@example.com" disabled />
+                    <Form.Control type="email" 
+                                    name="email" 
+                                    placeholder="example@example.com" 
+                                    disabled={idDisabled} 
+                                    value={actionType == "add" ? "" : props.email} />
                 </Form.Group>
             
                 <div style={{ display: "flex", float: "right" }} >

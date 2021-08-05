@@ -13,7 +13,10 @@ import { useState } from "react";
 import { connect } from "react-redux";
 
 const FileItemInList = (props) => {
-    
+    /*
+        파일 및 디렉토리 아이템 컴포넌트
+    */
+
     /*
         props info
         filename: String
@@ -33,8 +36,8 @@ const FileItemInList = (props) => {
            let nextUrlToString = curUrl.join('/') + "/" + filename;
            window.location.assign("/storage/"+nextUrlToString);
        } else {
-           // TODO 파일 다운로드
-           // TODO 차기 버전은 특정 타입에 따라 다른 작업을 수행해야 함
+           // TODO: 파일 다운로드
+           // TODO: 차기 버전은 특정 타입에 따라 다른 작업을 수행해야 함
        }
    }
 

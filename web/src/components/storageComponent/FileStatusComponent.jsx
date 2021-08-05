@@ -2,8 +2,30 @@ import styled from "styled-components";
 import { Image, Button } from "react-bootstrap";
 
 import ExampleImg from '../../asset/img/icons/dir.svg'
+import { connect } from "react-redux";
 
-const FileStatusComponent = () => {
+const FileStatusComponent = (props) => {
+
+    // FIXME: props 갱신 안됨
+    let dirMap = props.dirListMap;
+
+    console.log(props);
+    let selectedFileType = []
+    let selectCounter = 0
+
+    if(dirMap !== undefined) {
+
+        // Calculate
+        let keys = Array.from(dirMap.keys());
+        keys.map((key) => {
+            let isSelected = dirMap.get(key);
+            if(isSelected) {
+                // 선택한 경우
+                selectCounter++;
+            }
+        });
+    }
+
     return (
         <Layout>
             <center style={{ marginBottom: "40px" }}>
@@ -41,7 +63,11 @@ const FileStatusComponent = () => {
         </Layout>
     );
 }
-export default FileStatusComponent;
+
+const mapStateToProps = (state) => {
+    return state.SelectedDirReducer;
+}
+export default connect(mapStateToProps)(FileStatusComponent);
 
 const Layout = styled.div`
     line-height: 0.4em;

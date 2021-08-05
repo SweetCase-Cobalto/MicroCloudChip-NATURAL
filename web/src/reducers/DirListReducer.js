@@ -1,8 +1,10 @@
 export const UPDATE_DIRLIST = "DIR_LIST_REDUCER/UPDATE_DIR_LIST";
 
+// 해당 루트에 대한 파일 및 디렉토리 데이터
+
 export const updateDirList = (newUrl) => {
 
-    // TODO Get DirList From server
+    // TODO: Get DirList From server
     // 서버 API를 연결할 경우
     // asnyc로 전환하고 axios 함수 앞에 await 추가
 

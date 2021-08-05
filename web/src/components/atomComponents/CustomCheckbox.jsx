@@ -15,10 +15,14 @@ const CustomCheckbox = (props) => {
     if(isSelected) {
         styleData['backgroundColor'] = color;
     }
-
     return  (
         <div style={styleData} onClick={(e) => {
             setIsSelected(!isSelected);
+            
+            // If have onClick Event
+            if(props.onClick !== undefined) {
+                props.onClick();
+            }
         }} />
     );
 }

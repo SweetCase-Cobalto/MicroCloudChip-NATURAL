@@ -4,7 +4,7 @@ import usrIcon from '../asset/img/icons/user-icon.svg';
 export const UPDATE_USERLIST = "USER_LIST_REDUCER/UPDATE_USER_LIST";
 
 export const updateUserList = () => {
-    // TODO Connect to Server
+    // TODO: Connect to Server
     // admin을 제외한 나머지 데이터 불러오기
     let userList = [
         {

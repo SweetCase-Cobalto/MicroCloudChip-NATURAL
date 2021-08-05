@@ -14,13 +14,14 @@ const Navbar = (props) => {
         window.location.assign("/");
     }
 
+    let displaySetting = props.isAdmin ? "block" : "none";
+
     return (
         <Layout>
             <img src={NavIcon} width="30px" height="30px" style={{ margin: "10px" }} alt="navbar icon" />
             <TextItemLayer><Link to="/storage/root" style={{ color: "white"}}>Storage</Link></TextItemLayer>
-            <TextItemLayer>Shared</TextItemLayer>
-            <TextItemLayer><Link to="/accounts" style={{ color: "white"}}>Accounts</Link></TextItemLayer>
-            <TextItemLayer><Link to="/settings" style={{ color: "white"}}>Settings</Link></TextItemLayer>
+            <TextItemLayer><Link to="/accounts" style={{ color: "white", display: displaySetting }}>Accounts</Link></TextItemLayer>
+            <TextItemLayer><Link to="/settings" style={{ color: "white", display: displaySetting }}>Settings</Link></TextItemLayer>
             <TextItemLayer style={{ float: "right", cursor: "pointer", color: "white" }} onClick={logoutEvent}>Logout</TextItemLayer>
         </Layout>
     );

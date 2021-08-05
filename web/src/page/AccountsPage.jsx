@@ -3,8 +3,9 @@ import Footer from '../components/Footer';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
-import AccountStatus from '../components/accountComponent/AccountStatus';
+import MyAccountStatusComponent from '../components/accountComponent/MyAccountStatusComponent';
 import AccountListComponent from '../components/accountComponent/AccountListComponent';
+import AccountStatusComponent from '../components/accountComponent/AccountStatusComponent';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AccountsPage = () => {
@@ -15,8 +16,9 @@ const AccountsPage = () => {
             </Helmet>
             <Navbar />
             <Layout>
-                <AccountStatus />
+                <MyAccountStatusComponent />
                 <AccountListComponent />
+                <AccountStatusComponent />
             </Layout>
             <Footer />
         </div>

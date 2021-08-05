@@ -3,7 +3,7 @@ import Footer from '../components/Footer';
 import {Helmet} from 'react-helmet'
 import styled from 'styled-components';
 
-import AccountStatus from '../components/accountComponent/AccountStatus';
+import MyAccountStatusComponent from '../components/accountComponent/MyAccountStatusComponent';
 import FileStatusComponent from '../components/storageComponent/FileStatusComponent';
 import FileListComponent from '../components/storageComponent/FileListComponent';
 
@@ -18,7 +18,7 @@ const StoragePage = () => {
             </Helmet>
             <Navbar />
             <Layout>
-                <AccountStatus />
+                <MyAccountStatusComponent />
                 <FileListComponent />
                 <FileStatusComponent />
             </Layout>

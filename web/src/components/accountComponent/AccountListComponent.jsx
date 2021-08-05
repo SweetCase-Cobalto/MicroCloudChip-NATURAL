@@ -7,6 +7,7 @@ import AccountItemInList from "./AccountItemInList";
 
 const AccountListComponent = (props) => {
 
+
     if(props.userList === undefined) {
         props.updateUserList();
         return (
@@ -37,7 +38,6 @@ const AccountListComponent = (props) => {
             </Layout>
         );
     }
-
 };
 const mapStateToProps = (state) => {
     return state.UserListReducer;

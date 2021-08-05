@@ -4,7 +4,7 @@ import "../asset/font/font.css";
 const Footer = () => {
     return (
         <Layer>
-            <p>MicroCloudChip NATRUAL</p>
+            <p>MicroCloudChip NATURAL</p>
             <p>v0.0.1-Alpha1</p>
             <p>Copyright 2021. Sweetcase. All rights reserved</p>
         </Layer>
