@@ -4,6 +4,7 @@ import { Button } from "react-bootstrap";
 
 import { updateUserList } from "../../reducers/UserListReducer";
 import AccountItemInList from "./AccountItemInList";
+import { Link } from "react-router-dom";
 
 const AccountListComponent = (props) => {
 
@@ -29,7 +30,9 @@ const AccountListComponent = (props) => {
         return (
             <Layout>
                 <div>
-                    <Button variant="success" style={{ width: "200px", marginBottom: "20px"}}>생성</Button>
+                    <Link to="/accounts/account-adder">
+                        <Button variant="success" style={{ width: "200px", marginBottom: "20px"}}>생성</Button>
+                    </Link>
                     <div style={{ width: "100%", height: "1px", backgroundColor: "gray", marginBottom: "20px" }} />
                     <UsersLayer>
                         {UserItems}

@@ -3,6 +3,7 @@ import { Image, Button } from "react-bootstrap";
 
 import ExampleImg from '../../asset/img/icons/user-icon.svg';
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 
 const AccountStatusComponent = (props) => {
     /*
@@ -27,6 +28,7 @@ const AccountStatusComponent = (props) => {
         // TODO: 여기서 서버로부터 유저 정보를 불러와야 한다.
         // TODO: 수정 및 삭제 버튼에 대한 이벤트 구현 필요
 
+        let modifyUrl = "/accounts/modify/"+props.selectedUserStaticId;
         return (
             <Layout>
                 <center style={{ marginBottom: "40px" }}>
@@ -49,9 +51,12 @@ const AccountStatusComponent = (props) => {
                         <ValueLayer>100G</ValueLayer>
                     </TextLayer>
                 </div>
-    
-                <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>수정</Button>
-                <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+
+                <Link to={modifyUrl}>
+                    <Button variant="success" 
+                            style={{ width: "100%", marginBottom: "15px"}}>수정</Button>
+                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+                </Link>
             </Layout>
         );
     }
