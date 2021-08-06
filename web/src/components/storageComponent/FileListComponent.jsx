@@ -1,19 +1,49 @@
 import styled from "styled-components";
-import { Button, Dropdown } from "react-bootstrap";
+import { Button, Dropdown, Form, Modal } from "react-bootstrap";
 
 import FileItemInList from "./FileItemInList";
 import CustomCheckbox from "../atomComponents/CustomCheckbox";
 import { connect } from "react-redux";
 
+import { useState } from "react";
+
 import { updateDirList } from "../../reducers/DirListReducer";
 import { updateDirs } from "../../reducers/SelectedDirReducer";
 
 const FileListComponent = (props) => {
-    
+    const [directoryAdderShow, setDirectoryAdderShow] = useState(false);
+
     let allRootArr = window.location.pathname.split('/').slice(2); // url 파라미터로부터 가져온다
     let allRootArrToString = "";
-    let datas = [];
-    let selectedDirMap = new Map();
+    let datas = []; // 파일리스트와 디렉토리 리스트를 저정하는 배열
+    let selectedDirList = props.SelectedDirReducer.dirList;
+
+    // 체크박스 클릭 핸들러
+    const checkBoxClickHandler = (f) => {
+
+        // 각 파일의 체크박스 선택 시 사용되는 핸들러
+        // 주로 선택된 파일 리스트를 redux를 사용해 관리하는데 사용한다.
+
+        let __key = f["filename"]+"/"+String(f["file-type"]);
+        let targetIdx = selectedDirList.indexOf(__key);
+
+        if(targetIdx > -1) {
+            // 이미 있는 경우 해제해야 하므로
+            // 삭제
+            if(targetIdx == 0) {
+                selectedDirList = selectedDirList.slice(1);
+            } else {
+                let leftArr = selectedDirList.slice(0, targetIdx);
+                let rightArr = selectedDirList.slice(targetIdx + 1);
+                selectedDirList = leftArr.concat(rightArr);
+            }
+            props.updateDirs(selectedDirList);
+        } else {
+            // 선택된 파일 리스트에 추가
+            selectedDirList = selectedDirList.concat(__key);
+            props.updateDirs(selectedDirList);
+        }
+    }
 
     if(props.DirListReducer.curUrl.length == 0) {
 
@@ -31,24 +61,6 @@ const FileListComponent = (props) => {
         // 파일 리스트와 디렉토리 리스트를 전부 data에 저장
         datas = props.DirListReducer.fileList.concat(props.DirListReducer.directoryList);
 
-        
-        // Data를 이용해 선택 파일 리스트 생성
-        if(props.SelectedDirReducer.dirListMap === undefined) {
-            // reducer에 데이터가 없을 경우
-            // datas 를 이용해 갱신
-            datas.map((f) =>{
-                selectedDirMap.set(f["filename"]+"/"+String(f["isDir"]), false);
-            });
-
-            props.updateDirs(selectedDirMap);
-            // FIXME: ReactJS에서 안티패턴으로 인한 warning이 발생하나 정상적으로 작동
-            // 안티패턴을 피하기 위한 방법 조사 필요
-        } else {
-            // 존재한다면
-            // local variable에 reducer data 동기화
-            selectedDirMap = props.SelectedDirReducer.dirListMap;
-        }
-
         // List로 정의되어있는 루트를 문자열로 변환
         allRootArrToString = allRootArr.join('/');
 
@@ -57,11 +69,7 @@ const FileListComponent = (props) => {
             return (
                 <div key={index} style={{ display: "flex", marginBottom: "20px" }}>
                     <CustomCheckbox color="#137813" 
-                                    onClick={() => {
-                                        let __key = f["filename"]+"/"+String(f["isDir"]);
-                                        selectedDirMap.set(__key, !selectedDirMap.get(__key));
-                                        props.updateDirs(selectedDirMap);
-                                    }} />
+                                    onClick={() => { checkBoxClickHandler(f); }} />
                     <FileItemInList 
                             isDir={f['isDir']}
                             filename={f['filename']}
@@ -69,27 +77,70 @@ const FileListComponent = (props) => {
                 </div>
             );
         });
+
+
+        // Directory Upload Modal
+        const DirectoryUploadModal = () => {
+
+            const closeEvent = () => setDirectoryAdderShow(false);
+
+            return (
+                <Modal
+                    show={directoryAdderShow}
+                    onHide={closeEvent}
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>디렉토리 생성</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form>
+                            <Form.Group className="mb-3" controId="newDirectoryName">
+                                <Form.Label>생성할 디렉토리 이름을 입력하세요</Form.Label>
+                                <Form.Control type="text" placeholder="디렉토리 이름 입력" />
+                            </Form.Group>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="success">생성</Button>
+                        <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                    </Modal.Footer>
+                </Modal>
+            );
+        }
+
         return (
             <Layout>
                 <h4 style={{ fontWeight: "bold" }}>{allRootArrToString}</h4>
                 
                 <div style={{ marginTop: "20px", display: "flex" }}>
-                    <Button variant="success" style={{ marginRight: "20px", padding: "0px 30px 0px 30px" }}>업로드</Button>
+
+                    <Dropdown>
+                        <Dropdown.Toggle variant="success" id="item-adder" style={{ paddingLeft: "30px", paddingRight: "30px", marginRight: "10px" }}>
+                            업로드
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            <Dropdown.Item>파일 업로드</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+
                     <Dropdown>
                         <Dropdown.Toggle variant="outline-success" id="item-adder">
                             생성
                         </Dropdown.Toggle>
     
                         <Dropdown.Menu>
-                            <Dropdown.Item onClick={e => {console.log(e)}}>디렉토리 생성</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setDirectoryAdderShow(true)}>디렉토리 생성</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
+
                 </div>
     
                 <div style={{ backgroundColor: "gray", width: "100%", height:"1.4px", marginTop: "20px", marginBottom: "20px" }} />
                 <div>
                     {FileItemsComponent}
                 </div>
+
+                <DirectoryUploadModal />
             </Layout>
         );
     }

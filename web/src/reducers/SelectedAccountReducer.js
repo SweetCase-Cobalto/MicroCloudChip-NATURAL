@@ -19,6 +19,7 @@ export const SelectedAccountReducer = (state = initialState, action) => {
     switch(action.type) {
         case SELECT_USER:
             return {
+                ...state,
                 selectedUserStaticId: action.selectedUserStaticId
             };
         default:

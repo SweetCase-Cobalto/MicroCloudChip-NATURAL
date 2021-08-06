@@ -23,7 +23,7 @@ export const updateDirList = (newUrl) => {
     let newDirList = [
         {
             "filename": "mydir",
-            "file-type": "none",
+            "file-type": "dir",
             "isDir": true,
         }
     ]

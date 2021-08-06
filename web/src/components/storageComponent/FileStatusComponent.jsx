@@ -1,3 +1,17 @@
+// Icons
+import dirImg from '../../asset/img/icons/dir.svg';
+import audioFileImg from '../../asset/img/icons/audio-file.svg';
+import exeFileImg from '../../asset/img/icons/exe-file.svg';
+import imgFileImg from '../../asset/img/icons/img-file.svg';
+import pdfFileImg from '../../asset/img/icons/pdf-file.svg';
+import txtFileImg from '../../asset/img/icons/txt-file.svg';
+import otherFileImg from '../../asset/img/icons/unknown-file.svg';
+import videoFileImg from '../../asset/img/icons/video-file.svg';
+
+import multiFileImg from '../../asset/img/icons/multiple-file-icon.svg';
+import multiDirImg from '../../asset/img/icons/multiple-dirs-icon.svg';
+import multiAllImg from '../../asset/img/icons/multiple-all-icon.svg';
+
 import styled from "styled-components";
 import { Image, Button } from "react-bootstrap";
 
@@ -6,62 +20,149 @@ import { connect } from "react-redux";
 
 const FileStatusComponent = (props) => {
 
-    // FIXME: props 갱신 안됨
-    let dirMap = props.dirListMap;
+    let selectedDirList = props.dirList;
 
-    console.log(props);
-    let selectedFileType = []
-    let selectCounter = 0
 
-    if(dirMap !== undefined) {
-
-        // Calculate
-        let keys = Array.from(dirMap.keys());
-        keys.map((key) => {
-            let isSelected = dirMap.get(key);
-            if(isSelected) {
-                // 선택한 경우
-                selectCounter++;
-            }
-        });
+    // 컴포넌트에 출력될 데이터들
+    let filename = "";
+    let imgUrl = "";
+    
+    
+    if(!selectedDirList.length) {
+        // 선택된 파일이 없음
+        return (
+            <Layout>
+                <h5>선택된 파일 없음</h5>
+            </Layout>
+        );
     }
 
-    return (
-        <Layout>
-            <center style={{ marginBottom: "40px" }}>
-                <Image src={ExampleImg} width="140px" height="140px" />
-            </center>
-            
-            <div style={{ marginBottom: "40px" }}>
-                <TextLayer>
-                    <KeyLayer>파일 이름</KeyLayer>
-                    <ValueLayer>file.txt</ValueLayer>
-                </TextLayer>
+    // 선택된 파일이 한 개 일 경우
+    else if(selectedDirList.length == 1) {
 
-                <TextLayer>
-                    <KeyLayer>수정 날짜</KeyLayer>
-                    <ValueLayer>2021-01-01 4:13 am</ValueLayer>
-                </TextLayer>
-
-                <TextLayer>
-                    <KeyLayer>파일 유형</KeyLayer>
-                    <ValueLayer>Text</ValueLayer>
-                </TextLayer>
+        let splited = selectedDirList[0].split('/');
+        filename = splited[0];
+        let fileType = splited[1];
+        
+        if(fileType == "dir") {
+            // 디렉토리
+            return (
+                <Layout>
+                    <center style={{ marginBottom: "40px" }}>
+                        <Image src={dirImg} width="140px" height="140px" />
+                    </center>
                 
-                <TextLayer>
-                    <KeyLayer>용량</KeyLayer>
-                    <ValueLayer>1KB</ValueLayer>
-                </TextLayer>
-            </div>
+                    <div style={{ marginBottom: "40px" }}>
+                        <TextLayer>
+                            <KeyLayer>디렉토리이름</KeyLayer>
+                            <ValueLayer>{filename}</ValueLayer>
+                        </TextLayer>
+    
+                        <TextLayer>
+                            <KeyLayer>수정 날짜</KeyLayer>
+                            <ValueLayer>2021-01-01 4:13 am</ValueLayer>
+                        </TextLayer>
+    
+                        <TextLayer>
+                            <KeyLayer>파일 유형</KeyLayer>
+                            <ValueLayer>Text</ValueLayer>
+                        </TextLayer>
+                    
+                        <TextLayer>
+                            <KeyLayer>용량</KeyLayer>
+                            <ValueLayer>1KB</ValueLayer>
+                        </TextLayer>
+                    </div>
+    
+                    <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
+                    <div style={{ marginBottom: "15px", display: "flex" }}>
+                        <Button variant="outline-success" style={{ width: "50%", marginRight: "10%"}}>이름 변경</Button>
+                        <Button variant="outline-success" style={{ width: "50%"}}>공유 설정</Button>
+                    </div>
+                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+                </Layout>
+            )
+        } else {
+            let imgUrl = "";
+            switch(fileType) {
+                case 'text': imgUrl = txtFileImg; break;
+                case 'exe': imgUrl = exeFileImg; break;
+                case 'pdf': imgUrl = pdfFileImg; break;
+                case 'image': imgUrl = imgFileImg; break;
+                case 'audio': imgUrl = audioFileImg;  break;
+                case 'video': imgUrl = videoFileImg; break;
+                case 'other': imgUrl = otherFileImg; break;
+                default: imgUrl = otherFileImg; break;
 
-            <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
-            <div style={{ marginBottom: "15px", display: "flex" }}>
-                <Button variant="outline-success" style={{ width: "50%", marginRight: "10%"}}>이름 변경</Button>
-                <Button variant="outline-success" style={{ width: "50%"}}>공유 설정</Button>
-            </div>
-            <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
-        </Layout>
-    );
+            }
+            return (
+                <Layout>
+                    <center style={{ marginBottom: "40px" }}>
+                        <Image src={imgUrl} width="140px" height="140px" />
+                    </center>
+                
+                    <div style={{ marginBottom: "40px" }}>
+                        <TextLayer>
+                            <KeyLayer>파일 이름</KeyLayer>
+                            <ValueLayer>{filename}</ValueLayer>
+                        </TextLayer>
+    
+                        <TextLayer>
+                            <KeyLayer>수정 날짜</KeyLayer>
+                            <ValueLayer>2021-01-01 4:13 am</ValueLayer>
+                        </TextLayer>
+    
+                        <TextLayer>
+                            <KeyLayer>파일 유형</KeyLayer>
+                            <ValueLayer>Text</ValueLayer>
+                        </TextLayer>
+                    
+                        <TextLayer>
+                            <KeyLayer>용량</KeyLayer>
+                            <ValueLayer>1KB</ValueLayer>
+                        </TextLayer>
+                    </div>
+    
+                    <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
+                    <div style={{ marginBottom: "15px", display: "flex" }}>
+                        <Button variant="outline-success" style={{ width: "50%", marginRight: "10%"}}>이름 변경</Button>
+                        <Button variant="outline-success" style={{ width: "50%"}}>공유 설정</Button>
+                    </div>
+                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+                </Layout>
+            )
+        }
+    } else {
+        // 여러개
+        let imgUrl = ""
+        let fileTypes = selectedDirList.map((data) => data.split('/')[1]);
+        let dirCount = fileTypes.filter(t => 'dir' == t).length;
+        if(dirCount == 0) {
+            // 파일만 선택한 경우
+            imgUrl = multiFileImg;
+        } else if(dirCount == fileTypes.length) {
+            // 폴더만 선택한 경우
+            imgUrl = multiDirImg;
+        } else {
+            // 섞어서 선택한 경우
+            imgUrl = multiAllImg;
+        }
+        return (
+            <Layout>
+                <center style={{ marginBottom: "40px" }}>
+                    <Image src={imgUrl} width="140px" height="140px" />
+                </center>
+                <div style={{ marginBottom: "40px" }}>
+                    <TextLayer>
+                        <KeyLayer>선택된 갯수</KeyLayer>
+                        <ValueLayer>{fileTypes.length}</ValueLayer>
+                    </TextLayer>
+                </div>
+                <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
+                <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+            </Layout>
+        );
+    }
 }
 
 const mapStateToProps = (state) => {

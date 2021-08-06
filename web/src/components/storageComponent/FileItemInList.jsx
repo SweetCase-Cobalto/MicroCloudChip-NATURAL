@@ -55,7 +55,7 @@ const FileItemInList = (props) => {
                 case 'image': imgLink = imgFileImg; break;
                 case 'audio': imgLink = audioFileImg;  break;
                 case 'video': imgLink = videoFileImg; break;
-                case 'none': imgLink = otherFileImg; break;
+                case 'other': imgLink = otherFileImg; break;
                 default: imgLink = otherFileImg; break;
             }
         }
