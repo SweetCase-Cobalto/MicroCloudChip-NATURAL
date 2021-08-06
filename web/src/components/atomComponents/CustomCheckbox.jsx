@@ -1,4 +1,7 @@
 import { useState } from "react"
+
+// 부트스트랩 체크박스 별로라 직접 만듦
+
 const CustomCheckbox = (props) => {
     const [isSelected, setIsSelected] = useState(false);
     let color = props.color;

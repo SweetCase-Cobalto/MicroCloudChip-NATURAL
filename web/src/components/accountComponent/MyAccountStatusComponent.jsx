@@ -8,6 +8,7 @@ const MyAccountStatusComponent = (props) => {
         내 계정에 대한 정보를 표시하는 컴포넌트
         이름과 이메일, 계급(클라이언트, 어드민)
         그리고 사용 용량이 표기되어야 한다.
+        좌측에 표시된다.
     */
 
     let name = props.userName;
@@ -17,7 +18,7 @@ const MyAccountStatusComponent = (props) => {
     let usedStorage = props.usedVolume;             // 사용하고 있는 용량
     let usrIcon = props.usrImgLink;                 // 업로드한 유저 이미지
 
-    let gage = (usedStorage / capacityStorage) * 100;
+    let gage = (usedStorage / capacityStorage) * 100; // 사용용량 Percentage
 
     return (
         <Layout>

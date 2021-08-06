@@ -21,7 +21,7 @@ const FileItemInList = (props) => {
         props info
         filename: String
         isDir: bool
-        fileType: text, exe, pdf, image, audio, video, other, none
+        fileType: dir, text, exe, pdf, image, audio, video, other, none
     */
    const [isMouseEntered, setIsMouseEntered] = useState(false);
    let filename = props.filename;
@@ -43,6 +43,7 @@ const FileItemInList = (props) => {
 
    const FileImgLayer = () => {
         // 이미지 태그
+        // TODO: 이미지 Url 갖고오는 거 언젠간 모듈화 할예정
         let imgLink = "";
         
         if(isDir) {

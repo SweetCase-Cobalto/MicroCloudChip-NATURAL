@@ -38,8 +38,10 @@ const AccountUpdaterForm = (props) => {
 
     // Select Type
     if(actionType == "modify") {
+        // 계정 정보를 수정하는 경우
         if(target == "my") {
-
+            // 자기 자신을 수정하는 경우
+            // 일반 사용자는 자기 자신을 수정할 수 없다.
             nameDefaultValue = props.userName;
             emailDefaultValue = props.email;
 
@@ -47,7 +49,12 @@ const AccountUpdaterForm = (props) => {
                 isDisabled = true;
             }
         } else {
-            // 해당 정보 데이터를 갖고오기
+            /*
+                Admin이 해당 사용자의 정보 수정을 원하는 경우이다.
+                TODO: 사용자 staticId를 활용하여 서버로부터 전체적인
+                유저 데이터를 갖고 온다.
+            */
+            // 아래는 예시 데이터
             nameDefaultValue = "exampleName";
             emailDefaultValue = "exampleEmail";
         }

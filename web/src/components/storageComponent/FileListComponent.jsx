@@ -14,7 +14,7 @@ const FileListComponent = (props) => {
     const [directoryAdderShow, setDirectoryAdderShow] = useState(false);
 
     let allRootArr = window.location.pathname.split('/').slice(2); // url 파라미터로부터 가져온다
-    let allRootArrToString = "";
+    let allRootArrToString = ""; // allRootArr를 화면에 출력하기 위해 String 변환
     let datas = []; // 파일리스트와 디렉토리 리스트를 저정하는 배열
     let selectedDirList = props.SelectedDirReducer.dirList;
 
@@ -37,14 +37,18 @@ const FileListComponent = (props) => {
                 let rightArr = selectedDirList.slice(targetIdx + 1);
                 selectedDirList = leftArr.concat(rightArr);
             }
+            // 선택 리스트 수정 후
+            // 결과 반영을 위한 redux 업데이트
             props.updateDirs(selectedDirList);
         } else {
+            // 없는 경우 ==  파일 및 디렉토리 추가
             // 선택된 파일 리스트에 추가
             selectedDirList = selectedDirList.concat(__key);
             props.updateDirs(selectedDirList);
         }
     }
 
+    // Start
     if(props.DirListReducer.curUrl.length == 0) {
 
         // 해당 디렉토리로부터 데이터를 서버로부터 갖고와서 업데이트

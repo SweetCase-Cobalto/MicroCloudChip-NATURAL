@@ -44,6 +44,9 @@ const FileStatusComponent = (props) => {
         filename = splited[0];
         let fileType = splited[1];
         
+        // TODO: 해당 파일에 대한 정보를
+        // 서버로부터 받아와야 함
+
         if(fileType == "dir") {
             // 디렉토리
             return (

@@ -23,6 +23,9 @@ const AccountItemInList = (props) => {
             
         }}
         onClick={() => {
+            // 선택 계정 변경
+            // AccoutnStateComponent에 적용이 되며
+            // 계정 삭제 및 변경이 가능해짐
             props.selectUser(props.staticId);
         }}
         onMouseEnter={() => setIsHovered(true)}
