@@ -1,0 +1,8 @@
+
+{
+    "database": {
+        "rdbms": {
+            "type": "sqlite"
+        }
+    }
+}

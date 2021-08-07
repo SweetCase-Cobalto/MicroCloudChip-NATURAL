@@ -1,0 +1,10 @@
+
+{
+    "system": {
+    },
+    "database": {
+        "rdbms": {
+            "type": "sqlite"
+        }
+    }
+}

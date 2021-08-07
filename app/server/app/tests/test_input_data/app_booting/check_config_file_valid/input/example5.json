@@ -1,0 +1,10 @@
+{
+    "system": {
+        "port": 8000
+    },
+    "database": {
+        "rdbms": {
+            "type": "sqlite"
+        }
+    }
+}

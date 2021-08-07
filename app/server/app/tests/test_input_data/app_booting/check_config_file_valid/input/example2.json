@@ -1,0 +1,9 @@
+
+{
+    "asides": "XXX",
+    "database": {
+        "rdbms": {
+            "type": "sqlite"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+
+{
+    "system": {
+        "storage-root": "D:\\projects\\project-test\\microcloudchip",
+        "port": "dsflkjfasdlkasdflk"
+    },
+    "database": {
+        "rdbms": {
+            "type": "sqlite"
+        }
+    }
+}
