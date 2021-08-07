@@ -256,7 +256,12 @@ sub process_install {
     install_dependency_packages();
 
     
-    # TODO 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
+    # TODO: 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
+
+
+    # 해당 루트에 디렉토리 생성
+    mkdir($app_root);
+
 
 }
 sub process_format {
