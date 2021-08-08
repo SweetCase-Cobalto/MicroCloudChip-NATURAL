@@ -1,7 +1,7 @@
 
 {
     "system": {
-        "storage-root": "D:\\projects\\project-test\\microcloudchip",
+        "root": "D:\\projects\\project-test\\microcloudchip",
         "port": "dsflkjfasdlkasdflk"
     },
     "database": {

@@ -237,7 +237,7 @@ sub process_install {
         print FILE_CFG "
 {
     \"system\": {
-        \"storage-root\": \"$app_root\",
+        \"root\": \"$app_root\",
         \"port\": $app_port
     },
     \"database\": {
@@ -261,6 +261,7 @@ sub process_install {
 
     # 해당 루트에 디렉토리 생성
     mkdir($app_root);
+    mkdir($app_root . "/storage")
 
 
 }

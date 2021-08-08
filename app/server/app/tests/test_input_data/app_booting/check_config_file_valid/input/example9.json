@@ -1,6 +1,6 @@
 {
     "system": {
-        "storage-root": "D:\\projects\\project-test\\failed",
+        "root": "D:\\projects\\project-test\\failed",
         "port": 8000
     },
     "database": {

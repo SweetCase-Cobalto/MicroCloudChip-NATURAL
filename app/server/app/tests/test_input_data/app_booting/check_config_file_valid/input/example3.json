@@ -1,6 +1,6 @@
 {
     "system": {
-        "storage-root": "/thisis/not/file",
+        "root": "/thisis/not/file",
         "port": 8000
     },
     "database": {

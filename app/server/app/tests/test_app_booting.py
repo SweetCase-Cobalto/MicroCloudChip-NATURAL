@@ -1,10 +1,7 @@
 from django.test import TestCase
 
-"""
-from module.specifications import Config
-from module.exceptions import *
-"""
 import os
+from module.specification.SystemConfig import SystemConfig
 
 
 class AppBootingUnittest(TestCase):
@@ -27,7 +24,9 @@ class AppBootingUnittest(TestCase):
             raise FileNotFoundError(f"{AppBootingUnittest.CONFIG_OUTPUT_EXPECT_RESULT} is not exist")
 
     def test_check_config_file_valid(self):
+
         import json
+        from module.MicrocloudchipException.exceptions import MicrocloudchipSystemConfigFileParsingError
 
         # Server/config.json의 데이터가 올바르게 되어 있는 지 검사한다
         # 단 database는 이미 setting.py에서 검증하기 때문에 database를 제외한 나머지
@@ -61,13 +60,22 @@ class AppBootingUnittest(TestCase):
                 system_config = SystemConfig(input_root)
 
                 # System Root가 정상적으로 파싱이 되었는지 확인한다.
-                expected_root = json.loads(open(input_root).readlines[:-1])['system']['storage-root']
-                self.assertEqual(expected_root, system_config.get_system_root())
+                with open(input_root) as f:
+                    expected_system_config = json.load(f)['system']
+                    expected_root = expected_system_config['root']
+                    expected_port = expected_system_config['port']
+                    self.assertEqual(expected_root, system_config.get_system_root())
+                    self.assertEqual(expected_port, system_config.get_system_port())
             else:
                 # 실패를 해야 하는 경우
                 def generate_system_config(input_file_root: str):
                     return SystemConfig(input_file_root)
 
                 # 반드시 에러 발생
-                self.assertRaises(MicroCloudChipSystemConfigFileParsingError, \
-                                  generate_system_config, input_root)
+                try:
+                    self.assertRaises(MicrocloudchipSystemConfigFileParsingError, \
+                                      generate_system_config, input_root)
+                except AssertionError:
+                    # 테스트 실패 시 테스트 위치 확인
+                    print(f"problem number: {problem_num} is failed.")
+                    raise
