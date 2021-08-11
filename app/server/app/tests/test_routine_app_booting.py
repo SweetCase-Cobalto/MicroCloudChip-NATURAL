@@ -1,12 +1,12 @@
 from django.test import TestCase
 
 import os
-from module.specification.SystemConfig import SystemConfig
+from module.specification.System_config import SystemConfig
 
 
 class AppBootingUnittest(TestCase):
     # Test File Roots
-    TEST_DIR: str = "app/tests/test_input_data/app_booting"
+    TEST_DIR: str = "app/tests/test-input-data/app_booting"
 
     CONFIG_TEST_DIR: str = f"{TEST_DIR}/check_config_file_valid"
     CONFIG_INPUT_DIR: str = f"{CONFIG_TEST_DIR}/input"
@@ -28,16 +28,16 @@ class AppBootingUnittest(TestCase):
         import json
         from module.MicrocloudchipException.exceptions import MicrocloudchipSystemConfigFileParsingError
 
-        # Server/config.json의 데이터가 올바르게 되어 있는 지 검사한다
-        # 단 database는 이미 setting.py에서 검증하기 때문에 database를 제외한 나머지
+        # Server/config.json 의 데이터가 올바르게 되어 있는 지 검사한다
+        # 단 database 는 이미 setting.py 에서 검증하기 때문에 database 를 제외한 나머지
         # 부분만 검사하면 된다
 
         def get_result_datas() -> dict:
             # TestCase 결과 데이터 불러오기
             results = {}
-            with open(AppBootingUnittest.CONFIG_OUTPUT_EXPECT_RESULT, 'rt') as f:
+            with open(AppBootingUnittest.CONFIG_OUTPUT_EXPECT_RESULT, 'rt') as _f:
                 while True:
-                    line = f.readline()[:-1]
+                    line = _f.readline()[:-1]
                     if not line:
                         break
                     _problem_num, raw_result = line.split(':')
@@ -54,12 +54,11 @@ class AppBootingUnittest(TestCase):
             self.assertEqual(os.path.isfile(input_root), True)
 
             # 테스트 시작
-            system_config = None
             if expected_result:
                 # 파싱 성공이 정답인 경우
                 system_config = SystemConfig(input_root)
 
-                # System Root가 정상적으로 파싱이 되었는지 확인한다.
+                # System Root 가 정상적으로 파싱이 되었는지 확인한다.
                 with open(input_root) as f:
                     expected_system_config = json.load(f)['system']
                     expected_root = expected_system_config['root']
@@ -73,7 +72,7 @@ class AppBootingUnittest(TestCase):
 
                 # 반드시 에러 발생
                 try:
-                    self.assertRaises(MicrocloudchipSystemConfigFileParsingError, \
+                    self.assertRaises(MicrocloudchipSystemConfigFileParsingError,
                                       generate_system_config, input_root)
                 except AssertionError:
                     # 테스트 실패 시 테스트 위치 확인

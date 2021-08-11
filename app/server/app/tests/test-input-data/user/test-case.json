@@ -1,0 +1,253 @@
+{
+  "test-case": [
+
+    {
+      "is-passed": false,
+      "request": {}
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "mynames",
+        "pswd": "sldfsdfsfsd"
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "mynames",
+        "pswd": "sldfsdfsfsd",
+        "email": "names@gmail.com"
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "mynames",
+        "pswd": "sldfsdfsfsd",
+        "email": "names@gmail.com",
+        "volume-type": "TEST"
+      }
+    },
+
+
+    {
+      "is-passed": false,
+      "request": {
+        "name": "abc",
+        "pswd": "password1234",
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "  ",
+        "pswd": "password1234",
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": 4234,
+        "pswd": "password1234",
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "12345678901234567",
+        "pswd": "password1234",
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "1234567",
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": 800,
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789",
+        "email": "myname@gmail",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "@example.com",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": 1234,
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "python@example",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "python@example-com",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "mytest@gmail.com",
+        "volume-type": "Gueqps",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "mytest@gmail.com",
+        "volume-type": true,
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "mytest@gmail.com",
+        "volume-type": "HEAVIER",
+        "is-admin": "false"
+      }
+    },
+
+
+    {
+      "is-passed": true,
+      "request": {
+        "name": "admin",
+        "pswd": "adminpaswd",
+        "email": "mytest1@gmail.com",
+        "volume-type": "HEAVIER",
+        "is-admin": true
+      }
+    },
+    {
+      "is-passed": true,
+      "request": {
+        "name": "user1",
+        "pswd": "adminpaswd",
+        "email": "mytest2@gmail.com",
+        "volume-type": "USER",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": true,
+      "request": {
+        "name": "user2",
+        "pswd": "adminpaswd",
+        "email": "mytest3@gmail.com",
+        "volume-type": "USER",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": true,
+      "request": {
+        "name": "jeonghyun",
+        "pswd": "adminpaswd",
+        "email": "mytest4@gmail.com",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": true,
+      "request": {
+        "name": "testuser",
+        "pswd": "adminpaswd",
+        "email": "mytest5@gmail.com",
+        "volume-type": "TEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "testuser2",
+        "pswd": "adminpaswd",
+        "email": "mytest5@gmail.com",
+        "volume-type": "TEST",
+        "is-admin": false
+      }
+    }
+  ],
+
+
+  "modify-case": [
+    {
+      "is-passed": true,
+      "target-attribute": ["name", "pswd"],
+      "request": {
+        "name": "theuser",
+        "pswd": "makinpswd"
+      }
+    }
+  ]
+}
+

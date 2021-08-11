@@ -21,7 +21,6 @@ class SystemConfig:
         """
             config_root: config.json File root
         """
-        config_raw_data = None
         try:
             with open(config_root) as f:
                 config_raw_data = json.load(f)['system']
@@ -37,14 +36,14 @@ class SystemConfig:
             # 테스트는 windows 기준으로 한다.
             splited_system_root = \
                 system_root.split('\\') if sys.platform == 'win32' \
-                    else system_root.split('/')
+                else system_root.split('/')
 
             # Root checking
             # is string?
             if not isinstance(system_root, str):
                 raise MicrocloudchipSystemConfigFileParsingError("system root must be string")
 
-            # 끝부분이 microcloudchip인 지 검토
+            # 끝부분이 microcloudchip 인 지 검토
             # 디렉토리가 맞는 지 검토
             if splited_system_root[-1] != 'microcloudchip' or \
                     not os.path.isdir(system_root):
