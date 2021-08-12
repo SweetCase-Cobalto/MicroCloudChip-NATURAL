@@ -20,6 +20,8 @@ def test_set_info_to_user_builder(user_builder: UserBuilder, req: dict):
 
 
 def test_upload_user_in_step_routinetest(model_user: model.User, system_root: str, user_img_example_root: str = None):
+    """ 이 테스트 루틴은 차후 UserManager 에서 활용하게 된다"""
+
     while True:
         # 중복되는 static_id가 있는 지 확인
         try:
@@ -39,7 +41,6 @@ def test_upload_user_in_step_routinetest(model_user: model.User, system_root: st
         # 데이터 업로드
         model_user.save()
 
-
         # 유저 스토리지 생성
         # OS에 따라 디렉토리 토큰이 달라진다
         dir_token = '\\' if sys.platform == "win32" else '/'
@@ -58,6 +59,7 @@ def test_upload_user_in_step_routinetest(model_user: model.User, system_root: st
                     dst.writelines(src.readlines())
         return
 
+    # email 중복
     raise MicrocloudchipUserUploadFailedError("same email user is exist")
 
 
