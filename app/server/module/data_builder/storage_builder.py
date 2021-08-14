@@ -30,23 +30,16 @@ class StorageBuilder(DataBuilder):
         get_full_root: 전체 절대경로 출력: 클래스에 따라 같은 static_id, target_root 여도 절대경로가 다를 수 있음
         is_all_have: 해당 요소가 전부다 들어있는 지 확인
         save: 생성(저장)
-        delete: 제거
     """
 
     def set_author_static_id(self, author_static_id: str):
-        # 데이터베이스 확인
         import app.models as model
         try:
+            # 데이터베이스에 해당 static id 가 존재하는 지 확인
             model.User.objects.get(static_id=author_static_id)
         except model.User.DoesNotExist:
             raise MicrocloudchipUserDoesNotExistError("User does not exist")
 
-        # 디렉토리 확인
-        full_author_root = f"{self.system_root}{self.TOKEN}storage{self.TOKEN}{author_static_id}/root"
-        if not os.path.isdir(full_author_root):
-            raise MicrocloudchipDirectoryNotFoundError(f"User[{author_static_id}] Directory: Does not exist check "
-                                                       f"system storage")
-        # 다 있으면 저장
         self.author_static_id = author_static_id
 
         return self
@@ -63,20 +56,6 @@ class StorageBuilder(DataBuilder):
             # 금지어 검출
             raise MicrocloudchipFileAndDirectoryValidateError("This root have failed naming character")
 
-        # 디렉토리를 생성할 이전 디렉토리 존재 여부 확인
-        # static_id가 선택이 안되었을 경우 에러 호출
-        if not self.author_static_id:
-            raise ValueError("User Static id is None")
-
-        author_full_root = f"{self.system_root}{self.TOKEN}storage{self.TOKEN}{self.author_static_id}{self.TOKEN}root"
-        prev_directory_root = self.TOKEN.join(target_root.split(self.TOKEN)[:-1])
-        prev_full_root = author_full_root + self.TOKEN + prev_directory_root
-
-        if not os.path.isdir(prev_full_root):
-            # 이전 디렉토리강 없으면 에러 송출
-            raise MicrocloudchipDirectoryNotFoundError(f"Prev Directory for add new directory does not exist: "
-                                                       f"{prev_full_root}")
-        # target root 추가
         self.target_root = target_root
         return self
 
