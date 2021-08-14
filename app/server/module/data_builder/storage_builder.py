@@ -1,9 +1,8 @@
-from abc import ABCMeta, abstractmethod
-import os
-import sys
+from abc import abstractmethod
+
 from module.data_builder.data_builder import DataBuilder
 from module.MicrocloudchipException.exceptions import MicrocloudchipUserDoesNotExistError, \
-    MicrocloudchipDirectoryNotFoundError, MicrocloudchipFileAndDirectoryValidateError
+    MicrocloudchipFileAndDirectoryValidateError
 
 
 class StorageBuilder(DataBuilder):
@@ -63,9 +62,13 @@ class StorageBuilder(DataBuilder):
     def is_all_have(self) -> bool:
         pass
 
-    @abstractmethod
     def get_full_root(self) -> str:
-        pass
+        # 전체 루트 구하기
+        if self.is_all_have():
+            return f"{self.system_root}{self.TOKEN}storage" \
+                   f"{self.TOKEN}{self.author_static_id}{self.TOKEN}root{self.TOKEN}" \
+                   f"{self.target_root}"
+        raise ValueError("All data is not filled")
 
     @abstractmethod
     def save(self):

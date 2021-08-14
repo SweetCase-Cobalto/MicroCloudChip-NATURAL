@@ -51,6 +51,9 @@ class FileDirControlTestUnittest(TestCase):
     test_user_root: str = f"{system_config.get_system_root()}{token}storage{token}"
     cur_root: str = ""
 
+    # Test Files Root
+    test_file_root: str = "app/tests/test-input-data/example_files"
+
     def setUp(self) -> None:
         user_builder = UserBuilder()
         user_builder.set_name("admin") \
@@ -117,9 +120,74 @@ class FileDirControlTestUnittest(TestCase):
                 # 디렉토리가 존재해야 한다.
                 self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{req}"), True)
 
+    @staticmethod
+    def get_raw_data_from_file(file_root: str) -> bytes:
+        raw = b''
+        with open(file_root, 'rb') as f:
+            while True:
+                r = f.readline()
+                if not r:
+                    break
+                raw += r
+        return raw
+
     def test_upload_file(self):
-        # 파일 가상 업로드 하기
-        pass
+        # Validate Check 는 Directory 와 동일하기 때문에
+        # 업로드 여부, 종복 여부만 체크한다.
+        test_files = os.listdir(self.test_file_root)
+        author_static_id = model.User.objects.get(name="admin").static_id
+
+        # 테스트 대상
+        """
+            success: 성공
+            success-after-make-directory: 디렉토리 생성 후에 성공
+            failed: 실패
+        """
+        test_case = {
+            "success": test_files,
+            "success-after-make-directory": f"directory{self.token}{test_files[0]}",
+            "failed": f"no{self.token}{test_files[1]}",
+        }
+
+        # In Success
+        for test_file in test_case['success']:
+            binary_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_file)
+            # 테스트 돌리기
+            req = {
+                "static-id": author_static_id,
+                "target-root": test_file,
+                "system-root": self.system_config.get_system_root(),
+                "raw-data": binary_data
+            }
+            test_upload_file(req)
+
+        # 디렉토리 생성
+        dir_req = {
+            "static-id": author_static_id,
+            "system-root": self.system_config.get_system_root(),
+            "target-root": "directory",
+        }
+        test_make_directory(dir_req)
+        
+        # 디랙토리 생성 후 성공
+        __test_file = test_case['success-after-make-directory']
+        __raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[0])
+        file_req = {
+            "static-id": author_static_id,
+            "target-root": __test_file,
+            "system-root": self.system_config.get_system_root(),
+            "raw-data": __raw_data
+        }
+        test_upload_file(file_req)
+        # 중복 추가 불가능
+        self.assertRaises(MicrocloudchipFileAlreadyExistError, lambda: test_upload_file(file_req))
+
+        # 실패
+        __test_file = test_case['failed']
+        __raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[1])
+        file_req['target-root'] = __test_file
+        file_req['raw-data'] = __raw_data
+        self.assertRaises(MicrocloudchipDirectoryNotFoundError, lambda: test_upload_file(file_req))
 
     def test_get_information_of_file(self):
         # 파일 관련 정보 갖고오기
