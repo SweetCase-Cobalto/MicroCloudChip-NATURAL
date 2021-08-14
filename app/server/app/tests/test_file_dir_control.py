@@ -159,7 +159,8 @@ class FileDirControlTestUnittest(TestCase):
                 "system-root": self.system_config.get_system_root(),
                 "raw-data": binary_data
             }
-            test_upload_file(req)
+            # 업로드와 동시에 정상적으로 추가되었는 지 확인
+            self.assertEqual(test_upload_file(req), True)
 
         # 디렉토리 생성
         dir_req = {
@@ -178,7 +179,7 @@ class FileDirControlTestUnittest(TestCase):
             "system-root": self.system_config.get_system_root(),
             "raw-data": __raw_data
         }
-        test_upload_file(file_req)
+        self.assertEqual(test_upload_file(file_req), True)
         # 중복 추가 불가능
         self.assertRaises(MicrocloudchipFileAlreadyExistError, lambda: test_upload_file(file_req))
 
