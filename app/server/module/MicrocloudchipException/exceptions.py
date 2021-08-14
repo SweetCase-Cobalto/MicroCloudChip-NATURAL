@@ -29,6 +29,11 @@ class MicrocloudchipUserUploadFailedError(MicrocloudchipException):
         super().__init__(err_msg, 0x00000002 | USER_PREFIX)
 
 
+class MicrocloudchipUserDoesNotExistError(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x00000003 | USER_PREFIX)
+
+
 # File/Data Exception
 class MicrocloudchipDirectoryNotFoundError(MicrocloudchipException):
     def __init__(self, err_msg: str):
@@ -45,11 +50,11 @@ class MicrocloudchipFileAndDirectoryValidateError(MicrocloudchipException):
         super().__init__(err_msg, 0x00000003 | STORAGE_PREFIX)
 
 
-class MicrocloudchipDirectoryAleadyExistError(MicrocloudchipException):
+class MicrocloudchipDirectoryAlreadyExistError(MicrocloudchipException):
     def __init__(self, err_msg: str):
         super().__init__(err_msg, 0x00000004 | STORAGE_PREFIX)
 
 
-class MicrocloudchipFileAleadyExistError(MicrocloudchipException):
+class MicrocloudchipFileAlreadyExistError(MicrocloudchipException):
     def __init__(self, err_msg: str):
         super().__init__(err_msg, 0x00000005 | STORAGE_PREFIX)

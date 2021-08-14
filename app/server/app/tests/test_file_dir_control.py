@@ -3,6 +3,8 @@ from django.test import TestCase
 from module.data_builder.user_builder import UserBuilder
 from module.specification.System_config import SystemConfig
 from module.MicrocloudchipException.exceptions import *
+from app.tests.test_modules.testing_file_dir_control_module import *
+import app.models as model
 import os
 import sys
 
@@ -14,8 +16,7 @@ class FileDirControlTestUnittest(TestCase):
         테스트 항목
         
         -- 디렉토리[생성 및 삭제] --
-        1. 디렉토리 생성
-        2. 디렉토리 삭제
+        1. 디렉토리 
         
         --- 파일 ---
         1. 파일 가상 업로드
@@ -65,13 +66,14 @@ class FileDirControlTestUnittest(TestCase):
         os.mkdir(self.test_user_root)
 
         # 해당 User 에 대한 파일 및 디렉토리 관리는 root 에서 진행한다.
-        self.cur_root = f"{self.test_user_root}\\root" if sys.platform == "win32" else f"{self.test_user_root}/root"
+        self.cur_root = f"{self.test_user_root}{self.token}root"
         os.mkdir(self.cur_root)
 
         # Check is Directory Exist
         self.assertEqual(os.path.isdir(self.cur_root), True)
 
     def test_make_new_directory(self):
+
         # 디렉토리 생성 테스트
 
         # 디랙토리 생성
@@ -85,8 +87,8 @@ class FileDirControlTestUnittest(TestCase):
             ('''fs"fs"fs''', False, MicrocloudchipFileAndDirectoryValidateError),
             ("fs|fs|fs", False, MicrocloudchipFileAndDirectoryValidateError),
             ("mydirectory", True, None),
-            ("mydirectory", False, MicrocloudchipDirectoryAleadyExistError),
-            (f"mydirectory{self.token}semidirectory", True),
+            ("mydirectory", False, MicrocloudchipDirectoryAlreadyExistError),
+            (f"mydirectory{self.token}semidirectory", True, None),
 
             # 운영체제에 따른 실패 케이스 추가
             (f"mydirectory{self.token}aaff///" if self.token == '\\' else f"mydirectory{self.token}aaff\\", False,
@@ -94,10 +96,11 @@ class FileDirControlTestUnittest(TestCase):
         ]
 
         for i in range(len(test_case)):
+
             req, pre_result, exception = test_case[i]
 
             test_req_data = {
-                "author": "admin",
+                "static-id": model.User.objects.get(name="admin").static_id,
                 "system-root": self.system_config.get_system_root(),
                 "target-root": req,
             }
@@ -105,52 +108,14 @@ class FileDirControlTestUnittest(TestCase):
                 # 실패
                 self.assertRaises(exception, lambda: test_make_directory(test_req_data))
                 # 디렉토리가 존재해서는 안된다.
-                self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{req}"), False)
+                if exception != MicrocloudchipDirectoryAlreadyExistError:
+                    # 중복 추가 에러가 아니면 실수로 생성되었는 지 측정한다.
+                    self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{req}"), False)
             else:
                 # 성공
                 test_make_directory(test_req_data)
                 # 디렉토리가 존재해야 한다.
                 self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{req}"), True)
-
-    def test_remove_new_directory(self):
-        # 디렉토리 제거 테스트
-
-        directory_list = ["aaa", "bbb", f"aaa{self.token}ccc"]
-        test_case = [
-            (f"sdflsa", False, MicrocloudchipDirectoryNotFoundError),
-            (f"aaa{self.token}zzz", False, MicrocloudchipDirectoryNotFoundError),
-            (f"bbb", True, None),
-            (f"aaa{self.token}ccc", True, None),
-            (f"aaa", True, None)
-        ]
-
-        # 테스트를 위한 디렉토리 생성
-        for dir in directory_list:
-            req_data = {
-                "author": "admin",
-                "system-root": self.system_config.get_system_root(),
-                "target-root": dir
-            }
-            test_make_directory(req_data)
-            self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{dir}"), True)
-
-        # 삭제
-        for i in range(len(test_case)):
-            dir, pre_result, exception = test_case[i]
-            req_data = {
-                "author": "admin",
-                "system-root": self.system_config.get_system_root(),
-                "target-root": dir
-            }
-            if not pre_result:
-                # 실패일 경우
-                self.assertRaises(exception, lambda: test_remove_directory(req_data))
-                # 실패이므로 디렉토리가 존재해야 한다.
-                self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{dir}"), True)
-            else:
-                test_remove_directory(req_data)
-                # 성공이므로 삭제가 되어야 한다.
-                self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{dir}"), False)
 
     def test_upload_file(self):
         # 파일 가상 업로드 하기
