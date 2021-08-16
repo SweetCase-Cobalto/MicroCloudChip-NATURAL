@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-import os, sys
+import os, sys, shutil
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
     MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, MicrocloudchipDirectoryAlreadyExistError
@@ -115,6 +115,7 @@ class FileData(StorageData):
 
     def remove(self):
         super().remove()
+        self.__call__()
         if os.path.isfile(self.full_root):
             os.remove(self.full_root)
         self.is_called = False
@@ -228,4 +229,8 @@ class DirectoryData(StorageData):
         self.__call__()  # 다시 업데이트
 
     def remove(self):
-        pass
+        super().remove()
+        self.__call__()
+        if os.path.isdir(self.full_root):
+            shutil.rmtree(self.full_root)
+        self.is_called = False

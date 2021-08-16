@@ -370,5 +370,39 @@ class FileDirControlTestUnittest(TestCase):
         d.update_name("other-dir")
 
     def test_remove_directory_recursive(self):
-        # 디렉토리 순환 삭제
-        pass
+
+        test_files = os.listdir(self.test_file_root)
+        author_static_id = model.User.objects.get(name="admin").static_id
+        system_root = self.system_config.get_system_root()
+        target_dir = 'dir'
+
+        dir_req = {
+            'static-id': author_static_id,
+            'system-root': system_root,
+            'target-root': target_dir
+        }
+
+        test_make_directory(dir_req)
+
+        # 파일 업로드
+        for t in test_files:
+            target_root = target_dir + self.token + t
+            b = self.get_raw_data_from_file(self.test_file_root + self.token + t)
+            r = {
+                'static-id': author_static_id,
+                'system-root': system_root,
+                'target-root': target_root,
+                'raw-data': b
+            }
+            self.assertEqual(test_upload_file_routine(r), True)
+
+        # 디렉토리 조회
+        dir_req['root-token'] = self.token
+        d = test_get_directory_info_routine(dir_req)
+        dir_full_root = d['full-root']
+
+        # 삭제
+        d.remove()
+
+        # 삭제 여부 확인
+        self.assertFalse(os.path.isdir(dir_full_root))
