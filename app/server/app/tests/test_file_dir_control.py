@@ -297,6 +297,7 @@ class FileDirControlTestUnittest(TestCase):
             self.assertRaises(ValueError, lambda: f.update_name(new_file_name))
 
         def failed_case_removed_file_does_not_modify_name():
+            # 실패 케이스: 삭제된 파일은 생성 불능
             raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[1])
             file_name = test_files[1]
             file_add_req = {
@@ -322,12 +323,51 @@ class FileDirControlTestUnittest(TestCase):
         success_case()
         failed_case_removed_file_does_not_modify_name()
 
-    def test_get_directory_info_and_file_list(self):
-        # 디렉토리 정보와 파일 리스트 조회하기
-        pass
+    def test_get_directory_info(self):
+        # 1. Root 단계에서 데이터 구하기
+
+        test_files = os.listdir(self.test_file_root)
+        author_static_id = model.User.objects.get(name="admin").static_id
+        system_root = self.system_config.get_system_root()
+
+        # 파일 생성
+        for test_file in test_files:
+            raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_file)
+            req = {
+                'static-id': author_static_id,
+                'system-root': system_root,
+                'target-root': test_file,
+                'raw-data': raw_data
+            }
+            test_upload_file_routine(req)
+
+        # Root 범위의 디렉토리 데이터 갖고오기
+        req = {
+            'static-id': author_static_id,
+            'system-root': system_root,
+            'target-root': '',
+            'root-token': self.token
+        }
+        d = test_get_directory_info_routine(req)
+
+        # 파일 갯수 확인
+        self.assertEqual(d['file-size'], len(test_files))
 
     def test_modify_directory_name(self):
-        pass
+
+        author_static_id = model.User.objects.get(name="admin").static_id
+        system_root = self.system_config.get_system_root()
+        req = {
+            "static-id": author_static_id,
+            "system-root": system_root,
+            "target-root": "my-dir"
+        }
+        test_make_directory(req)
+        req['root-token'] = self.token
+        d = test_get_directory_info_routine(req)
+
+        # 디렉토리 수정
+        d.update_name("other-dir")
 
     def test_remove_directory_recursive(self):
         # 디렉토리 순환 삭제

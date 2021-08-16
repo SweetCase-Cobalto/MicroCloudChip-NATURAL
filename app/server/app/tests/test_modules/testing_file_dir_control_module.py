@@ -39,5 +39,16 @@ def test_remove_file_routine(f_information: FileData):
     return not os.path.isfile(full_root)
 
 
-def test_get_directory_information(req):
-    pass
+def test_get_directory_info_routine(req):
+    static_id = req['static-id']
+    target_root = req['target-root']
+    system_root = req['system-root']
+    root_token = req['root-token']
+
+    full_root = f"{system_root}{root_token}storage{root_token}{static_id}{root_token}root"
+    if target_root and len(target_root) > 0:
+        full_root += f"{root_token}{target_root}"
+
+    d = DirectoryData(full_root)()
+
+    return d

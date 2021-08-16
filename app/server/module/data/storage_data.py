@@ -3,7 +3,7 @@ from datetime import datetime
 import os, sys
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
-    MicrocloudchipFileAlreadyExistError
+    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, MicrocloudchipDirectoryAlreadyExistError
 from module.label.file_type import FileType, FileVolumeType
 
 
@@ -139,12 +139,12 @@ class FileData(StorageData):
 
         # 이름 바구기에 성공했을 경우 속성 변경
         self.full_root = new_full_root
+        self.name = new_name
         self.__call__()
 
 
 class DirectoryData(StorageData):
-    file_size: int
-    file_list: list[str]
+    file_list: list[dict]
 
     def __init__(self, full_root: str):
         super().__init__(full_root)
@@ -152,8 +152,80 @@ class DirectoryData(StorageData):
     def __call__(self):
         super().__call__()
 
+        # 디렉토리 여부 확인
+        if not os.path.isdir(self.full_root):
+            raise MicrocloudchipDirectoryNotFoundError(f"Directory {self.full_root} not found")
+
+        # 데이터 갖고오기
+        file_stat = os.stat(self.full_root)
+        self.create_date = datetime.fromtimestamp(file_stat.st_ctime)
+        self.modify_date = datetime.fromtimestamp(file_stat.st_mtime)
+        self.name = self.full_root.split(self.token)[-1]
+
+        file_list = os.listdir(self.full_root)
+        self.file_list = []
+        # 디렉토리 파일을 구별해야 한다
+        for f in file_list:
+            d = {"name": f}
+            if os.path.isfile(self.full_root + self.token + f):
+                d['type'] = 'file'
+            else:
+                d['type'] = 'directory'
+            self.file_list.append(d)
+        self.is_called = True
+        return self
+
     def __getitem__(self, item: str):
         super().__getitem__(item)
 
+        if item == 'create-date':
+            return self.create_date
+        elif item == 'modify-date':
+            return self.modify_date
+        elif item == 'dir-name':
+            return self.name
+        elif item == 'file-list':
+            return self.file_list
+        elif item == 'file-size':
+            return len(self.file_list)
+        elif item == 'full-root':
+            return self.full_root
+        else:
+            raise KeyError(f"file data key error: {item}")
+
     def __str__(self):
-        return "AAa"
+        r = ""
+        if not self.is_called:
+            r = f"This Class is not called yet, root: {self.full_root}"
+        else:
+            r += f"dir name: {self.name}\n"
+            r += f"create date: {self.create_date}\n"
+            r += f"modify date: {self.modify_date}\n"
+            r += f"files: {self['file-list']}\n"
+            r += f"full root: {self.full_root}\n"
+        return r
+
+    def update_name(self, new_name: str):
+        # 디렉토리 이름 변경
+        # TODO: Warning: 루트 디렉토리 변경을 막는 부분은 Manager 단계에서 진행하므로 여기서는 예외처리를 하지 않는다.
+
+        self.__call__()  # 업데이트 시도
+        # 실패 시 Directory Not Found
+
+        if new_name == self.name:
+            raise ValueError("same directory name")
+
+        # 파일 이름 변경
+        new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
+        try:
+            os.rename(self.full_root, new_full_root)
+        except FileExistsError:
+            raise MicrocloudchipDirectoryAlreadyExistError("Directory that new named is aleady exist")
+
+        # 이름 바꾸기에 성공했을 경우 속성 변경
+        self.full_root = new_full_root
+        self.name = new_name
+        self.__call__()  # 다시 업데이트
+
+    def remove(self):
+        pass
