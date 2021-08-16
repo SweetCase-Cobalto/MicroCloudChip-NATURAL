@@ -3,6 +3,7 @@ from abc import abstractmethod
 from module.data_builder.data_builder import DataBuilder
 from module.MicrocloudchipException.exceptions import MicrocloudchipUserDoesNotExistError, \
     MicrocloudchipFileAndDirectoryValidateError
+from module.validator.storage_validator import StorageValidator
 
 
 class StorageBuilder(DataBuilder):
@@ -45,16 +46,7 @@ class StorageBuilder(DataBuilder):
 
     def set_target_root(self, target_root):
         # 해당 루트에 금지 문자가 있는 지 확인
-        naming_failed_char_list = self.NAMING_FAILED_CHAR_LIST
-        if self.TOKEN == '\\':
-            naming_failed_char_list += ['/']
-        else:
-            naming_failed_char_list += ["\\"]
-
-        if any(char in target_root for char in naming_failed_char_list):
-            # 금지어 검출
-            raise MicrocloudchipFileAndDirectoryValidateError("This root have failed naming character")
-
+        StorageValidator.validate_storage_with_no_django_validator_exception(target_root, self.TOKEN)
         self.target_root = target_root
         return self
 

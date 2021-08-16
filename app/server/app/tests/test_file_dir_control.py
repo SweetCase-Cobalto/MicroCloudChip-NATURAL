@@ -22,11 +22,12 @@ class FileDirControlTestUnittest(TestCase):
         1. 파일 가상 업로드
         2. 파일 정보 갖고오기
             3. 파일 확장자에 따른 파일 타입 구하기
-        3. 파일 정보 수정 (이름 수정)
-        4. 파일 삭제
+        3. 파일 삭제
+        4. 파일 정보 수정 (이름 수정)
 
         -- 디렉토리[정보 갖고오기] --
         1. 디렉토리 정보 갖고오기
+        2. 디렉토리 정보 수정
         2. 디렉토리 recursive 삭제
         
         
@@ -160,7 +161,7 @@ class FileDirControlTestUnittest(TestCase):
                 "raw-data": binary_data
             }
             # 업로드와 동시에 정상적으로 추가되었는 지 확인
-            self.assertEqual(test_upload_file(req), True)
+            self.assertEqual(test_upload_file_routine(req), True)
 
         # 디렉토리 생성
         dir_req = {
@@ -169,7 +170,7 @@ class FileDirControlTestUnittest(TestCase):
             "target-root": "directory",
         }
         test_make_directory(dir_req)
-        
+
         # 디랙토리 생성 후 성공
         __test_file = test_case['success-after-make-directory']
         __raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[0])
@@ -179,27 +180,153 @@ class FileDirControlTestUnittest(TestCase):
             "system-root": self.system_config.get_system_root(),
             "raw-data": __raw_data
         }
-        self.assertEqual(test_upload_file(file_req), True)
+        self.assertEqual(test_upload_file_routine(file_req), True)
         # 중복 추가 불가능
-        self.assertRaises(MicrocloudchipFileAlreadyExistError, lambda: test_upload_file(file_req))
+        self.assertRaises(MicrocloudchipFileAlreadyExistError, lambda: test_upload_file_routine(file_req))
 
         # 실패
         __test_file = test_case['failed']
         __raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[1])
         file_req['target-root'] = __test_file
         file_req['raw-data'] = __raw_data
-        self.assertRaises(MicrocloudchipDirectoryNotFoundError, lambda: test_upload_file(file_req))
+        self.assertRaises(MicrocloudchipDirectoryNotFoundError, lambda: test_upload_file_routine(file_req))
 
     def test_get_information_of_file(self):
-        # 파일 관련 정보 갖고오기
-        pass
 
-    def test_modify_file_name(self):
-        # 파일 이름 바꾸기 테스트
-        pass
+        # 데이터 정보 갖고오기
+
+        # 이전 파일 저장
+        example_files = os.listdir(self.test_file_root)
+        author_static_id = model.User.objects.get(name="admin").static_id
+        sys_root = self.system_config.get_system_root()
+
+        # 파일 저장
+        for ex in example_files:
+            binary_data = self.get_raw_data_from_file(self.test_file_root + self.token + ex)
+            req = {
+                "static-id": author_static_id,
+                "target-root": ex,
+                "system-root": sys_root,
+                "raw-data": binary_data
+            }
+            self.assertEqual(test_upload_file_routine(req), True)
+
+        for ex in example_files:
+            # 파일 정보 갖고오기
+            req = {
+                "static-id": author_static_id,
+                "target-root": ex,
+                "system-root": sys_root,
+                "root-token": self.token
+            }
+            # Get File Information
+            test_get_file_information(req)
+
+        # 실패 케이스 추가
+        req = {
+            'static-id': author_static_id,
+            "target-root": "man.txt",
+            "system-root": self.system_config.get_system_root(),
+            "root-token": self.token
+        }
+        # 파일 못찾음
+        self.assertRaises(MicrocloudchipFileNotFoundError, lambda: test_get_file_information(req))
+
+    def test_remove_file(self):
+        # 파일 삭제
+
+        example_files = os.listdir(self.test_file_root)
+        file_name = example_files[0]
+        author_static_id = model.User.objects.get(name="admin").static_id
+        sys_root = self.system_config.get_system_root()
+
+        binary_data = self.get_raw_data_from_file(self.test_file_root + self.token + file_name)
+        req = {
+            "static-id": author_static_id,
+            "target-root": file_name,
+            "system-root": sys_root,
+            "raw-data": binary_data
+        }
+        self.assertEqual(test_upload_file_routine(req), True)
+
+        del req['raw-data']
+        req['root-token'] = self.token
+
+        # 파일 데이터를 불러오고
+        f_information = test_get_file_information(req)
+
+        # 파일 삭제
+        self.assertEqual(test_remove_file_routine(f_information), True)
+        # 정상적으로 삭제되면 True 를 출력한다
+
+    def test_modify_file(self):
+        # 파일 수정
+        """
+            다음을 테스트 한다
+            1. 정상적으로 파일 수정
+            2. 같은 상태로 파일 수정 불가
+            3. 삭제된 파일 또는 존재하지 않는 파일 수정 불가
+        """
+
+        # 테스트용 파일 생성
+        test_files = os.listdir(self.test_file_root)
+        author_static_id = model.User.objects.get(name="admin").static_id
+
+        def success_case():
+            # 성공 케이스
+            raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[0])
+            file_add_req = {
+                "static-id": author_static_id,
+                "target-root": test_files[0],
+                "system-root": self.system_config.get_system_root(),
+                "raw-data": raw_data
+            }
+            # 일단 파일 생성
+            test_upload_file_routine(file_add_req)
+
+            # 파일 데이터 갖고오기
+            del file_add_req['raw-data']
+            file_add_req['root-token'] = self.token
+            f = test_get_file_information(file_add_req)
+
+            new_file_name = f"new.{test_files[0].split('.')[-1]}"
+            f.update_name(new_file_name)
+            self.assertEqual(os.path.isfile(f['full-root']), True)
+
+            # 같은 상태로 파일 수정 불가
+            self.assertRaises(ValueError, lambda: f.update_name(new_file_name))
+
+        def failed_case_removed_file_does_not_modify_name():
+            raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[1])
+            file_name = test_files[1]
+            file_add_req = {
+                "static-id": author_static_id,
+                "target-root": file_name,
+                "system-root": self.system_config.get_system_root(),
+                "raw-data": raw_data
+            }
+            # 파일 생성
+            test_upload_file_routine(file_add_req)
+
+            # 파일 데이터 갖고오기
+            del file_add_req['raw-data']
+            file_add_req['root-token'] = self.token
+            f1 = test_get_file_information(file_add_req)
+            f2 = test_get_file_information(file_add_req)
+
+            # 파일 삭제
+            test_remove_file_routine(f1)
+            # 파일 수정 시도 그러나 에러 발생
+            self.assertRaises(MicrocloudchipFileNotFoundError, lambda: f2.update_name("mine.mid"))
+
+        success_case()
+        failed_case_removed_file_does_not_modify_name()
 
     def test_get_directory_info_and_file_list(self):
-        # 디렉토리 정보와 파일 조회하기
+        # 디렉토리 정보와 파일 리스트 조회하기
+        pass
+
+    def test_modify_directory_name(self):
         pass
 
     def test_remove_directory_recursive(self):
