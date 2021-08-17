@@ -12,7 +12,7 @@ class UserValidator:
         if not isinstance(email, str):
             raise ValidationError("email match error: email must be string")
 
-        p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        p = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$')
 
         if not p.match(email):
             raise ValidationError("email match error: email is not valid")

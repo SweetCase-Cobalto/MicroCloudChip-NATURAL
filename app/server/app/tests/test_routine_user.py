@@ -74,7 +74,7 @@ class UserUnittest(TestCase):
                             Manager 단계 Test 에서 다시 한번 테스트를 거친다.
                         """
                         test_set_info_to_user_builder(user_builder, req)
-                        img_root: str = os.path.join(*(self.EXAMPLE_IMAGE_ROOT + ["example.png"])) # 예제 이미지 루트
+                        img_root: str = os.path.join(*(self.EXAMPLE_IMAGE_ROOT + ["example.png"]))  # 예제 이미지 루트
                         self.assertRaises(MicrocloudchipUserUploadFailedError,
                                           lambda: test_upload_user_in_step_routinetest(user_builder.build(),
                                                                                        self.config.get_system_root(),
@@ -96,6 +96,6 @@ class UserUnittest(TestCase):
 
                 # 다음 테스트에 사용할 static_id 추가
                 self.static_id_list.append(user_builder.static_id)
-        
+
         # 디렉토리 초기화
         test_reset_because_of_failed_upload_failed(self.static_id_list, self.config.get_system_root())
