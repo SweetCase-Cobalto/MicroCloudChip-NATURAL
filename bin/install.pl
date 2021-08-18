@@ -149,6 +149,25 @@ sub install_dependency_packages() {
     system "sudo apt install -y python3-dev libmysqlclient-dev gcc";
 }
 
+sub add_admin_email() {
+
+    my $email = "";
+    my $buf = "";
+
+    # User
+    while(1) {
+        printf "[4] write admin email >> ";
+        chomp($buf = <STDIN>);
+        if(length($buf) > 0) {
+            $email = $buf;
+            last;
+        }
+    }
+
+    return $email;
+}
+
+
 sub process_install {
     # Variables
     # StorageRoot
@@ -204,6 +223,9 @@ sub process_install {
     # select sql
     my %rdbms_config = rdbms_select_process();
 
+    # Email
+    my $email = add_admin_email();
+
     # Config Data를 바탕으로 데이터 처리
     my %server_config = (
         "APP_ROOT" => $app_root,
@@ -230,6 +252,9 @@ sub process_install {
             \"host\": \"$rdbms_config{\"HOST\"}\",
             \"port\": $rdbms_config{\"PORT\"}
         }
+    },
+    \"admin\": {
+        \"email\": \"$email\"
     }
 }
     ";
@@ -244,6 +269,9 @@ sub process_install {
         \"rdbms\": {
             \"type\": \"sqlite\"
         }
+    },
+    \"admin\": {
+        \"email\": \"$email\"
     }
 }
 ";
@@ -254,9 +282,6 @@ sub process_install {
 
     # 의존성 패키지 설치
     install_dependency_packages();
-
-    
-    # TODO: 이후 부분은 파이썬/가상환경 설치인데 차후에 코딩하자.
 
 
     # 해당 루트에 디렉토리 생성
