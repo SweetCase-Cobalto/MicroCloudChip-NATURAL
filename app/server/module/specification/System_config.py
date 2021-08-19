@@ -16,6 +16,7 @@ class SystemConfig:
 
     system_root: str
     system_port: int
+    admin_email: str
 
     def __init__(self, config_root: str):
         """
@@ -23,7 +24,9 @@ class SystemConfig:
         """
         try:
             with open(config_root) as f:
-                config_raw_data = json.load(f)['system']
+                _j = json.load(f)
+                config_raw_data = _j['system']
+                admin_data = _j['admin']
 
             # Get Data
             system_root = config_raw_data['root']
@@ -35,8 +38,7 @@ class SystemConfig:
             # OS에 따라 Root 형식이 다르다
             # 테스트는 windows 기준으로 한다.
             splited_system_root = \
-                system_root.split('\\') if sys.platform == 'win32' \
-                else system_root.split('/')
+                system_root.split('\\') if sys.platform == 'win32' else system_root.split('/')
 
             # Root checking
             # is string?
@@ -58,6 +60,7 @@ class SystemConfig:
             # Set config data
             self.system_root = system_root
             self.system_port = system_port
+            self.admin_email = admin_data['email']
         except FileNotFoundError:
             # 파일 못찾음
             raise MicrocloudchipSystemConfigFileNotFoundError()
@@ -70,3 +73,6 @@ class SystemConfig:
 
     def get_system_port(self):
         return self.system_port
+
+    def get_admin_eamil(self):
+        return self.admin_email

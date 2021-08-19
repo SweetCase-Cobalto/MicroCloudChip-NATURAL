@@ -6,5 +6,8 @@
         "rdbms": {
             "type": "sqlite"
         }
+    },
+    "admin": {
+        "email": "seokbong60@gmail.com"
     }
 }

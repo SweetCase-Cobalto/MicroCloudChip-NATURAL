@@ -4,6 +4,7 @@ from module.MicrocloudchipException.base_exception import MicrocloudchipExceptio
 SYSTEM_PREFIX = 0x00000000
 USER_PREFIX = 0x01000000
 STORAGE_PREFIX = 0x02000000
+ACCESS_PREFIX = 0x03000000
 
 
 class MicrocloudchipSystemConfigFileNotFoundError(MicrocloudchipException):
@@ -58,3 +59,9 @@ class MicrocloudchipDirectoryAlreadyExistError(MicrocloudchipException):
 class MicrocloudchipFileAlreadyExistError(MicrocloudchipException):
     def __init__(self, err_msg: str):
         super().__init__(err_msg, 0x00000005 | STORAGE_PREFIX)
+
+
+# AccessException
+class MicrocloudchipAuthAccessError(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x1 | ACCESS_PREFIX)
