@@ -6,6 +6,7 @@ from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessEr
 from module.data_builder.user_builder import UserBuilder
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
+from module.validator.user_validator import UserValidator
 
 
 class UserManager(WorkerManager):
@@ -137,6 +138,19 @@ class UserManager(WorkerManager):
         for u in model.User.objects.all():
             r.append(u)
         return r
+
+    def get_user_by_static_id(self, static_id: str) -> dict:
+        try:
+            d = model.User.objects.get(static_id=static_id)
+            return {
+                "name": d.name,
+                "pswd": d.pswd,
+                "email": d.email,
+                "is_admin": d.is_admin,
+                "volume_type": UserValidator.validate_volume_type_by_string(d.volume_type)
+            }
+        except model.User.DoesNotExist:
+            return None
 
     def update_user(self, req_static_id: str, data_format: dict):
 
