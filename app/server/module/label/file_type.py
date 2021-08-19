@@ -53,3 +53,35 @@ class FileVolumeType(Enum):
             vol_type, _vol = FileVolumeType.TB, vol / FileVolumeType.TB.value
 
         return vol_type, (_vol if zfill_counter < 1 else round(_vol, zfill_counter))
+
+    @staticmethod
+    def type_to_num(vol_type, vol: int) -> int:
+        # 바이트 전환
+        r = vol * vol_type.value
+        return r
+
+    @staticmethod
+    def add(num1: tuple, num2: tuple, zfill_counter: int = 0) -> tuple:
+        """
+            param:
+                tuple:
+                    (int, VolumeType)
+        """
+        # 바이트 단위로 전환
+        n1 = FileVolumeType.type_to_num(num1[0], num1[1])
+        n2 = FileVolumeType.type_to_num(num2[0], num2[1])
+        n = n1 + n2
+        return FileVolumeType.get_file_volume_type(n, zfill_counter)
+
+    @staticmethod
+    def sub(num1: tuple, num2: tuple, zfill_counter: int = 0) -> tuple:
+        n1 = FileVolumeType.type_to_num(num1[0], num1[1])
+        n2 = FileVolumeType.type_to_num(num2[0], num2[1])
+        n = n1 - n2
+        return FileVolumeType.get_file_volume_type(n, zfill_counter)
+
+    @staticmethod
+    def cut_zfill(r: tuple, zfill_counter: int):
+        v_type, val = r
+        raw_val = FileVolumeType.type_to_num(v_type, val)
+        return FileVolumeType.get_file_volume_type(raw_val, zfill_counter)

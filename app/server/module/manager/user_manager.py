@@ -7,6 +7,7 @@ from module.data_builder.user_builder import UserBuilder
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 from module.validator.user_validator import UserValidator
+from module.label.file_type import FileVolumeType
 
 
 class UserManager(WorkerManager):
@@ -151,6 +152,28 @@ class UserManager(WorkerManager):
             }
         except model.User.DoesNotExist:
             return None
+
+    def get_used_size(self, static_id: str, zfill_counter: int = 0) -> tuple:
+
+        # 시스템 루트 갖고오기
+        sys_root: str = self.config.get_system_root()
+
+        # 해당 유저의 최상위 루트
+        super_root: str = os.path.join(sys_root, "storage", static_id, "root")
+
+        r: tuple = (FileVolumeType.BYTE, 0)
+
+        for root, _, files in os.walk(super_root):
+            for f in files:
+                f_root = os.path.join(root, f)
+                f_stat = os.stat(f_root)
+
+                # 파일 용량
+                fr: tuple = FileVolumeType.get_file_volume_type(f_stat.st_size)
+                r = FileVolumeType.add(r, fr)
+
+        r = FileVolumeType.cut_zfill(r, zfill_counter)
+        return r
 
     def update_user(self, req_static_id: str, data_format: dict):
 
