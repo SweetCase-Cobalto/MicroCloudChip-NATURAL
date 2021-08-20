@@ -348,4 +348,52 @@ class ManagerOperationUnittest(TestCase):
         )
 
     def test_delete_datas(self):
-        pass
+
+        """ Info: Raw 단계와는 달리 Manager 단위에서는 디렉토리를 삭제할 때
+            Recursive 하게 삭제합니다.
+        """
+
+        # 상위 디렉토리 생성
+        dir_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": "test-dir"
+        }
+        self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+
+        # 디렉토리들 생성
+        sub_dir_name = ['d01', 'd02', 'd03']
+        for d in sub_dir_name:
+            dir_format['target-root'] = os.path.join('test-dir', d)
+            self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+
+        # 파일 하나 생성
+        ex_filename: str = self.TEST_FILES[0]
+        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+
+        file_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": os.path.join('test-dir', ex_filename),
+            "raw-data": raw
+        }
+        self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
+
+        req_dir_delete_format: dict = {
+            'static-id': self.admin_static_id,
+            'target-root': 'test-dir'
+        }
+
+        # 다른 계정이 함부로 삭제할 수 없다
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.storage_manager.delete_directory(self.client_static_id, req_dir_delete_format)
+        )
+
+        # 제대로 된 삭제
+        self.storage_manager.delete_directory(self.admin_static_id, req_dir_delete_format)
+        f_list, d_list = self.storage_manager.get_data(self.admin_static_id, {
+            'static-id': self.admin_static_id,
+            'target-root': ''
+        })
+
+        self.assertEqual(len(f_list), 0)
+        self.assertEqual(len(d_list), 0)

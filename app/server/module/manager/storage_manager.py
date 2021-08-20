@@ -1,6 +1,7 @@
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
     MicrocloudchipStorageOverCapacityError, MicrocloudchipFileAlreadyExistError, MicrocloudchipFileNotFoundError, \
-    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryAlreadyExistError
+    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryAlreadyExistError, \
+    MicrocloudchipDirectoryNotFoundError
 from module.data.storage_data import FileData, DirectoryData
 from module.data_builder.directory_builder import DirectoryBuilder
 from module.data_builder.file_builder import FileBuilder
@@ -101,12 +102,14 @@ class StorageManager(WorkerManager):
             raise e
         except ValueError:
             # 동일한 이름으로 저장하려는 경우
+            self.process_locker.release()
             raise MicrocloudchipAuthAccessError("Same name does not be changeable")
         except MicrocloudchipFileAlreadyExistError as e:
             # 파일 이름 변경 실패
             self.process_locker.release()
             raise e
         except Exception as e:
+            self.process_locker.release()
             raise e
 
     def generate_directory(
@@ -161,6 +164,7 @@ class StorageManager(WorkerManager):
             d: DirectoryData = DirectoryData(src_root)()
 
             self.process_locker.acquire()
+            # 이름 바꾸기
             d.update_name(change_elements['name'])
             self.process_locker.release()
 
@@ -169,12 +173,15 @@ class StorageManager(WorkerManager):
             raise e
         except ValueError:
             # 동일한 이름으로 저장하려는 경우
+            self.process_locker.release()
             raise MicrocloudchipAuthAccessError("Same name does not be changeable")
         except (MicrocloudchipDirectoryAlreadyExistError, MicrocloudchipFileAndDirectoryValidateError) as e:
             # 파일 이름 변경 실패, 파일명 유효하지 않음
             self.process_locker.release()
             raise e
         except Exception as e:
+            # 기타 알수 없는 에러
+            self.process_locker.release()
             raise e
 
     def get_data(self, req_static_id: str, req: dict):
@@ -213,3 +220,100 @@ class StorageManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Incorrect File root")
 
         return f_list, d_list
+
+    def delete_file(self, req_static_id: str, req: dict):
+
+        try:
+            target_static_id = req['static-id']
+            target_root = req['target-root']
+        except KeyError as e:
+            raise e
+
+        # 권한 체크
+        if target_static_id != req_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
+
+        full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+
+        # 파일 정보 확인하기
+        try:
+            f_stat: os.stat_result = os.stat(full_root)
+            if not stat.S_ISREG(f_stat.st_mode):
+                # 파일이 아닌 경우
+                raise MicrocloudchipFileNotFoundError("This Data Is Not File")
+
+        except FileNotFoundError:
+            raise MicrocloudchipAuthAccessError("Incorrect File root")
+
+        # 데이터 정보 갖고오고 삭제하기
+        try:
+            self.process_locker.acquire()
+            # 데이터 갖고오기
+            file_data: FileData = FileData(full_root)()
+            # 삭제
+            file_data.remove()
+        except Exception as e:
+            # 에러 안일어나긴 하는데 혹시 모르니까
+            self.process_locker.release()
+            raise e
+        self.process_locker.release()
+
+    def delete_directory(self, req_static_id: str, req: dict):
+
+        # 데이터 체크
+        try:
+            target_static_id = req['static-id']
+            target_root = req['target-root']
+        except KeyError as e:
+            raise e
+
+        # 권한 체크
+        if target_static_id != req_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
+
+        full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+
+        # 디렉토리 확인
+        try:
+            d_stat: os.stat_result = os.stat(full_root)
+            if not stat.S_ISDIR(d_stat.st_mode):
+                raise MicrocloudchipDirectoryNotFoundError("This Data is not Directory")
+        except FileNotFoundError:
+            raise MicrocloudchipAuthAccessError("Incorrect File Root")
+
+        # BFS 방식으로 삭제
+        try:
+
+            stack = [full_root]
+
+            while stack:
+                r = stack[-1]
+
+                f_list, d_list = self.get_data(req_static_id, {
+                    "static-id": target_static_id,
+                    'target-root': r
+                })
+
+                # 파일 부터 죄다 삭제
+                for f in f_list:
+                    self.delete_file(req_static_id, {
+                        'static-id': target_static_id,
+                        'target-root': os.path.join(r, f.name)
+                    })
+
+                # 파일을 전부 삭제하고 디렉토리가 없는 경우
+                # 그냥 현재 디렉토리를 삭제한다
+                if len(d_list) == 0:
+                    stack.pop()
+                    deleted_d: DirectoryData = DirectoryData(r)()
+                    deleted_d.remove()
+                else:
+                    # 루트 를 더하고 스택에 추가
+                    # POP 을 하지 않는 이유는 모든 모든 디렉토리가 없는 경우 대해 한 번 더 함수를 실행해서
+                    # 루트 자체를 삭제하기 위해
+                    for d in d_list:
+                        next_r = os.path.join(r, d.name)
+                        stack.append(next_r)
+
+        except Exception as e:
+            raise e
