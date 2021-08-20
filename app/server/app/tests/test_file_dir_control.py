@@ -2,7 +2,6 @@ from django.test import TestCase
 
 from module.data_builder.user_builder import UserBuilder
 from module.specification.System_config import SystemConfig
-from module.MicrocloudchipException.exceptions import *
 from app.tests.test_modules.testing_file_dir_control_module import *
 import app.models as model
 import os
@@ -402,7 +401,9 @@ class FileDirControlTestUnittest(TestCase):
         dir_full_root = d['full-root']
 
         # 삭제
+        # 하위 데이터가 있다면 삭제를 할 수 없다.
         d.remove()
 
         # 삭제 여부 확인
-        self.assertFalse(os.path.isdir(dir_full_root))
+        # 삭제 되면 안됨
+        self.assertTrue(os.path.isdir(dir_full_root))

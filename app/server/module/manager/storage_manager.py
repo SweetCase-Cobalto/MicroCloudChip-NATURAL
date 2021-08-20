@@ -10,8 +10,7 @@ from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 
 import os
-
-from module.validator.storage_validator import StorageValidator
+import stat
 
 
 class StorageManager(WorkerManager):
@@ -177,3 +176,40 @@ class StorageManager(WorkerManager):
             raise e
         except Exception as e:
             raise e
+
+    def get_data(self, req_static_id: str, req: dict):
+        try:
+            target_static_id = req['static-id']
+            target_root = req['target-root']
+        except KeyError as e:
+            raise e
+
+        # 권한 체크
+        if target_static_id != req_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
+
+        # 데이터 갖고오기
+        f_list: list[FileData] = []
+        d_list: list[DirectoryData] = []
+
+        full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+
+        try:
+
+            # 헌재 디렉토리에서 검색된 파일 및 디렉토리 순환 조사
+            # full_root 의 데이터가 없으면 FileNotFoundError
+            for f_name in os.listdir(full_root):
+
+                f_root: str = os.path.join(full_root, f_name)
+                f_stat: os.stat_result = os.stat(f_root)
+
+                # 파일/디렉토리 확인
+                if stat.S_ISDIR(f_stat.st_mode):
+                    d_list.append(DirectoryData(f_root)())
+                elif stat.S_ISREG(f_stat.st_mode):
+                    f_list.append(FileData(f_root)())
+
+        except FileNotFoundError:
+            raise MicrocloudchipAuthAccessError("Incorrect File root")
+
+        return f_list, d_list

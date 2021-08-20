@@ -1,12 +1,14 @@
+import os
+import sys
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-import os, sys, shutil
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
-    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, MicrocloudchipDirectoryAlreadyExistError, \
+    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, \
+    MicrocloudchipDirectoryAlreadyExistError, \
     MicrocloudchipFileAndDirectoryValidateError
-from module.label.file_type import FileType, FileVolumeType
 
+from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
 
 
@@ -236,7 +238,7 @@ class DirectoryData(StorageData):
         try:
             os.rename(self.full_root, new_full_root)
         except FileExistsError:
-            raise MicrocloudchipDirectoryAlreadyExistError("Directory that new named is aleady exist")
+            raise MicrocloudchipDirectoryAlreadyExistError("Directory that new named is already exist")
 
         # 이름 바꾸기에 성공했을 경우 속성 변경
         self.full_root = new_full_root
@@ -247,5 +249,10 @@ class DirectoryData(StorageData):
         super().remove()
         self.__call__()
         if os.path.isdir(self.full_root):
-            shutil.rmtree(self.full_root)
+            if len(os.listdir(self.full_root)) == 0:
+                os.rmdir(self.full_root)
+                self.is_called = False
+            else:
+                self.is_called = True
+                return
         self.is_called = False

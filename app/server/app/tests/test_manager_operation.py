@@ -1,12 +1,11 @@
 import sys
-
 from django.test import TestCase
-
 import os
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
     MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryAlreadyExistError, \
     MicrocloudchipStorageOverCapacityError
+
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
 from module.specification.System_config import SystemConfig
@@ -303,7 +302,50 @@ class ManagerOperationUnittest(TestCase):
         )
 
     def test_get_list_in_directory(self):
-        pass
+        
+        # 상위 디렉토리 생성
+        dir_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": "test-dir"
+        }
+        self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+
+        # 디렉토리들 생성
+        sub_dir_name = ['d01', 'd02', 'd03']
+        for d in sub_dir_name:
+            dir_format['target-root'] = os.path.join('test-dir', d)
+            self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+
+        # 파일 하나 생성
+        ex_filename: str = self.TEST_FILES[0]
+        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+
+        file_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": os.path.join('test-dir', ex_filename),
+            "raw-data": raw
+        }
+        self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
+        
+        # 데이터 요청 포맷
+        req_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": 'test-dir'
+        }
+        file_list, directory_list = self.storage_manager.get_data(self.admin_static_id, req_format)
+
+        # 검색된 디렉토리 이름 리스트
+        checked_dir_list: list[str] = [a.name for a in directory_list]
+
+        # 측정
+        self.assertEqual(file_list[0].name, ex_filename)
+        self.assertCountEqual(sub_dir_name, checked_dir_list)
+
+        # 다른 사용자가 접근해서는 안된다
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.storage_manager.get_data(self.client_static_id, req_format)
+        )
 
     def test_delete_datas(self):
         pass
