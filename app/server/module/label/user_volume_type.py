@@ -1,11 +1,26 @@
-from enum import Enum
+from enum import Enum, unique
 
-KEY_VOLUME = "volume"
-KEY_TYPE = "type"
+from module.label.file_type import FileVolumeType
 
 
+@unique
+class UserVolumeTypeKeys(Enum):
+    KEY_VOLUME = "volume"
+    KEY_TYPE = "type"
+
+
+@unique
 class UserVolumeType(Enum):
-    TEST = {KEY_TYPE: "MB", KEY_VOLUME: 1}
-    GUEST = {KEY_TYPE: "GB", KEY_VOLUME: 5}
-    USER = {KEY_TYPE: "GB", KEY_VOLUME: 20}
-    HEAVIER = {KEY_TYPE: "GB", KEY_VOLUME: 100}
+    TEST = {UserVolumeTypeKeys.KEY_TYPE: FileVolumeType.KB, UserVolumeTypeKeys.KEY_VOLUME: 1}
+    GUEST = {UserVolumeTypeKeys.KEY_TYPE: FileVolumeType.GB, UserVolumeTypeKeys.KEY_VOLUME: 5}
+    USER = {UserVolumeTypeKeys.KEY_TYPE: FileVolumeType.GB, UserVolumeTypeKeys.KEY_VOLUME: 20}
+    HEAVIER = {UserVolumeTypeKeys.KEY_TYPE: FileVolumeType.GB, UserVolumeTypeKeys.KEY_VOLUME: 100}
+
+    def __int__(self):
+        return FileVolumeType.type_to_num(
+            self.value[UserVolumeTypeKeys.KEY_TYPE],
+            self.value[UserVolumeTypeKeys.KEY_VOLUME]
+        )
+
+    def to_tuple(self):
+        return self.value[UserVolumeTypeKeys.KEY_TYPE], self.value[UserVolumeTypeKeys.KEY_VOLUME]

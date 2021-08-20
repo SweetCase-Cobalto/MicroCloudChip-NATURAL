@@ -4,7 +4,10 @@ from django.test import TestCase
 
 import os
 
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError
+from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
+    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryAlreadyExistError, \
+    MicrocloudchipStorageOverCapacityError
+from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
 from module.specification.System_config import SystemConfig
 
@@ -25,16 +28,21 @@ class ManagerOperationUnittest(TestCase):
     # API 없이 서버 프로세스를 테스트합니다.
 
     config: SystemConfig = SystemConfig(os.path.join(*["server", "config.json"]))
+    SYSTEM_ROOT: str = config.get_system_root()
     IMG_EXAMPLE_ROOT: str = os.path.join(*["app", "tests", "test-input-data", "user", "example.png"])
     token: str = '\\' if sys.platform == 'win32' else '/'
 
     user_manager: UserManager = None
-    # storage_manager: StorageManager = None
+    storage_manager: StorageManager = None
 
     # 테스트 대상 Users
     admin_static_id: str = ""
     client_static_id: str = ""
     other_static_id: str = ""
+
+    # 테스트 파일이 들어있는 루트
+    TEST_FILE_ROOT: str = "app/tests/test-input-data/example_files"
+    TEST_FILES: str = os.listdir(TEST_FILE_ROOT)
 
     def setUp(self) -> None:
 
@@ -42,7 +50,7 @@ class ManagerOperationUnittest(TestCase):
         # 초기화를 할 때 UserManager 는 Admin 이 있는 지 확인한다.
         # 없을 경우 config information 을 확인하여 Admin User 를 생성한다.
 
-        # self.storage_manager = StorageManager(self.config)
+        self.storage_manager = StorageManager(self.config)
 
         # admin_static_id 갖고오기
         self.admin_static_id = self.user_manager.get_users()[0].static_id
@@ -117,13 +125,15 @@ class ManagerOperationUnittest(TestCase):
         self.assertRaises(MicrocloudchipAuthAccessError,
                           lambda: self.user_manager.update_user(self.other_static_id, update_req))
 
-        # 이미지 삭제
+        # 클라이언트 이미지가 들어가 있는 루트
         client_img_root = os.path.join(self.config.get_system_root(), "storage", self.client_static_id, 'asset',
                                        'user.png')
 
         # 삭제 전
         self.assertTrue(os.path.isfile(client_img_root))
 
+        # 이미지 삭제
+        # img-raw-data 가 None -> 이미지 삭제
         update_req['img-changeable'] = True
         self.user_manager.update_user(self.admin_static_id, update_req)
 
@@ -137,3 +147,100 @@ class ManagerOperationUnittest(TestCase):
         # 생성 후 체크
         self.user_manager.update_user(self.admin_static_id, update_req)
         self.assertTrue(os.path.isfile(client_img_root))
+
+    def test_add_datas(self):
+        """ File/Directory 권한에 따른 저장 """
+
+        ex_filename: str = self.TEST_FILES[0]
+        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+
+        file_add_req = {
+            "static-id": self.admin_static_id,
+            "target-root": self.TEST_FILES[0],
+            "raw-data": raw
+        }
+        dir_add_req = {
+            "static-id": self.admin_static_id,
+            "target-root": "test-dir"
+        }
+
+        # File Checking
+        self.storage_manager.upload_file(
+            self.admin_static_id,
+            file_add_req,
+            self.user_manager
+        )
+        self.assertTrue(
+            os.path.isfile(
+                os.path.join(self.SYSTEM_ROOT, 'storage', self.admin_static_id,
+                             'root', file_add_req['target-root'])
+            )
+        )
+
+        # Directory Checking
+        self.storage_manager.generate_directory(
+            self.admin_static_id,
+            dir_add_req
+        )
+        self.assertTrue(
+            os.path.isdir(
+                os.path.join(self.SYSTEM_ROOT, 'storage', self.admin_static_id,
+                             'root', dir_add_req['target-root'])
+            )
+        )
+
+        """ 다른 사용자가 파일및 디렉토리를 추가할 수 없다"""
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.storage_manager.upload_file(
+                self.client_static_id,
+                file_add_req,
+                self.user_manager
+            )
+        )
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.storage_manager.generate_directory(
+                self.client_static_id,
+                dir_add_req,
+            )
+        )
+
+        """동일 파일 및 폴더는 생성 불가"""
+        self.assertRaises(
+            MicrocloudchipFileAlreadyExistError,
+            lambda: self.storage_manager.upload_file(
+                self.admin_static_id,
+                file_add_req,
+                self.user_manager
+            )
+        )
+        self.assertRaises(
+            MicrocloudchipDirectoryAlreadyExistError,
+            lambda: self.storage_manager.generate_directory(
+                self.admin_static_id,
+                dir_add_req,
+            )
+        )
+
+        """사용량 초과 시 알림"""
+        file_add_req['static-id'] = self.client_static_id
+        # 테스트용 클라이언트는 최대 사용 가능 용량이 1KB
+
+        self.assertRaises(
+            MicrocloudchipStorageOverCapacityError,
+            lambda: self.storage_manager.upload_file(
+                self.client_static_id,
+                file_add_req,
+                self.user_manager
+            )
+        )
+
+    def test_update_datas(self):
+        pass
+
+    def test_delete_datas(self):
+        pass
+
+    def test_get_list_in_directory(self):
+        pass
