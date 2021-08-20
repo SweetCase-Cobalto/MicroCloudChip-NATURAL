@@ -237,10 +237,73 @@ class ManagerOperationUnittest(TestCase):
         )
 
     def test_update_datas(self):
+
+        ex_filename: str = self.TEST_FILES[0]
+        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+
+        # 파일과 디렉토리 생성
+        file_add_req = {
+            "static-id": self.admin_static_id,
+            "target-root": ex_filename,
+            "raw-data": raw
+        }
+        dir_add_req = {
+            "static-id": self.admin_static_id,
+            "target-root": "test-dir"
+        }
+
+        test_file_ex: str = ex_filename.split('.')[-1]
+        self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
+
+        self.storage_manager.generate_directory(self.admin_static_id, dir_add_req)
+
+        # 파일 및 디렉토리 수정
+        file_update_req = {
+            "static-id": self.admin_static_id,
+            "target-root": ex_filename,
+            "change": {
+                "name": "reddd." + test_file_ex
+            }
+        }
+        dir_update_req = {
+            "static-id": self.admin_static_id,
+            "target-root": "test-dir",
+            "change": {
+                "name": "other-dir"
+            }
+        }
+
+        self.storage_manager.update_file(self.admin_static_id, file_update_req)
+        self.storage_manager.update_directory(self.admin_static_id, dir_update_req)
+
+        """ 동일한 파일 이름을 수정 할 때 존재하는 파일 및 디렉토리 이름으로 수정이 불가능하다. """
+        self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
+        self.storage_manager.generate_directory(self.admin_static_id, dir_add_req)
+
+        self.assertRaises(
+            MicrocloudchipFileAlreadyExistError,
+            lambda: self.storage_manager.update_file(self.admin_static_id, file_update_req)
+        )
+        self.assertRaises(
+            MicrocloudchipDirectoryAlreadyExistError,
+            lambda: self.storage_manager.update_directory(self.admin_static_id, dir_update_req)
+        )
+
+        file_update_req['change']['name'] = "xx" + test_file_ex
+        dir_update_req['change']['name'] = "ch-dir"
+
+        """ 다른 계정이 변경을 시도하면 안된다 """
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.storage_manager.update_file(self.client_static_id, file_update_req)
+        )
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.storage_manager.update_directory(self.client_static_id, dir_update_req)
+        )
+
+    def test_get_list_in_directory(self):
         pass
 
     def test_delete_datas(self):
-        pass
-
-    def test_get_list_in_directory(self):
         pass

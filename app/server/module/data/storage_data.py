@@ -3,8 +3,11 @@ from datetime import datetime
 import os, sys, shutil
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
-    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, MicrocloudchipDirectoryAlreadyExistError
+    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, MicrocloudchipDirectoryAlreadyExistError, \
+    MicrocloudchipFileAndDirectoryValidateError
 from module.label.file_type import FileType, FileVolumeType
+
+from module.validator.storage_validator import StorageValidator
 
 
 class StorageData(metaclass=ABCMeta):
@@ -129,6 +132,12 @@ class FileData(StorageData):
         if new_name == self.name:
             # 이름이 같은건 생성 불가
             raise ValueError("same filename")
+        
+        # Validator 측정
+        try:
+            StorageValidator.validate_storage_with_no_django_validator_exception(new_name, self.token)
+        except MicrocloudchipFileAndDirectoryValidateError as e:
+            raise e
 
         # 파일 이름 변경
         new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
@@ -215,6 +224,12 @@ class DirectoryData(StorageData):
 
         if new_name == self.name:
             raise ValueError("same directory name")
+
+        # Validator 측정
+        try:
+            StorageValidator.validate_storage_with_no_django_validator_exception(new_name, self.token)
+        except MicrocloudchipFileAndDirectoryValidateError as e:
+            raise e
 
         # 파일 이름 변경
         new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
