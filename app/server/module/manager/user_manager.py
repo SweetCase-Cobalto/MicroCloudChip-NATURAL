@@ -251,7 +251,27 @@ class UserManager(WorkerManager):
         self.process_locker.release()
 
     def delete_user(self, req_static_id: str, target_static_id: str, storage_manager: StorageManager):
-        try:
-            model.User.objects.get(target)
-        except model.User.DoesNotExist:
+
+        is_accessible = len(model.User.objects.filter(is_admin=True).filter(static_id=req_static_id))
+        if not is_accessible:
             raise MicrocloudchipAuthAccessError("Auth Error for delete user")
+
+        # 자기 자신은 삭제할 수 없다.
+        if req_static_id == target_static_id:
+            raise MicrocloudchipAuthAccessError("User can't remove itself")
+
+        # Storage 제거
+        self.process_locker.acquire()
+        try:
+            storage_manager.delete_directory(target_static_id, {
+                'static-id': target_static_id,
+                'target-root': ''
+            })
+
+            # 기타 유저 데이터 삭제
+            user_root = os.path.join(self.config.get_system_root(), 'storage', target_static_id)
+            shutil.rmtree(user_root)
+        except Exception as e:
+            self.process_locker.release()
+            raise e
+        self.process_locker.release()

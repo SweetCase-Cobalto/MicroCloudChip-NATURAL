@@ -434,3 +434,6 @@ class ManagerOperationUnittest(TestCase):
 
         # 삭제
         self.user_manager.delete_user(self.admin_static_id, self.other_static_id, self.storage_manager)
+
+        # 삭제 확인
+        self.assertFalse(os.path.isdir(os.path.join(self.config.get_system_root(), 'storage', self.other_static_id)))

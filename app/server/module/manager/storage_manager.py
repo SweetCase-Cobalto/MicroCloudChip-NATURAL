@@ -6,7 +6,6 @@ from module.data.storage_data import FileData, DirectoryData
 from module.data_builder.directory_builder import DirectoryBuilder
 from module.data_builder.file_builder import FileBuilder
 from module.label.file_type import FileVolumeType
-from module.manager.user_manager import UserManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 
@@ -28,7 +27,7 @@ class StorageManager(WorkerManager):
             self,
             req_static_id: str,
             req: dict,
-            user_manager: UserManager
+            user_manager # 이거 UserManager 인데 Import Recursive 문제로 힌트 표기 안함
     ):
         # 다른 사용자가 파일을 컨트롤 해선 안된다.
         try:
