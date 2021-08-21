@@ -12,10 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import json
-import os
-import sys
 
-# Config is Test
 config = None
 # Load Config File
 try:
@@ -24,7 +21,6 @@ try:
 except Exception as e:
     print("Config data is not setting, please back to `bin` directory and run command `perl install.pl install` ")
     exit(0)
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
