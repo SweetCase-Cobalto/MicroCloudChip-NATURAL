@@ -26,7 +26,7 @@ const initialState = {
  * 서버 API를 연결할 경우
  * 모든 함수를 ASYNC 처리하고 axios 옆에 await 추가
 */
-export const userLogin = (user, pswd) => {
+export const userLogin = (email, pswd) => {
     // TODO: Connect From API Server For check login data
 
     // Test Case

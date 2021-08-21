@@ -84,7 +84,7 @@ class ManagerOperationUnittest(TestCase):
             "name": "other",
             "password": "12346789",
             "email": "napalosense2@gmail.com",
-            "volume-type": "TEST",
+            "volume-type": "GUEST",
             "img-raw-data": None,
             "img-extension": None
         }
@@ -302,7 +302,7 @@ class ManagerOperationUnittest(TestCase):
         )
 
     def test_get_list_in_directory(self):
-        
+
         # 상위 디렉토리 생성
         dir_format: dict = {
             "static-id": self.admin_static_id,
@@ -326,7 +326,7 @@ class ManagerOperationUnittest(TestCase):
             "raw-data": raw
         }
         self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
-        
+
         # 데이터 요청 포맷
         req_format: dict = {
             "static-id": self.admin_static_id,
@@ -397,3 +397,40 @@ class ManagerOperationUnittest(TestCase):
 
         self.assertEqual(len(f_list), 0)
         self.assertEqual(len(d_list), 0)
+
+    def test_delete_user(self):
+        # 데이터 생성
+        # 상위 디렉토리 생성
+        dir_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": "test-dir"
+        }
+        self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+
+        # 디렉토리들 생성
+        sub_dir_name = ['d01', 'd02', 'd03']
+        for d in sub_dir_name:
+            dir_format['target-root'] = os.path.join('test-dir', d)
+            self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+
+        # 파일 하나 생성
+        ex_filename: str = self.TEST_FILES[0]
+        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+
+        file_format: dict = {
+            "static-id": self.admin_static_id,
+            "target-root": os.path.join('test-dir', ex_filename),
+            "raw-data": raw
+        }
+        self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
+
+        # Admin 만 삭제할 수 있다.
+        self.assertRaises(
+            MicrocloudchipAuthAccessError,
+            lambda: self.user_manager.delete_user(
+                self.client_static_id, self.other_static_id, self.storage_manager
+            )
+        )
+
+        # 삭제
+        self.user_manager.delete_user(self.admin_static_id, self.other_static_id, self.storage_manager)

@@ -4,6 +4,7 @@ import shutil
 import app.models as model
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError
 from module.data_builder.user_builder import UserBuilder
+from module.manager.storage_manager import StorageManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 from module.validator.user_validator import UserValidator
@@ -248,3 +249,9 @@ class UserManager(WorkerManager):
                         f.write(data_format['img-raw-data'])
 
         self.process_locker.release()
+
+    def delete_user(self, req_static_id: str, target_static_id: str, storage_manager: StorageManager):
+        try:
+            model.User.objects.get(target)
+        except model.User.DoesNotExist:
+            raise MicrocloudchipAuthAccessError("Auth Error for delete user")

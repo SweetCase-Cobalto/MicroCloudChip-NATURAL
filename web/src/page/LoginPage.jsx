@@ -22,10 +22,10 @@ const LoginPage = (props) => {
     const loginBtnEvent = (e) => {
         e.preventDefault();
 
-        let username = e.target.username.value;
+        let email = e.target.email.value;
         let password = e.target.password.value;
 
-        props.userLogin(username, password);
+        props.userLogin(email, password);
     }
 
     return (
@@ -39,8 +39,8 @@ const LoginPage = (props) => {
                     <p>server: {hostToStr}</p>
                     <LoginSection onSubmit={loginBtnEvent}>
                         <EditSection>
-                            <EditLabel>NAME</EditLabel>
-                            <EditText type="text" name="username" />
+                            <EditLabel>EMAIL</EditLabel>
+                            <EditText type="text" name="email" />
                         </EditSection>
                         <EditSection>
                             <EditLabel>PSWD</EditLabel>
