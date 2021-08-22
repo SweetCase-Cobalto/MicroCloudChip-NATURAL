@@ -21,14 +21,21 @@ def view_user_login(request: Request) -> JsonResponse:
         return JsonResponse({
             "code": e.errorCode
         })
-    except MicrocloudchipLoginFailedError as e:
+    except MicrocloudchipException as e:
         return JsonResponse({
             "code": e.errorCode
         })
 
     # 통과
     # 세션 저장
-    session_control.login_session_event(request, user_data['static-id'])
+    try:
+        session_control.login_session_event(request, user_data['static-id'])
+    except MicrocloudchipAuthAccessError as e:
+        # 이미 로그인 했는데 또 로그인 한 경우
+        # Microcloudchip AccessError 호출
+        return JsonResponse({
+            'code': e.errorCode
+        })
     return JsonResponse({
         "code": 0x00,
         "data": user_data
@@ -37,8 +44,6 @@ def view_user_login(request: Request) -> JsonResponse:
 
 @api_view(['GET'])
 def view_user_logout(request: Request) -> JsonResponse:
-    print(session_control.is_logined_event(request))
-
     session_control.logout_session_event(request)
     return JsonResponse({
         "code": 0x00

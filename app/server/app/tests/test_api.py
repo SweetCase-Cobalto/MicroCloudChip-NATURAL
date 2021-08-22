@@ -59,3 +59,20 @@ class TestAPIUnittest(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.json()['code'], 0)
+
+        # 다시 로그인 불가
+        response = self.client.post(
+            '/server/user/login',
+            json.dumps({
+                'email': 'seokbong60@gmail.com',
+                'pswd': '12345678'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+
+        self.client.get(
+            '/server/user/logout'
+        )
+
+
