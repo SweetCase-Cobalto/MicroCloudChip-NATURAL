@@ -2,8 +2,9 @@ import os
 import shutil
 
 import app.models as model
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError
+from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, MicrocloudchipLoginFailedError
 from module.data_builder.user_builder import UserBuilder
+from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
 from module.manager.storage_manager import StorageManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
@@ -68,6 +69,29 @@ class UserManager(WorkerManager):
 
             # DB 저장
             new_admin_builder.build().save()
+
+    def login(self, user_email: str, user_password: str) -> dict:
+
+        r = model.User.objects.filter(email=user_email).filter(pswd=user_password)
+        if len(r) == 0:
+            raise MicrocloudchipLoginFailedError("Login Failed")
+
+        user: model.User = r[0]
+        user_volume_type: UserVolumeType = UserValidator.validate_volume_type_by_string(user.volume_type)
+
+        return {
+            "static-id": user.static_id,
+            "name": user.name,
+            "email": user.email,
+            "is-admin": user.is_admin,
+            "volume-type": {
+                "name": user_volume_type.name,
+                "value": {
+                    "unit": user_volume_type.value[UserVolumeTypeKeys.KEY_TYPE].name,
+                    "volume": user_volume_type.value[UserVolumeTypeKeys.KEY_VOLUME]
+                }
+            }
+        }
 
     # User Control
     def add_user(self, req_static_id: str, data_format: dict):

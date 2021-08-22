@@ -1,7 +1,9 @@
 from django.http import JsonResponse
 
 import app.models as model
-from module.MicrocloudchipException.exceptions import MicrocloudchipSystemAbnormalAccessError
+from module.MicrocloudchipException.exceptions import MicrocloudchipSystemAbnormalAccessError, \
+    MicrocloudchipLoginFailedError
+from . import USER_MANAGER, STORAGE_MANAGER
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -13,13 +15,18 @@ def view_user_login(request: Request) -> JsonResponse:
     try:
         email: str = request.data['email']
         pswd: str = request.data['pswd']
+        user_data: dict = USER_MANAGER.login(email, pswd)
     except KeyError:
         e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
         return JsonResponse({
             "code": e.errorCode
         })
+    except MicrocloudchipLoginFailedError as e:
+        return JsonResponse({
+            "code": e.errorCode
+        })
 
-    # 데이터 검색
     return JsonResponse({
-        "hello": "world"
+        "code": 0x00,
+        "data": user_data
     })

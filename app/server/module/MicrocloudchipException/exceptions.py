@@ -46,6 +46,10 @@ class MicrocloudchipUserDoesNotExistError(MicrocloudchipException):
     def __init__(self, err_msg: str):
         super().__init__(err_msg, 0x00000003 | USER_PREFIX)
 
+class MicrocloudchipLoginFailedError(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x04 | USER_PREFIX)
+
 
 # File/Data Exception
 class MicrocloudchipDirectoryNotFoundError(MicrocloudchipException):
