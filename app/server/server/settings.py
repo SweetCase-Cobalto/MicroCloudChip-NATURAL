@@ -110,8 +110,6 @@ except Exception as e:
     print("please back to bin directory and run `perl install.pl install` again ")
     exit(0)
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 

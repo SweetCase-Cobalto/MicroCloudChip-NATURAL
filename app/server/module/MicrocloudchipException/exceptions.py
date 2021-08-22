@@ -7,6 +7,12 @@ STORAGE_PREFIX = 0x02000000
 ACCESS_PREFIX = 0x03000000
 
 
+class MicrocloudchipSucceed(MicrocloudchipException):
+    # 정상 접근 (보통 API 가 제대로 응답 했을 경우 이 코드를 전송한다.)
+    def __init__(self):
+        super().__init__("Success", 0x00)
+
+
 class MicrocloudchipSystemConfigFileNotFoundError(MicrocloudchipException):
     # config file 못찾음
     def __init__(self):
@@ -17,6 +23,12 @@ class MicrocloudchipSystemConfigFileParsingError(MicrocloudchipException):
     # config.json 파싱 에러
     def __init__(self, err_msg: str):
         super().__init__(err_msg, 0x00000002 | SYSTEM_PREFIX)
+
+
+class MicrocloudchipSystemAbnormalAccessError(MicrocloudchipException):
+    # 비정상 접근 에러
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x03 | SYSTEM_PREFIX)
 
 
 # User Exception
