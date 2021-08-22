@@ -1,9 +1,8 @@
 from django.http import JsonResponse
 
-import app.models as model
-from module.MicrocloudchipException.exceptions import MicrocloudchipSystemAbnormalAccessError, \
-    MicrocloudchipLoginFailedError
-from . import USER_MANAGER, STORAGE_MANAGER
+from module.MicrocloudchipException.exceptions import *
+from module.session_control import session_control
+from . import *
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -26,7 +25,20 @@ def view_user_login(request: Request) -> JsonResponse:
             "code": e.errorCode
         })
 
+    # 통과
+    # 세션 저장
+    session_control.login_session_event(request, user_data['static-id'])
     return JsonResponse({
         "code": 0x00,
         "data": user_data
+    })
+
+
+@api_view(['GET'])
+def view_user_logout(request: Request) -> JsonResponse:
+    print(session_control.is_logined_event(request))
+
+    session_control.logout_session_event(request)
+    return JsonResponse({
+        "code": 0x00
     })

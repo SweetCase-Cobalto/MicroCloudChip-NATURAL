@@ -139,3 +139,4 @@ cython_debug/
 
 # no config
 server/config.json
+app/migrations/*
