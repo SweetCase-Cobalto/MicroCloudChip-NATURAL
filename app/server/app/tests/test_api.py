@@ -8,8 +8,6 @@ from module.manager.user_manager import UserManager
 from module.specification.System_config import SystemConfig
 
 SYSTEM_CONFIG: SystemConfig
-USER_MANAGER: UserManager
-STORAGE_MANAGER: StorageManager
 
 
 class TestAPIUnittest(TestCase):
@@ -18,9 +16,11 @@ class TestAPIUnittest(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         super(TestAPIUnittest, cls).setUpClass()
+
+        # Admin
         SYSTEM_CONFIG = SystemConfig("server/config.json")
-        USER_MANAGER = UserManager(SYSTEM_CONFIG)
-        STORAGE_MANAGER = StorageManager(SYSTEM_CONFIG)
+        UserManager(SYSTEM_CONFIG)
+        StorageManager(SYSTEM_CONFIG)
 
     def setUp(self) -> None:
         self.client = Client()
@@ -29,18 +29,33 @@ class TestAPIUnittest(TestCase):
 
         # Admin 계정으로 로그인
 
-        # False
+        # False [KeyError]
+        response: JsonResponse = self.client.post('/server/user/login', json.dumps({}),
+                                                  content_type='application/json')
+        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
 
-
-        response: JsonResponse = self.client.post(
+        # False [LoginFailed]
+        response = self.client.post(
             '/server/user/login',
             json.dumps(
-                {"email": "seokbong60@gmail.com",
-                 "pswd": "12345678"
-                 }
+                {
+                    "email": "seokbong60@gmail.com",
+                    "pswd": "9999999"
+                }
             ),
-            content_type='application/json')
-        err_code: int = response.json()['code']
+            content_type='application/json'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipLoginFailedError("").errorCode)
 
-        if err_code == MicrocloudchipLoginFailedError("").errorCode:
-            print("err")
+        # Success
+        # 단 install.pl 에서 설정한 이메일을 입력해야 success 가 나온다.
+        # 패스워드는 12345678 동일
+        response = self.client.post(
+            '/server/user/login',
+            json.dumps({
+                'email': 'seokbong60@gmail.com',
+                'pswd': '12345678'
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(response.json()['code'], 0)

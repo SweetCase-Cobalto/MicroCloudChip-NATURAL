@@ -16,7 +16,8 @@ def view_user_login(request: Request) -> JsonResponse:
         pswd: str = request.data['pswd']
         user_data: dict = USER_MANAGER.login(email, pswd)
     except KeyError:
-        e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
+        # request에 해당 데이터가 존재하지 않는 경우
+        e = MicrocloudchipAuthAccessError("Access Failed")
         return JsonResponse({
             "code": e.errorCode
         })
