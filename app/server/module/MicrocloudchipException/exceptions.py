@@ -31,6 +31,12 @@ class MicrocloudchipSystemAbnormalAccessError(MicrocloudchipException):
         super().__init__(err_msg, 0x03 | SYSTEM_PREFIX)
 
 
+class MicrocloudchipLoginConnectionExpireError(MicrocloudchipException):
+    # 로그인 만료
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x04 | SYSTEM_PREFIX)
+
+
 # User Exception
 class MicrocloudchipUserInformationValidateError(MicrocloudchipException):
     def __init__(self, err_msg: str):

@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.http.response import JsonResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files import File
 
 import json
 import app.models as model
@@ -17,8 +18,8 @@ class TestAPIUnittest(TestCase):
     client: Client
     admin_static_id: str
 
-    USR_IMG_ROOT: str = 'test-input-data/user/example.png'
-    FILES_ROOT: str = 'test-input-data/example_files'
+    USR_IMG_ROOT: str = 'app/tests/test-input-data/user/example.png'
+    FILES_ROOT: str = 'app/tests/test-input-data/example_files'
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -28,6 +29,14 @@ class TestAPIUnittest(TestCase):
         SYSTEM_CONFIG = SystemConfig("server/config.json")
         UserManager(SYSTEM_CONFIG)
         StorageManager(SYSTEM_CONFIG)
+
+    @staticmethod
+    def make_uploaded_file(root: str):
+        f: File = File(open(root, 'rb'))
+        u: SimpleUploadedFile = SimpleUploadedFile(
+            f.name, f.read(), content_type='multipart/form-data'
+        )
+        return u
 
     def setUp(self) -> None:
         self.client = Client()
@@ -69,8 +78,21 @@ class TestAPIUnittest(TestCase):
         )
 
     def test_user_add_and_delete(self):
-        # Admin Login
 
+        # 로그인이 안 된 상태에서 수행 불가
+        response = self.client.post(
+            '/server/user', {
+                'req-static-id': self.admin_static_id,
+                'name': 'the-client',
+                'email': 'napalosense@gmail.com',
+                'password': '098765432',
+                'volume-type': 'TEST',
+                'img': TestAPIUnittest.make_uploaded_file(self.USR_IMG_ROOT)
+            }
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipLoginConnectionExpireError("").errorCode)
+
+        # Admin Login
         response = self.client.post(
             '/server/user/login',
             dict(email='seokbong60@gmail.com', pswd='12345678')
@@ -78,3 +100,28 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.json()['code'], 0)
 
         # 유저 생성
+
+        # Success
+        response = self.client.post(
+            '/server/user', {
+                'req-static-id': self.admin_static_id,
+                'name': 'theclient',
+                'email': 'napalosense@gmail.com',
+                'password': '098765432',
+                'volume-type': 'TEST',
+                'img': TestAPIUnittest.make_uploaded_file(self.USR_IMG_ROOT)
+            }
+        )
+        self.assertEqual(response.json()['code'], 0)
+
+        # Failed[Same email]
+        response = self.client.post(
+            '/server/user', {
+                'req-static-id': self.admin_static_id,
+                'name': 'theclient2',
+                'email': 'napalosense@gmail.com',
+                'password': '934852323',
+                'volume-type': 'TEST',
+            }
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)

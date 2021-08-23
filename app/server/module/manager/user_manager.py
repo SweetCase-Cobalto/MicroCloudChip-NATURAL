@@ -105,6 +105,17 @@ class UserManager(WorkerManager):
             # 해당되지 않는다면 이는 AccessError
             raise MicrocloudchipAuthAccessError("Access for add user Failed")
 
+        # Email 중복 여부 확인
+        try:
+            model.User.objects.get(email=data_format['email'])
+        except model.User.DoesNotExist:
+            # 없음 -> 통과
+            pass
+        else:
+            # 있음:
+            # Error 출력
+            raise MicrocloudchipAuthAccessError("Email Already Exist")
+
         try:
             user_builder: UserBuilder = UserBuilder() \
                 .set_name(data_format['name']) \

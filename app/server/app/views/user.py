@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 
 from module.MicrocloudchipException.exceptions import *
@@ -51,8 +52,48 @@ def view_user_logout(request: Request) -> JsonResponse:
 
 
 @api_view(['POST'])
-def test(request: Request) -> JsonResponse:
-    print(request.data['email'])
-    return JsonResponse({
-        "code": 0x00
-    })
+def view_add_user(request: Request) -> JsonResponse:
+    if not session_control.is_logined_event(request):
+        # 로그인 확인
+        return JsonResponse({
+            "code": MicrocloudchipLoginConnectionExpireError("").errorCode
+        })
+
+    try:
+        # 데이터 확인
+        req_static_id: str = request.data['req-static-id']
+        email: str = request.data['email']
+        pswd: str = request.data['password']
+        volume_type_str: str = request.data['volume-type']
+        name: str = request.data['name']
+    except KeyError:
+        _e = MicrocloudchipAuthAccessError("Access Failed")
+        return JsonResponse({
+            'code': _e.errorCode
+        })
+    
+    # 이미지를 추가 안했다면 None으로 처리한다
+    user_img: InMemoryUploadedFile = request.FILES['img'] if 'img' in request.FILES else None
+
+    # 유저를 출력하기 위한 데이터 작성
+    user_req: dict = {
+        'name': name,
+        'password': pswd,
+        'email': email,
+        'volume-type': volume_type_str,
+        'img-raw-data': None if not user_img else user_img.read(),
+        'img-extension': None if not user_img else user_img.name.split('.')[-1]
+    }
+    try:
+        # 추가
+        USER_MANAGER.add_user(req_static_id, user_req)
+    except MicrocloudchipException as e:
+        # 실패
+        return JsonResponse({
+            'code': e.errorCode
+        })
+    else:
+        # 성공
+        return JsonResponse({
+            'code': 0x00
+        })
