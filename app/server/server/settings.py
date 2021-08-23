@@ -147,7 +147,3 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# 세션 만료기한
-SESSION_COOKIE_AGE = 180
-SESSION_SAVE_EVERY_REQUEST = True

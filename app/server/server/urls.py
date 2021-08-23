@@ -20,5 +20,6 @@ from app.views.user import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'server/user/login', view_user_login),
-    path(r'server/user/logout', view_user_logout)
+    path(r'server/user/logout', view_user_logout),
+    path(r'server/test', test)
 ]

@@ -48,3 +48,11 @@ def view_user_logout(request: Request) -> JsonResponse:
     return JsonResponse({
         "code": 0x00
     })
+
+
+@api_view(['POST'])
+def test(request: Request) -> JsonResponse:
+    print(request.data['email'])
+    return JsonResponse({
+        "code": 0x00
+    })
