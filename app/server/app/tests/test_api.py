@@ -1,3 +1,5 @@
+import os
+
 from django.test import TestCase, Client
 from django.http.response import JsonResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -78,7 +80,6 @@ class TestAPIUnittest(TestCase):
         )
 
     def test_user_add_and_delete(self):
-
         # 로그인이 안 된 상태에서 수행 불가
         response = self.client.post(
             '/server/user', {
@@ -125,3 +126,19 @@ class TestAPIUnittest(TestCase):
             }
         )
         self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+
+        # 테스트용 클라리언트 고정 아이디를 구해보자
+        client_static_id: str = model.User.objects.get(is_admin=False).static_id
+
+        # 데이터 수정 -> 이름 바꾸기
+
+        response = self.client.put(
+            f"/server/user/{client_static_id}", {
+                'req-static=id': self.admin_static_id,
+                'change-data': {
+                    'name': 'sclient2',
+                    'img-changeable': False
+                }
+            }
+        )
+        # self.assertEqual(response.json()['code'], 0)

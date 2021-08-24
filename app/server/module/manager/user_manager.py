@@ -2,6 +2,7 @@ import os
 import shutil
 
 import app.models as model
+from module.MicrocloudchipException.base_exception import MicrocloudchipException
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, MicrocloudchipLoginFailedError
 from module.data_builder.user_builder import UserBuilder
 from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
@@ -234,16 +235,18 @@ class UserManager(WorkerManager):
         # Img Validation
 
         try:
-            if 'img-raw-data' not in data_format or 'img-extension' not in data_format or \
-                    'img-changeable' not in data_format:
+            if 'img-changeable' not in data_format:
                 raise KeyError("key not found")
-            # 확장자 확인
-            if data_format['img-raw-data'] is not None:
-                # 생성될 유저 데이터가 들어간 경우
-                if data_format['img-extension'] is None:
-                    raise MicrocloudchipAuthAccessError("img extension does not exist")
-                if data_format['img-extension'] not in self.AVAILABLE_IMG_EXTENSIONS:
-                    raise MicrocloudchipAuthAccessError("img extension is not available")
+            
+            if data_format['img-changeable']:
+                # 이미지를 바꿀 의향이 있는 경우
+                # 이미지 데이터 확인
+                if data_format['img-raw-data'] is not None:
+                    # 생성될 유저 데이터가 들어간 경우
+                    if data_format['img-extension'] is None:
+                        raise MicrocloudchipAuthAccessError("img extension does not exist")
+                    if data_format['img-extension'] not in self.AVAILABLE_IMG_EXTENSIONS:
+                        raise MicrocloudchipAuthAccessError("img extension is not available")
 
         except KeyError:
             raise MicrocloudchipAuthAccessError("user img data key is not found")
@@ -251,9 +254,31 @@ class UserManager(WorkerManager):
         self.process_locker.acquire()
 
         # 유저 변경
-        target_user.name = data_format['name']
-        target_user.pswd = data_format['password']
-        target_user.volume_type = data_format['volume-type']
+
+        if 'name' in data_format:
+            # 이름 유효성 측정
+            try:
+                UserValidator.validate_name(data_format['name'])
+            except MicrocloudchipException as e:
+                raise e
+            target_user.name = data_format['name']
+
+        if 'password' in data_format:
+            # 패스워드 유효성 측정
+            try:
+                UserValidator.validate_password(data_format['password'])
+            except MicrocloudchipException as e:
+                raise e
+            target_user.pswd = data_format['password']
+
+        if 'volume-type' in data_format['volume-type']:
+            # Volume Type 유효성 측정
+            try:
+                UserValidator.validate_volume_type_by_string(data_format['volume-type'])
+            except MicrocloudchipException as e:
+                raise e
+            target_user.volume_type = data_format['volume-type']
+
         target_user.save()
 
         # 이미지 변경 여부

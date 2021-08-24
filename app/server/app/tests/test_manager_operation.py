@@ -105,7 +105,7 @@ class ManagerOperationUnittest(TestCase):
 
         update_req = {
             "static-id": self.client_static_id,
-            "name": "sub-client",
+            "name": "subclient",
             "password": "0987654321",
             "volume-type": "GUEST",
             "img-changeable": False,
