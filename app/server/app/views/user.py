@@ -1,5 +1,5 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
 
 from module.MicrocloudchipException.exceptions import *
 from module.session_control import session_control
@@ -7,6 +7,8 @@ from . import *
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
+
+UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
 
 
 @api_view(['POST'])
@@ -71,7 +73,7 @@ def view_add_user(request: Request) -> JsonResponse:
         return JsonResponse({
             'code': _e.errorCode
         })
-    
+
     # 이미지를 추가 안했다면 None으로 처리한다
     user_img: InMemoryUploadedFile = request.FILES['img'] if 'img' in request.FILES else None
 
@@ -97,3 +99,12 @@ def view_add_user(request: Request) -> JsonResponse:
         return JsonResponse({
             'code': 0x00
         })
+
+
+@api_view(['PATCH', 'DELETE', 'GET'])
+def view_user_control(request: Request, static_id: str) -> JsonResponse:
+    if request.method == 'PATCH':
+        print(request.POST)
+        print("")
+
+    return JsonResponse({'code': 0})

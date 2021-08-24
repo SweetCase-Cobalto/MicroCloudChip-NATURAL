@@ -20,7 +20,7 @@ class TestAPIUnittest(TestCase):
     client: Client
     admin_static_id: str
 
-    USR_IMG_ROOT: str = 'app/tests/test-input-data/user/example.png'
+    USR_IMG_ROOT: str = 'app/tests/test-input-data/user/'
     FILES_ROOT: str = 'app/tests/test-input-data/example_files'
 
     @classmethod
@@ -88,7 +88,7 @@ class TestAPIUnittest(TestCase):
                 'email': 'napalosense@gmail.com',
                 'password': '098765432',
                 'volume-type': 'TEST',
-                'img': TestAPIUnittest.make_uploaded_file(self.USR_IMG_ROOT)
+                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
             }
         )
         self.assertEqual(response.json()['code'], MicrocloudchipLoginConnectionExpireError("").errorCode)
@@ -110,7 +110,7 @@ class TestAPIUnittest(TestCase):
                 'email': 'napalosense@gmail.com',
                 'password': '098765432',
                 'volume-type': 'TEST',
-                'img': TestAPIUnittest.make_uploaded_file(self.USR_IMG_ROOT)
+                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
             }
         )
         self.assertEqual(response.json()['code'], 0)
@@ -132,13 +132,38 @@ class TestAPIUnittest(TestCase):
 
         # 데이터 수정 -> 이름 바꾸기
 
-        response = self.client.put(
-            f"/server/user/{client_static_id}", {
-                'req-static=id': self.admin_static_id,
-                'change-data': {
-                    'name': 'sclient2',
-                    'img-changeable': False
-                }
+        response = self.client.patch(
+            f"/server/user/{client_static_id}",
+            {
+                'req-static-id': self.admin_static_id,
+                'name': 'sclient2',
+                'img-changeable': 0
             }
         )
-        # self.assertEqual(response.json()['code'], 0)
+        print(response)
+
+        # 데이터 수정 -> 이미지 바꾸기
+        response = self.client.patch(
+            f"/server/user/{client_static_id}",
+            {
+                'req-static-id': client_static_id,
+                'name': 'sclient2',
+                'img-changeable': 1,
+                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example2.png'))
+            }
+        )
+        print(response)
+
+        # 데이터 수정 -> 이미지 변경을 하려고 하는데 이미지 데이터가 없음 -> 실패
+        """
+        response = self.client.put(
+            f"/server/user/{client_static_id}", {
+                'req-static-id': client_static_id,
+                'change-data': {
+                    'img-changeable': 1
+                }
+            },
+            content_type='application/json'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+        """

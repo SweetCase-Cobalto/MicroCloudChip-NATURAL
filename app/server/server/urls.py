@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 
 from app.views.user import *
-from app.views.user_control_view import UserControlView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +25,5 @@ urlpatterns = [
     path(r'server/user/login', view_user_login),
     path(r'server/user/logout', view_user_logout),
     path(r'server/user', view_add_user),
-    path(r'server/user/<str:static_id>', UserControlView.as_view())
+    path(r'server/user/<str:static_id>', view_user_control)
 ]
