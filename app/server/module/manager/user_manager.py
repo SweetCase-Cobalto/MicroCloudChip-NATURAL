@@ -3,7 +3,8 @@ import shutil
 
 import app.models as model
 from module.MicrocloudchipException.base_exception import MicrocloudchipException
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, MicrocloudchipLoginFailedError
+from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, MicrocloudchipLoginFailedError, \
+    MicrocloudchipUserInformationValidateError
 from module.data_builder.user_builder import UserBuilder
 from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
 from module.manager.storage_manager import StorageManager
@@ -235,19 +236,11 @@ class UserManager(WorkerManager):
         # Img Validation
 
         try:
+            # 이미지 요청 데이터 확인
             if 'img-changeable' not in data_format:
                 raise KeyError("key not found")
-            
-            if data_format['img-changeable']:
-                # 이미지를 바꿀 의향이 있는 경우
-                # 이미지 데이터 확인
-                if data_format['img-raw-data'] is not None:
-                    # 생성될 유저 데이터가 들어간 경우
-                    if data_format['img-extension'] is None:
-                        raise MicrocloudchipAuthAccessError("img extension does not exist")
-                    if data_format['img-extension'] not in self.AVAILABLE_IMG_EXTENSIONS:
-                        raise MicrocloudchipAuthAccessError("img extension is not available")
-
+            if not all(img_key in data_format for img_key in ['img-raw-data', 'img-extension']):
+                raise KeyError('img-data-not-found')
         except KeyError:
             raise MicrocloudchipAuthAccessError("user img data key is not found")
 
@@ -270,7 +263,6 @@ class UserManager(WorkerManager):
                 raise e
             target_user.pswd = data_format['password']
 
-
         if 'volume-type' in data_format:
             # Volume Type 유효성 측정
             try:
@@ -286,15 +278,22 @@ class UserManager(WorkerManager):
             asset_root = [self.config.get_system_root(), 'storage', target_user.static_id, 'asset']
             ex: str = ""
 
-            # 이미지 파일 확장자 찾기
+            # 기존의 이미지 파일 확장자 찾기
+            # 없으면 ex(확장자)의 길이는 0이 되며 이걸로 기존의 유저 이미지 여부를 측정한다.
             for filename in os.listdir(os.path.join(*asset_root)):
                 __splited = filename.split('.')
                 if len(__splited) == 2 and __splited[0] == "user":
                     ex = __splited[1]
                     break
 
+            # 이미지 요청은 있는데 요청 이미지 데이터는 없고 기존의 이미지도 없으면
+            # 이건 잘못 보낸 데이터이므로 에러 송출
+            if not all(data_format[k] for k in ['img-raw-data', 'img-extension']) and len(ex) == 0:
+                self.process_locker.release()
+                raise MicrocloudchipUserInformationValidateError("Img Raw Data does not found")
+
             # 이미지 파일이 없는 경우 이미지 파일 생성
-            if len(ex) == 0 and data_format['img-raw-data']:
+            if len(ex) == 0 and all(data_format[k] for k in ['img-raw-data', 'img-extension']):
                 # 단 img data 가 존재해야 한다.
                 with open(os.path.join(*asset_root, f'user.{data_format["img-extension"]}'), 'wb') as f:
                     f.write(data_format['img-raw-data'])
@@ -304,7 +303,7 @@ class UserManager(WorkerManager):
 
                 # raw-data 가 있는 경우 새로운 이미지로 대체한다
                 if data_format['img-raw-data']:
-                    with open(os.path.join(*asset_root, f"user.{data_format['img-extension']}")) as f:
+                    with open(os.path.join(*asset_root, f"user.{data_format['img-extension']}"), 'wb') as f:
                         f.write(data_format['img-raw-data'])
 
         self.process_locker.release()

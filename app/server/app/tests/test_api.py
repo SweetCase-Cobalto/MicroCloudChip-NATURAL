@@ -8,8 +8,6 @@ from django.test.client import encode_multipart
 
 import json
 
-from django.urls import reverse
-
 import app.models as model
 
 from module.manager.storage_manager import StorageManager
@@ -27,7 +25,7 @@ class TestAPIUnittest(TestCase):
     USR_IMG_ROOT: str = 'app/tests/test-input-data/user/'
     FILES_ROOT: str = 'app/tests/test-input-data/example_files'
 
-    BOUNDARY_VALUE: str = '123948572893'    # patch/delete 등에 사용하기위한 boudary 임의값
+    BOUNDARY_VALUE: str = '123948572893'  # patch/delete 등에 사용하기위한 boudary 임의값
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -39,7 +37,7 @@ class TestAPIUnittest(TestCase):
         StorageManager(SYSTEM_CONFIG)
 
     @staticmethod
-    def make_uploaded_file(root: str):
+    def make_uploaded_file(root: str) -> SimpleUploadedFile:
         f: File = File(open(root, 'rb'))
         u: SimpleUploadedFile = SimpleUploadedFile(
             f.name, f.read(), content_type='multipart/form-data'
@@ -115,8 +113,7 @@ class TestAPIUnittest(TestCase):
                 'name': 'theclient',
                 'email': 'napalosense@gmail.com',
                 'password': '098765432',
-                'volume-type': 'TEST',
-                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
+                'volume-type': 'TEST'
             }
         )
         self.assertEqual(response.json()['code'], 0)
@@ -137,7 +134,6 @@ class TestAPIUnittest(TestCase):
         client_static_id: str = model.User.objects.get(is_admin=False).static_id
 
         # 데이터 수정 -> 이름 바꾸기
-
         response = self.client.patch(
             f"/server/user/{client_static_id}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
@@ -147,31 +143,27 @@ class TestAPIUnittest(TestCase):
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
-        print(response)
+        self.assertFalse(response.json()['code'])
 
-        # 데이터 수정 -> 이미지 바꾸기
+        # 데이터 수정 -> 이미지 변경을 하려고 하는데 이미지 데이터가 없음 -> 실패
         response = self.client.patch(
             f"/server/user/{client_static_id}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 'req-static-id': client_static_id,
-                'name': 'sclient2',
-                'img-changeable': 1,
-                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example2.png'))
+                'img-changeable': 1
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
-        print(response)
+        self.assertEqual(response.json()['code'], MicrocloudchipUserInformationValidateError("").errorCode)
 
-        # 데이터 수정 -> 이미지 변경을 하려고 하는데 이미지 데이터가 없음 -> 실패
-        """
-        response = self.client.put(
-            f"/server/user/{client_static_id}", {
+        # 데이터 수정 -> 이미지 추가
+        response = self.client.patch(
+            f"/server/user/{client_static_id}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
                 'req-static-id': client_static_id,
-                'change-data': {
-                    'img-changeable': 1
-                }
-            },
-            content_type='application/json'
+                'img-changeable': 1,
+                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
-        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
-        """
+        self.assertFalse(response.json()['code'])

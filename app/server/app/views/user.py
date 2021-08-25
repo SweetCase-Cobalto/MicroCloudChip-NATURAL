@@ -8,8 +8,6 @@ from . import *
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 
-UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
-
 
 @api_view(['POST'])
 def view_user_login(request: Request) -> JsonResponse:
