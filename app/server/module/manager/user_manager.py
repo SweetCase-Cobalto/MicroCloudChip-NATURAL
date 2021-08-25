@@ -4,7 +4,7 @@ import shutil
 import app.models as model
 from module.MicrocloudchipException.base_exception import MicrocloudchipException
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, MicrocloudchipLoginFailedError, \
-    MicrocloudchipUserInformationValidateError
+    MicrocloudchipUserInformationValidateError, MicrocloudchipUserDoesNotExistError
 from module.data_builder.user_builder import UserBuilder
 from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
 from module.manager.storage_manager import StorageManager
@@ -324,10 +324,19 @@ class UserManager(WorkerManager):
         if req_static_id == target_static_id:
             raise MicrocloudchipAuthAccessError("User can't remove itself")
 
+        # 상대 유저 확인
+        try:
+            user_data: model.User = model.User.objects.get(static_id=target_static_id)
+        except model.User.DoesNotExist:
+            # 유저 없음
+            raise MicrocloudchipUserDoesNotExistError("User Not Exist")
+
         # Admin 계정 삭제 불가
-        target_is_admin = len(model.User.objects.filter(is_admin=True).filter(static_id=target_static_id))
-        if target_is_admin:
+        if user_data.is_admin:
             raise MicrocloudchipAuthAccessError("Admin could not be deleted")
+
+        # 유저 제거
+        user_data.delete()
 
         # Storage 제거
         try:

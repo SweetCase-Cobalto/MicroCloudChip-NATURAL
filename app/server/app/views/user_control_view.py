@@ -69,7 +69,7 @@ class UserControlView(APIView):
         finally:
             return JsonResponse({"code": err.errorCode})
 
-    def get(self, request: Request, static_id: str):
+    def get(self, request: Request, static_id: str) -> JsonResponse:
         # 유저 데이터 갖고오기
 
         # Session 상태 확인

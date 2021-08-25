@@ -1,6 +1,7 @@
 import sys
 from django.test import TestCase
 import os
+import app.models as model
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
     MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryAlreadyExistError, \
@@ -437,3 +438,4 @@ class ManagerOperationUnittest(TestCase):
 
         # 삭제 확인
         self.assertFalse(os.path.isdir(os.path.join(self.config.get_system_root(), 'storage', self.other_static_id)))
+        self.assertRaises(model.User.DoesNotExist, lambda: model.User.objects.get(static_id=self.other_static_id))

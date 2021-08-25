@@ -201,7 +201,7 @@ class TestAPIUnittest(TestCase):
         response = self.client.delete(
             f"/server/user/{client_static_id}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static=id': self.admin_static_id
+                'req-static-id': self.admin_static_id
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
