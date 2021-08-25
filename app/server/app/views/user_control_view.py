@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from module.MicrocloudchipException.exceptions import *
+from module.session_control.session_control import is_logined_event
 
 from . import *
 
@@ -14,6 +15,10 @@ class UserControlView(APIView):
     # 변경 항목(선택)
 
     def patch(self, request: Request, static_id: str) -> JsonResponse:
+
+        # Session 상태 확인
+        if not is_logined_event(request):
+            raise MicrocloudchipLoginConnectionExpireError("Login Expired")
 
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
