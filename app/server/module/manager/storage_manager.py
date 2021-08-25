@@ -44,7 +44,7 @@ class StorageManager(WorkerManager):
         # 용량 체크
         user_info = user_manager.get_user_by_static_id(target_static_id)
 
-        available_storage: tuple = FileVolumeType.sub(user_info['volume_type'].to_tuple(),
+        available_storage: tuple = FileVolumeType.sub(user_info['volume-type'].to_tuple(),
                                                       user_manager.get_used_size(target_static_id))
         available_storage = \
             FileVolumeType.sub(available_storage, FileVolumeType.get_file_volume_type(len(raw_data)))

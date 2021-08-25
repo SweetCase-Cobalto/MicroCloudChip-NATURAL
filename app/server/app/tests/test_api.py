@@ -167,3 +167,12 @@ class TestAPIUnittest(TestCase):
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
         self.assertFalse(response.json()['code'])
+
+        # 데이터 갖고오기
+        response = self.client.get(f"/server/user/{client_static_id}")
+        self.assertFalse(response.json()['code'])
+        print(response.json())
+
+        # 잘못된 결과
+        response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa")
+        self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)

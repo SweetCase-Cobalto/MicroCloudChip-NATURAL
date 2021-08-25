@@ -185,8 +185,8 @@ class UserManager(WorkerManager):
                 "name": d.name,
                 "pswd": d.pswd,
                 "email": d.email,
-                "is_admin": d.is_admin,
-                "volume_type": UserValidator.validate_volume_type_by_string(d.volume_type)
+                "is-admin": d.is_admin,
+                "volume-type": UserValidator.validate_volume_type_by_string(d.volume_type)
             }
         except model.User.DoesNotExist:
             return None
@@ -202,6 +202,12 @@ class UserManager(WorkerManager):
         r: tuple = (FileVolumeType.BYTE, 0)
 
         for root, _, files in os.walk(super_root):
+            # TODO: 데이터가 많아지면 매번 시간이 오래걸린다
+            """
+                TODO: 이를 해결할 방법은 두 가지가 있다
+                    1. 용량을 임시로 저장(동기화 필요)
+                    2. C언어 연동: 어느 정도만 줄일 수 있음
+            """
             for f in files:
                 f_root = os.path.join(root, f)
                 f_stat = os.stat(f_root)

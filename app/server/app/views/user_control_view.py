@@ -4,6 +4,8 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 
 from module.MicrocloudchipException.exceptions import *
+from module.label.file_type import FileVolumeType
+from module.label.user_volume_type import UserVolumeType
 from module.session_control.session_control import is_logined_event
 
 from . import *
@@ -14,11 +16,15 @@ class UserControlView(APIView):
 
     # 변경 항목(선택)
 
+    @staticmethod
+    def check_is_logined(request: Request):
+        if not is_logined_event(request):
+            raise MicrocloudchipLoginConnectionExpireError("Login Expired")
+
     def patch(self, request: Request, static_id: str) -> JsonResponse:
 
         # Session 상태 확인
-        if not is_logined_event(request):
-            raise MicrocloudchipLoginConnectionExpireError("Login Expired")
+        UserControlView.check_is_logined(request)
 
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
@@ -62,3 +68,42 @@ class UserControlView(APIView):
             err = e
         finally:
             return JsonResponse({"code": err.errorCode})
+
+    def get(self, request: Request, static_id: str):
+        # 유저 데이터 갖고오기
+
+        # Session 상태 확인
+        UserControlView.check_is_logined(request)
+        
+        # 데이터 갖고오기
+        user_info: dict = USER_MANAGER.get_user_by_static_id(static_id)
+
+        # 못찾음
+        if not user_info:
+            raise MicrocloudchipUserDoesNotExistError("User is not exist")
+
+
+        # 제한 용량 Json 형식에 맞추어 자료형 변경하기
+        user_volume_type: UserVolumeType = user_info['volume-type']
+
+        # 사용량 갖고오기
+        used_size_tuple: tuple = USER_MANAGER.get_used_size(static_id)
+
+        # 자료형 표기를 위해 일부너 여러줄 작성
+        volume_type: FileVolumeType = used_size_tuple[0]
+        volume_val: float = used_size_tuple[1]
+        volume_type_to_str = volume_type.name
+
+        # 결과 데이터 갖고오기
+        res: dict = {
+            "code": 0,
+            "user-info": user_info,
+            "used-volume": {
+                'type': volume_type_to_str,
+                'value': volume_val
+            }
+        }
+        print(res)
+
+        return JsonResponse(res)
+

@@ -1,5 +1,5 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import JsonResponse, QueryDict
+from django.http import JsonResponse
 
 from module.MicrocloudchipException.exceptions import *
 from module.session_control import session_control
@@ -84,16 +84,11 @@ def view_add_user(request: Request) -> JsonResponse:
         'img-raw-data': None if not user_img else user_img.read(),
         'img-extension': None if not user_img else user_img.name.split('.')[-1]
     }
+    err: MicrocloudchipException = MicrocloudchipSucceed()
     try:
         # 추가
         USER_MANAGER.add_user(req_static_id, user_req)
     except MicrocloudchipException as e:
-        # 실패
-        return JsonResponse({
-            'code': e.errorCode
-        })
-    else:
-        # 성공
-        return JsonResponse({
-            'code': 0x00
-        })
+        err = e
+    finally:
+        return JsonResponse({"code": err.errorCode})
