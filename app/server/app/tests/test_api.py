@@ -8,7 +8,7 @@ from django.test.client import encode_multipart
 
 import json
 
-from django.utils.text import slugify
+import urllib.parse
 
 import app.models as model
 
@@ -210,13 +210,11 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
 
     def test_data_control(self):
-
         # 파일 및 디렉토리 관리 테스트
 
-        target_root = slugify('값궶', allow_unicode=True)
-
+        target_root = urllib.parse.quote_plus("값궶")
         response = self.client.post(
-            f'server/storage/data/file/{self.admin_static_id}/{target_root}',
+            f"/server/storage/data/file/{self.admin_static_id}/{target_root}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 'req-static-id': self.admin_static_id
             }),
