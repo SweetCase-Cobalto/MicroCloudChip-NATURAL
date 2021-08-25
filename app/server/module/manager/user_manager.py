@@ -325,7 +325,7 @@ class UserManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("User can't remove itself")
 
         # Admin 계정 삭제 불가
-        target_is_admin = len(model.User.objects.filter(is_admin=True).filter(static_id=req_static_id))
+        target_is_admin = len(model.User.objects.filter(is_admin=True).filter(static_id=target_static_id))
         if target_is_admin:
             raise MicrocloudchipAuthAccessError("Admin could not be deleted")
 

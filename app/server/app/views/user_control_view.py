@@ -42,7 +42,7 @@ class UserControlView(APIView):
             req_static_id = data.get('req-static-id')
             is_img_change = True if int(data.get('img-changeable')) else False
         except KeyError:
-            err = MicrocloudchipAuthAccessError("Reqeust Data invalid Error")
+            err = MicrocloudchipSystemAbnormalAccessError("Reqeust Data invalid Error")
 
         # UserManager에 변경을 요청하기 위한 데이터 생성
         req['static-id'] = target_static_id
@@ -122,3 +122,8 @@ class UserControlView(APIView):
         }
 
         return JsonResponse(res)
+
+    def delete(self, request: Request, static_id: str):
+        """ 유저 삭제 """
+        pass
+

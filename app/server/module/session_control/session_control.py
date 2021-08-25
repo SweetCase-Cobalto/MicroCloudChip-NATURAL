@@ -2,7 +2,7 @@ from enum import unique, Enum
 
 from rest_framework.request import Request
 
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError
+from module.MicrocloudchipException.exceptions import *
 
 
 @unique
@@ -21,7 +21,7 @@ def login_session_event(request: Request, static_id: str):
 
     # 이미 로그인을 한 경우
     if is_logined_event(request):
-        raise MicrocloudchipAuthAccessError("Aleady Logined")
+        raise MicrocloudchipSystemAbnormalAccessError("Aleady Logined")
 
     # 로그인 할 때 세션 저장
     request.session[SessionKeys.STATIC_ID.value] = static_id

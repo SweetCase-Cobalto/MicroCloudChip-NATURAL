@@ -53,7 +53,7 @@ class TestAPIUnittest(TestCase):
         # False [KeyError]
         response: JsonResponse = self.client.post('/server/user/login', json.dumps({}),
                                                   content_type='application/json')
-        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+        self.assertEqual(response.json()['code'], MicrocloudchipSystemAbnormalAccessError("").errorCode)
 
         # False [LoginFailed]
         response = self.client.post(
@@ -77,7 +77,7 @@ class TestAPIUnittest(TestCase):
             '/server/user/login',
             dict(email='seokbong60@gmail.com', pswd='12345678')
         )
-        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+        self.assertEqual(response.json()['code'], MicrocloudchipSystemAbnormalAccessError("").errorCode)
 
         self.client.get(
             '/server/user/logout'

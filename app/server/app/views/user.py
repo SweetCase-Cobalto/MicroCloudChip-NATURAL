@@ -18,7 +18,7 @@ def view_user_login(request: Request) -> JsonResponse:
         user_data: dict = USER_MANAGER.login(email, pswd)
     except KeyError:
         # request에 해당 데이터가 존재하지 않는 경우
-        e = MicrocloudchipAuthAccessError("Access Failed")
+        e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
         return JsonResponse({
             "code": e.errorCode
         })
@@ -31,7 +31,7 @@ def view_user_login(request: Request) -> JsonResponse:
     # 세션 저장
     try:
         session_control.login_session_event(request, user_data['static-id'])
-    except MicrocloudchipAuthAccessError as e:
+    except MicrocloudchipSystemAbnormalAccessError as e:
         # 이미 로그인 했는데 또 로그인 한 경우
         # Microcloudchip AccessError 호출
         return JsonResponse({
@@ -67,7 +67,7 @@ def view_add_user(request: Request) -> JsonResponse:
         volume_type_str: str = request.data['volume-type']
         name: str = request.data['name']
     except KeyError:
-        _e = MicrocloudchipAuthAccessError("Access Failed")
+        _e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
         return JsonResponse({
             'code': _e.errorCode
         })
