@@ -125,5 +125,17 @@ class UserControlView(APIView):
 
     def delete(self, request: Request, static_id: str):
         """ 유저 삭제 """
-        pass
+        target_static_id: str = static_id
+        err: MicrocloudchipException = MicrocloudchipSucceed()
+        try:
+            req_static_id: str = request.data['req-static-id']
+        except KeyError:
+            err = MicrocloudchipSystemAbnormalAccessError("Request Data Invalid Error")
+        else:
+            try:
+                USER_MANAGER.delete_user(req_static_id, target_static_id, STORAGE_MANAGER)
+            except MicrocloudchipException as e:
+                err = e
+        finally:
+            return JsonResponse({'code': err.errorCode})
 
