@@ -81,6 +81,7 @@ WSGI_APPLICATION = 'server.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = None
+# 타입에 따라 다름
 try:
     if config["database"]["rdbms"]["type"] == "sqlite":
         DATABASES = {
@@ -146,3 +147,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 허용 가능 host
+ALLOWED_HOSTS = ['*']

@@ -99,12 +99,3 @@ def view_add_user(request: Request) -> JsonResponse:
         return JsonResponse({
             'code': 0x00
         })
-
-
-@api_view(['PATCH', 'DELETE', 'GET'])
-def view_user_control(request: Request, static_id: str) -> JsonResponse:
-    if request.method == 'PATCH':
-        print(request.POST)
-        print("")
-
-    return JsonResponse({'code': 0})

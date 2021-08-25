@@ -27,7 +27,7 @@ class StorageManager(WorkerManager):
             self,
             req_static_id: str,
             req: dict,
-            user_manager # 이거 UserManager 인데 Import Recursive 문제로 힌트 표기 안함
+            user_manager  # 이거 UserManager 인데 Import Recursive 문제로 힌트 표기 안함
     ):
         # 다른 사용자가 파일을 컨트롤 해선 안된다.
         try:
@@ -54,7 +54,6 @@ class StorageManager(WorkerManager):
         # 업로드
         # 이 단계에서 발생한 예외들은 바로 송출
         try:
-            self.process_locker.acquire()
 
             file_builder = FileBuilder()
             file_builder.set_system_root(self.config.get_system_root()) \
@@ -62,10 +61,7 @@ class StorageManager(WorkerManager):
                 .set_target_root(target_root) \
                 .set_raw_data(raw_data).save()
 
-            self.process_locker.release()
-
         except Exception as e:
-            self.process_locker.release()
             raise e
 
     def update_file(
@@ -91,24 +87,19 @@ class StorageManager(WorkerManager):
             # 파일 정보 검색
             f = FileData(src_root)()
 
-            self.process_locker.acquire()
             # 이름 바꾸기
             f.update_name(change_elements['name'])
-            self.process_locker.release()
 
         except (MicrocloudchipFileNotFoundError, MicrocloudchipFileAndDirectoryValidateError) as e:
             # 파일을 찾지 못한 경우, 파일 명이 유효하지 않은 경우
             raise e
         except ValueError:
             # 동일한 이름으로 저장하려는 경우
-            self.process_locker.release()
             raise MicrocloudchipAuthAccessError("Same name does not be changeable")
         except MicrocloudchipFileAlreadyExistError as e:
             # 파일 이름 변경 실패
-            self.process_locker.release()
             raise e
         except Exception as e:
-            self.process_locker.release()
             raise e
 
     def generate_directory(
@@ -128,14 +119,11 @@ class StorageManager(WorkerManager):
 
         # 디렉토리 생성
         try:
-            self.process_locker.acquire()
             directory_builder: DirectoryBuilder = DirectoryBuilder()
             directory_builder.set_system_root(self.config.get_system_root()) \
                 .set_author_static_id(target_static_id) \
                 .set_target_root(target_root).save()
-            self.process_locker.release()
         except Exception as e:
-            self.process_locker.release()
             raise e
 
     def update_directory(
@@ -162,25 +150,20 @@ class StorageManager(WorkerManager):
         try:
             d: DirectoryData = DirectoryData(src_root)()
 
-            self.process_locker.acquire()
             # 이름 바꾸기
             d.update_name(change_elements['name'])
-            self.process_locker.release()
 
         except MicrocloudchipFileNotFoundError as e:
             # 파일을 찾지 못한 경우, 파일 명이 유효하지 않은 경우
             raise e
         except ValueError:
             # 동일한 이름으로 저장하려는 경우
-            self.process_locker.release()
             raise MicrocloudchipAuthAccessError("Same name does not be changeable")
         except (MicrocloudchipDirectoryAlreadyExistError, MicrocloudchipFileAndDirectoryValidateError) as e:
             # 파일 이름 변경 실패, 파일명 유효하지 않음
-            self.process_locker.release()
             raise e
         except Exception as e:
             # 기타 알수 없는 에러
-            self.process_locker.release()
             raise e
 
     def get_data(self, req_static_id: str, req: dict):
@@ -246,16 +229,13 @@ class StorageManager(WorkerManager):
 
         # 데이터 정보 갖고오고 삭제하기
         try:
-            self.process_locker.acquire()
             # 데이터 갖고오기
             file_data: FileData = FileData(full_root)()
             # 삭제
             file_data.remove()
         except Exception as e:
             # 에러 안일어나긴 하는데 혹시 모르니까
-            self.process_locker.release()
             raise e
-        self.process_locker.release()
 
     def delete_directory(self, req_static_id: str, req: dict):
 

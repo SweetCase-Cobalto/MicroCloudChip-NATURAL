@@ -320,7 +320,6 @@ class UserManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("User can't remove itself")
 
         # Storage 제거
-        self.process_locker.acquire()
         try:
             storage_manager.delete_directory(target_static_id, {
                 'static-id': target_static_id,
@@ -331,6 +330,4 @@ class UserManager(WorkerManager):
             user_root = os.path.join(self.config.get_system_root(), 'storage', target_static_id)
             shutil.rmtree(user_root)
         except Exception as e:
-            self.process_locker.release()
             raise e
-        self.process_locker.release()

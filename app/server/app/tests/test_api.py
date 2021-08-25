@@ -4,8 +4,12 @@ from django.test import TestCase, Client
 from django.http.response import JsonResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
+from django.test.client import encode_multipart
 
 import json
+
+from django.urls import reverse
+
 import app.models as model
 
 from module.manager.storage_manager import StorageManager
@@ -22,6 +26,8 @@ class TestAPIUnittest(TestCase):
 
     USR_IMG_ROOT: str = 'app/tests/test-input-data/user/'
     FILES_ROOT: str = 'app/tests/test-input-data/example_files'
+
+    BOUNDARY_VALUE: str = '123948572893'    # patch/delete 등에 사용하기위한 boudary 임의값
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -134,23 +140,25 @@ class TestAPIUnittest(TestCase):
 
         response = self.client.patch(
             f"/server/user/{client_static_id}",
-            {
+            data=encode_multipart(self.BOUNDARY_VALUE, {
                 'req-static-id': self.admin_static_id,
                 'name': 'sclient2',
                 'img-changeable': 0
-            }
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
         print(response)
 
         # 데이터 수정 -> 이미지 바꾸기
         response = self.client.patch(
             f"/server/user/{client_static_id}",
-            {
+            data=encode_multipart(self.BOUNDARY_VALUE, {
                 'req-static-id': client_static_id,
                 'name': 'sclient2',
                 'img-changeable': 1,
                 'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example2.png'))
-            }
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
         print(response)
 
