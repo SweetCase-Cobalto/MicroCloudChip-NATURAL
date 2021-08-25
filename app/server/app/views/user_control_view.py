@@ -74,17 +74,34 @@ class UserControlView(APIView):
 
         # Session 상태 확인
         UserControlView.check_is_logined(request)
-        
+
         # 데이터 갖고오기
         user_info: dict = USER_MANAGER.get_user_by_static_id(static_id)
 
         # 못찾음
         if not user_info:
-            raise MicrocloudchipUserDoesNotExistError("User is not exist")
-
+            e = MicrocloudchipUserDoesNotExistError("User is not exist")
+            return JsonResponse({'code': e.errorCode})
 
         # 제한 용량 Json 형식에 맞추어 자료형 변경하기
         user_volume_type: UserVolumeType = user_info['volume-type']
+
+        t = user_volume_type.to_tuple()
+
+        user_volume_type: FileVolumeType = t[0]
+        user_volume_type_str: str = user_volume_type.name
+        # 왼쪽: 유저 사용 가능 용량의 타입(KB, MB, GB ..)
+        user_volume_type_val: int = t[1]
+        # 우측: 사용 가능 값(1, 1000 ...)
+
+        # 두개 다 합치면 1KB, 1GB 등이 된다.
+
+        # user_info 수정하기
+        del user_info['volume-type']
+        user_info['volume-type']: dict = {
+            "type": user_volume_type_str,
+            "value": user_volume_type_val
+        }
 
         # 사용량 갖고오기
         used_size_tuple: tuple = USER_MANAGER.get_used_size(static_id)
@@ -103,7 +120,5 @@ class UserControlView(APIView):
                 'value': volume_val
             }
         }
-        print(res)
 
         return JsonResponse(res)
-

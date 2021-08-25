@@ -171,7 +171,6 @@ class TestAPIUnittest(TestCase):
         # 데이터 갖고오기
         response = self.client.get(f"/server/user/{client_static_id}")
         self.assertFalse(response.json()['code'])
-        print(response.json())
 
         # 잘못된 결과
         response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa")
