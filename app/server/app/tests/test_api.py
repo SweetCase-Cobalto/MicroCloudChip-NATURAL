@@ -175,3 +175,34 @@ class TestAPIUnittest(TestCase):
         # 잘못된 결과
         response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa")
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
+        
+        # 유저 삭제하기
+        # 정상적인 삭제
+        response = self.client.delete(
+            f"/server/user/{client_static_id}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertFalse(response.json()['code'])
+        
+        # Admin 삭제 불가 [적어도 현재 버전은 Admin 삭제가 불가하다]
+        response = self.client.delete(
+            f"/server/user/{self.admin_static_id}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+
+        # 존재하지 않는 클라이언트 삭제 시 실패 송출
+        response = self.client.delete(
+            f"/server/user/{client_static_id}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static=id': self.admin_static_id
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
