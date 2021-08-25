@@ -8,6 +8,8 @@ from django.test.client import encode_multipart
 
 import json
 
+from django.utils.text import slugify
+
 import app.models as model
 
 from module.manager.storage_manager import StorageManager
@@ -175,7 +177,7 @@ class TestAPIUnittest(TestCase):
         # 잘못된 결과
         response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa")
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
-        
+
         # 유저 삭제하기
         # 정상적인 삭제
         response = self.client.delete(
@@ -186,7 +188,7 @@ class TestAPIUnittest(TestCase):
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
         self.assertFalse(response.json()['code'])
-        
+
         # Admin 삭제 불가 [적어도 현재 버전은 Admin 삭제가 불가하다]
         response = self.client.delete(
             f"/server/user/{self.admin_static_id}",
@@ -206,3 +208,17 @@ class TestAPIUnittest(TestCase):
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
+
+    def test_data_control(self):
+
+        # 파일 및 디렉토리 관리 테스트
+
+        target_root = slugify('값궶', allow_unicode=True)
+
+        response = self.client.post(
+            f'server/storage/data/file/{self.admin_static_id}/{target_root}',
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )

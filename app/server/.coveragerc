@@ -1,2 +1,5 @@
 [run]
-omit = D:\\projects\\venvs\\micro\\*
+omit =
+    D:\\projects\\venvs\\micro\\*
+    app\\tests\\*
+    server\\*

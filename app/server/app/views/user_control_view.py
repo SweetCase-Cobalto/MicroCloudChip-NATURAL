@@ -111,7 +111,7 @@ class UserControlView(APIView):
         volume_val: float = used_size_tuple[1]
         volume_type_to_str = volume_type.name
 
-        # 결과 데이터 갖고오기
+        # 결과 데이터 작성
         res: dict = {
             "code": 0,
             "user-info": user_info,
@@ -120,21 +120,31 @@ class UserControlView(APIView):
                 'value': volume_val
             }
         }
-
+        
+        # 출력
         return JsonResponse(res)
 
     def delete(self, request: Request, static_id: str):
+
+        # Session 상태 확인
+        UserControlView.check_is_logined(request)
+
         """ 유저 삭제 """
         target_static_id: str = static_id
+        # 성공으로 가정
         err: MicrocloudchipException = MicrocloudchipSucceed()
         try:
+            # 요청한 유저 갖고오기
             req_static_id: str = request.data['req-static-id']
         except KeyError:
+            # 없으면 잘못된 접근
             err = MicrocloudchipSystemAbnormalAccessError("Request Data Invalid Error")
         else:
             try:
+                # 유저 삭제
                 USER_MANAGER.delete_user(req_static_id, target_static_id, STORAGE_MANAGER)
             except MicrocloudchipException as e:
+                # 실패 시 에러 데이터 삽입
                 err = e
         finally:
             return JsonResponse({'code': err.errorCode})
