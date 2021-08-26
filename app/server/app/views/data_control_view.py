@@ -195,7 +195,7 @@ class DataControlView(APIView):
 
             # 디렉토리일 경우
             try:
-                dir_name: str = data.get('dir_name')
+                dir_name: str = data.get('dir-name')
             except KeyError:
                 err = MicrocloudchipSystemAbnormalAccessError("Reqeust Data invalid Error")
                 return JsonResponse({'code': err.errorCode})

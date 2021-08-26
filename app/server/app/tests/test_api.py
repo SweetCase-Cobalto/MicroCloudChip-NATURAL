@@ -239,7 +239,8 @@ class TestAPIUnittest(TestCase):
 
         # 파일 정보 갖고오기
         response = \
-            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}")
+            self.client.get(
+                f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}")
         self.assertFalse(response.json()['code'])
 
         # 존재하지 않는 파일은 정보 못 갖고옴
@@ -288,12 +289,22 @@ class TestAPIUnittest(TestCase):
         )
         self.assertFalse(response.json()['code'])
 
+        # 디렉토리 이름 수정
+        response = self.client.patch(
+            f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'dir-name': '연녕하세요'
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertFalse(response.json()['code'])
+
         # 디렉토리와 피일 죄다 삭제하기
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
+        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요")
         self.assertFalse(response.json()['code'])
 
         # 없는 건 삭제 불가
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
+        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요")
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
 
         # 파일도 삭제하기
