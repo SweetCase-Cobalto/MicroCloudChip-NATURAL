@@ -192,7 +192,6 @@ class TestAPIUnittest(TestCase):
         )
 
         # 테스트 대상 파일
-        example_text_file_unicode: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/텍스트파일.txt")
         example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
 
         # 정상적인 파일 하나 생성을 해보자

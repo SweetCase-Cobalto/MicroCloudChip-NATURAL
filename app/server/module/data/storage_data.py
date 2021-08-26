@@ -137,7 +137,7 @@ class FileData(StorageData):
         
         # Validator 측정
         try:
-            StorageValidator.validate_storage_with_no_django_validator_exception(new_name, self.token)
+            StorageValidator.validate_storage_with_no_django_validator_exception(new_name)
         except MicrocloudchipFileAndDirectoryValidateError as e:
             raise e
 
@@ -229,7 +229,7 @@ class DirectoryData(StorageData):
 
         # Validator 측정
         try:
-            StorageValidator.validate_storage_with_no_django_validator_exception(new_name, self.token)
+            StorageValidator.validate_storage_with_no_django_validator_exception(new_name)
         except MicrocloudchipFileAndDirectoryValidateError as e:
             raise e
 
