@@ -81,7 +81,7 @@ class FileDirControlTestUnittest(TestCase):
 
         # 디랙토리 생성
         test_case = [
-            (f"aavvccs{self.token}vkdsfdsd", False, MicrocloudchipDirectoryNotFoundError),
+            ("aavvccs/vkdsfdsd", False, MicrocloudchipDirectoryNotFoundError),
             ("fs:fds:fd", False, MicrocloudchipFileAndDirectoryValidateError),
             ("fs*fds*fd", False, MicrocloudchipFileAndDirectoryValidateError),
             ("fs?fs?fs", False, MicrocloudchipFileAndDirectoryValidateError),
@@ -91,11 +91,7 @@ class FileDirControlTestUnittest(TestCase):
             ("fs|fs|fs", False, MicrocloudchipFileAndDirectoryValidateError),
             ("mydirectory", True, None),
             ("mydirectory", False, MicrocloudchipDirectoryAlreadyExistError),
-            (f"mydirectory{self.token}semidirectory", True, None),
-
-            # 운영체제에 따른 실패 케이스 추가
-            (f"mydirectory{self.token}aaff///" if self.token == '\\' else f"mydirectory{self.token}aaff\\", False,
-             MicrocloudchipFileAndDirectoryValidateError)
+            ("mydirectory/semidirectory", True, None)
         ]
 
         for i in range(len(test_case)):
@@ -145,8 +141,8 @@ class FileDirControlTestUnittest(TestCase):
         """
         test_case = {
             "success": test_files,
-            "success-after-make-directory": f"directory{self.token}{test_files[0]}",
-            "failed": f"no{self.token}{test_files[1]}",
+            "success-after-make-directory": f"directory/{test_files[0]}",
+            "failed": f"no/{test_files[1]}",
         }
 
         # In Success
@@ -385,7 +381,7 @@ class FileDirControlTestUnittest(TestCase):
 
         # 파일 업로드
         for t in test_files:
-            target_root = target_dir + self.token + t
+            target_root = f"{target_dir}/{t}"
             b = self.get_raw_data_from_file(self.test_file_root + self.token + t)
             r = {
                 'static-id': author_static_id,

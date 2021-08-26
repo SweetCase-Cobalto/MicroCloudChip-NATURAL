@@ -166,7 +166,7 @@ class StorageManager(WorkerManager):
             # 기타 알수 없는 에러
             raise e
 
-    def get_data(self, req_static_id: str, req: dict):
+    def get_dirlist(self, req_static_id: str, req: dict):
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
@@ -225,7 +225,7 @@ class StorageManager(WorkerManager):
                 raise MicrocloudchipFileNotFoundError("This Data Is Not File")
 
         except FileNotFoundError:
-            raise MicrocloudchipAuthAccessError("Incorrect File root")
+            raise MicrocloudchipFileNotFoundError("Incorrect File root")
 
         # 데이터 정보 갖고오고 삭제하기
         try:
@@ -258,7 +258,7 @@ class StorageManager(WorkerManager):
             if not stat.S_ISDIR(d_stat.st_mode):
                 raise MicrocloudchipDirectoryNotFoundError("This Data is not Directory")
         except FileNotFoundError:
-            raise MicrocloudchipAuthAccessError("Incorrect File Root")
+            raise MicrocloudchipDirectoryNotFoundError("Incorrect File Root")
 
         # BFS 방식으로 삭제
         try:
@@ -268,7 +268,7 @@ class StorageManager(WorkerManager):
             while stack:
                 r = stack[-1]
 
-                f_list, d_list = self.get_data(req_static_id, {
+                f_list, d_list = self.get_dirlist(req_static_id, {
                     "static-id": target_static_id,
                     'target-root': r
                 })

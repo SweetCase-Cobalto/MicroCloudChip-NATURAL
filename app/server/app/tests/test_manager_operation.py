@@ -314,7 +314,7 @@ class ManagerOperationUnittest(TestCase):
         # 디렉토리들 생성
         sub_dir_name = ['d01', 'd02', 'd03']
         for d in sub_dir_name:
-            dir_format['target-root'] = os.path.join('test-dir', d)
+            dir_format['target-root'] = f'test-dir/{d}'
             self.storage_manager.generate_directory(self.admin_static_id, dir_format)
 
         # 파일 하나 생성
@@ -323,7 +323,7 @@ class ManagerOperationUnittest(TestCase):
 
         file_format: dict = {
             "static-id": self.admin_static_id,
-            "target-root": os.path.join('test-dir', ex_filename),
+            "target-root": f'test-dir/{ex_filename}',
             "raw-data": raw
         }
         self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
@@ -333,7 +333,7 @@ class ManagerOperationUnittest(TestCase):
             "static-id": self.admin_static_id,
             "target-root": 'test-dir'
         }
-        file_list, directory_list = self.storage_manager.get_data(self.admin_static_id, req_format)
+        file_list, directory_list = self.storage_manager.get_dirlist(self.admin_static_id, req_format)
 
         # 검색된 디렉토리 이름 리스트
         checked_dir_list: list[str] = [a.name for a in directory_list]
@@ -345,7 +345,7 @@ class ManagerOperationUnittest(TestCase):
         # 다른 사용자가 접근해서는 안된다
         self.assertRaises(
             MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.get_data(self.client_static_id, req_format)
+            lambda: self.storage_manager.get_dirlist(self.client_static_id, req_format)
         )
 
     def test_delete_datas(self):
@@ -364,7 +364,7 @@ class ManagerOperationUnittest(TestCase):
         # 디렉토리들 생성
         sub_dir_name = ['d01', 'd02', 'd03']
         for d in sub_dir_name:
-            dir_format['target-root'] = os.path.join('test-dir', d)
+            dir_format['target-root'] = f'test-dir/{d}'
             self.storage_manager.generate_directory(self.admin_static_id, dir_format)
 
         # 파일 하나 생성
@@ -373,7 +373,7 @@ class ManagerOperationUnittest(TestCase):
 
         file_format: dict = {
             "static-id": self.admin_static_id,
-            "target-root": os.path.join('test-dir', ex_filename),
+            "target-root": f'test-dir/{ex_filename}',
             "raw-data": raw
         }
         self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
@@ -391,7 +391,7 @@ class ManagerOperationUnittest(TestCase):
 
         # 제대로 된 삭제
         self.storage_manager.delete_directory(self.admin_static_id, req_dir_delete_format)
-        f_list, d_list = self.storage_manager.get_data(self.admin_static_id, {
+        f_list, d_list = self.storage_manager.get_dirlist(self.admin_static_id, {
             'static-id': self.admin_static_id,
             'target-root': ''
         })
@@ -411,7 +411,7 @@ class ManagerOperationUnittest(TestCase):
         # 디렉토리들 생성
         sub_dir_name = ['d01', 'd02', 'd03']
         for d in sub_dir_name:
-            dir_format['target-root'] = os.path.join('test-dir', d)
+            dir_format['target-root'] = f'test-dir/{d}'
             self.storage_manager.generate_directory(self.admin_static_id, dir_format)
 
         # 파일 하나 생성
@@ -420,7 +420,7 @@ class ManagerOperationUnittest(TestCase):
 
         file_format: dict = {
             "static-id": self.admin_static_id,
-            "target-root": os.path.join('test-dir', ex_filename),
+            "target-root": f'test-dir/{ex_filename}',
             "raw-data": raw
         }
         self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)

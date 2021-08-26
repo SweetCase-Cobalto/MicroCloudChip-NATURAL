@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 
 from module.data_builder.data_builder import DataBuilder
@@ -47,7 +48,8 @@ class StorageBuilder(DataBuilder):
     def set_target_root(self, target_root):
         # 해당 루트에 금지 문자가 있는 지 확인
         StorageValidator.validate_storage_with_no_django_validator_exception(target_root, self.TOKEN)
-        self.target_root = target_root
+        # target_root 변경
+        self.target_root = os.path.join(*(target_root.split('/')))
         return self
 
     @abstractmethod
