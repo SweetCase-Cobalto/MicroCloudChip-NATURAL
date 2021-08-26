@@ -61,7 +61,7 @@ def view_add_user(request: Request) -> JsonResponse:
 
     try:
         # 데이터 확인
-        req_static_id: str = request.data['req-static-id']
+        req_static_id: str = session_control.get_static_id_in_session(request)
         email: str = request.data['email']
         pswd: str = request.data['password']
         volume_type_str: str = request.data['volume-type']

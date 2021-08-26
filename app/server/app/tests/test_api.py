@@ -8,8 +8,6 @@ from django.test.client import encode_multipart
 
 import json
 
-import urllib.parse
-
 import app.models as model
 
 from module.manager.storage_manager import StorageManager
@@ -89,7 +87,6 @@ class TestAPIUnittest(TestCase):
         # 로그인이 안 된 상태에서 수행 불가
         response = self.client.post(
             '/server/user', {
-                'req-static-id': self.admin_static_id,
                 'name': 'the-client',
                 'email': 'napalosense@gmail.com',
                 'password': '098765432',
@@ -111,7 +108,6 @@ class TestAPIUnittest(TestCase):
         # Success
         response = self.client.post(
             '/server/user', {
-                'req-static-id': self.admin_static_id,
                 'name': 'theclient',
                 'email': 'napalosense@gmail.com',
                 'password': '098765432',
@@ -123,7 +119,6 @@ class TestAPIUnittest(TestCase):
         # Failed[Same email]
         response = self.client.post(
             '/server/user', {
-                'req-static-id': self.admin_static_id,
                 'name': 'theclient2',
                 'email': 'napalosense@gmail.com',
                 'password': '934852323',
@@ -139,7 +134,6 @@ class TestAPIUnittest(TestCase):
         response = self.client.patch(
             f"/server/user/{client_static_id}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': self.admin_static_id,
                 'name': 'sclient2',
                 'img-changeable': 0
             }),
@@ -151,7 +145,6 @@ class TestAPIUnittest(TestCase):
         response = self.client.patch(
             f"/server/user/{client_static_id}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': client_static_id,
                 'img-changeable': 1
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
@@ -162,7 +155,6 @@ class TestAPIUnittest(TestCase):
         response = self.client.patch(
             f"/server/user/{client_static_id}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': client_static_id,
                 'img-changeable': 1,
                 'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
             }),
@@ -180,43 +172,133 @@ class TestAPIUnittest(TestCase):
 
         # 유저 삭제하기
         # 정상적인 삭제
-        response = self.client.delete(
-            f"/server/user/{client_static_id}",
+        response = self.client.delete(f"/server/user/{client_static_id}")
+        self.assertFalse(response.json()['code'])
+
+        # Admin 삭제 불가 [적어도 현재 버전은 Admin 삭제가 불가하다]
+        response = self.client.delete(f"/server/user/{self.admin_static_id}")
+        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+
+        # 존재하지 않는 클라이언트 삭제 시 실패 송출
+        response = self.client.delete(f"/server/user/{client_static_id}")
+        self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
+
+    """
+    def test_add_modify_and_delete_data(self):
+        # 파일 및 디렉토리 생성
+        response = self.client.post(
+            '/server/user/login',
+            dict(email='seokbong60@gmail.com', pswd='12345678')
+        )
+
+        # 테스트 대상 파일
+        example_text_file_unicode: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/텍스트파일.txt")
+        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
+
+        # 정상적인 파일 하나 생성을 해보자
+        resonse = self.client.post(
+            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': self.admin_static_id
+                "req-static-id": self.admin_static_id,
+                "file": example_binary_file
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
         self.assertFalse(response.json()['code'])
 
-        # Admin 삭제 불가 [적어도 현재 버전은 Admin 삭제가 불가하다]
-        response = self.client.delete(
-            f"/server/user/{self.admin_static_id}",
+        # 동일한 파일은 생성 불가
+        resonse = self.client.post(
+            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': self.admin_static_id
+                "req-static-id": self.admin_static_id,
+                "file": example_binary_file
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
-        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+        self.assertEqual(response.json()['code'], MicrocloudchipFileAlreadyExistError("").errorCode)
 
-        # 존재하지 않는 클라이언트 삭제 시 실패 송출
-        response = self.client.delete(
-            f"/server/user/{client_static_id}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': self.admin_static_id
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
-
-    def test_data_control(self):
-        # 파일 및 디렉토리 관리 테스트
-
-        target_root = urllib.parse.quote_plus("값궶")
+        # 디렉토리 생성
         response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/{target_root}",
+            f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요",
             data=encode_multipart(self.BOUNDARY_VALUE, {
-                'req-static-id': self.admin_static_id
+                'req-static-id': self.admin_static_id,
             }),
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
         )
+        self.assertFalse(response.json()['code'])
+
+        # 동일 디렉토리 추가 안됨
+        response = self.client.post(
+            f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id,
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryAlreadyExistError("").errorCode)
+
+        # 올바르지 않은 디렉토리명 생성 불가
+        response = self.client.post(
+            f"/server/storage/data/dir/{self.admin_static_id}/esx:dfsd",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id,
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipFileAndDirectoryValidateError("").errorCode)
+
+        # 유니코드 이름으로 된 파일 추가
+        response = self.client.post(
+            f"/server/storage/data/file/{self.admin_static_id}/안냥하세요/{example_text_file_unicode.name}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                "req-static-id": self.admin_static_id,
+                "file": example_text_file_unicode
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertFalse(response.json()['code'])
+
+        # 파일 정보 갖고오기
+        response = \
+            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/안냥하세요/{example_text_file_unicode.name}")
+        self.assertFalse(response.json()['code'])
+
+        # 존재하지 않는 파일은 정보 못 갖고옴
+        response = \
+            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/asfkljasfdkljasfdklj")
+        self.assertEqual(response.json()['code'], MicrocloudchipFileNotFoundError("").errorCode)
+
+        # TODO 다운로드를 위한 파일 바이너리 데이터 출력하기
+
+        # 파일 이름 바꾸기
+        response = self.client.patch(
+            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id,
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+
+        # 디렉토리와 피일 죄다 삭제하기
+        response = self.client.delete(
+            f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id,
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertFalse(response.json()['code'])
+
+        # 없는 건 삭제 불가
+        response = self.client.delete(
+            f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                'req-static-id': self.admin_static_id,
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+        )
+        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
+    """
+    def test_size_overflow_when_add_file(self):
+        # 한계 이상인 파일을 저장했을 때 반응
+        pass

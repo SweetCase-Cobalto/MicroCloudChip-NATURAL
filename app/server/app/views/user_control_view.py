@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from module.MicrocloudchipException.exceptions import *
 from module.label.file_type import FileVolumeType
 from module.label.user_volume_type import UserVolumeType
-from module.session_control.session_control import is_logined_event
+from module.session_control.session_control import is_logined_event, get_static_id_in_session
 
 from . import *
 
@@ -24,12 +24,15 @@ class UserControlView(APIView):
     def patch(self, request: Request, static_id: str) -> JsonResponse:
 
         # Session 상태 확인
-        UserControlView.check_is_logined(request)
+        try:
+            UserControlView.check_is_logined(request)
+        except MicrocloudchipLoginConnectionExpireError as e:
+            return JsonResponse({'code': e.errorCode})
 
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
         target_static_id: str = static_id  # 수정 대상 유저
-        req_static_id: str = ""
+        req_static_id: str = get_static_id_in_session(request)
         is_img_change: bool = False  # 유저 이미지 변경 여부
 
         req: dict = {}  # UserManager 에 유저 수정을 위한 Input Data
@@ -39,7 +42,6 @@ class UserControlView(APIView):
         # Key 값 찾기
         try:
             # 변경을 요청하는 아이디 갖고오기
-            req_static_id = data.get('req-static-id')
             is_img_change = True if int(data.get('img-changeable')) else False
         except KeyError:
             err = MicrocloudchipSystemAbnormalAccessError("Reqeust Data invalid Error")
@@ -73,8 +75,13 @@ class UserControlView(APIView):
         # 유저 데이터 갖고오기
 
         # Session 상태 확인
-        UserControlView.check_is_logined(request)
-
+        try:
+            UserControlView.check_is_logined(request)
+        except MicrocloudchipLoginConnectionExpireError as e:
+            return JsonResponse({'code': e.errorCode})
+        
+        # TODO 보안 처리 필요
+        
         # 데이터 갖고오기
         user_info: dict = USER_MANAGER.get_user_by_static_id(static_id)
 
@@ -127,25 +134,22 @@ class UserControlView(APIView):
     def delete(self, request: Request, static_id: str):
 
         # Session 상태 확인
-        UserControlView.check_is_logined(request)
+        try:
+            UserControlView.check_is_logined(request)
+        except MicrocloudchipLoginConnectionExpireError as e:
+            return JsonResponse({'code': e.errorCode})
 
         """ 유저 삭제 """
         target_static_id: str = static_id
+        req_static_id: str = get_static_id_in_session(request)
         # 성공으로 가정
         err: MicrocloudchipException = MicrocloudchipSucceed()
         try:
-            # 요청한 유저 갖고오기
-            req_static_id: str = request.data['req-static-id']
-        except KeyError:
-            # 없으면 잘못된 접근
-            err = MicrocloudchipSystemAbnormalAccessError("Request Data Invalid Error")
-        else:
-            try:
-                # 유저 삭제
-                USER_MANAGER.delete_user(req_static_id, target_static_id, STORAGE_MANAGER)
-            except MicrocloudchipException as e:
-                # 실패 시 에러 데이터 삽입
-                err = e
+            # 유저 삭제
+            USER_MANAGER.delete_user(req_static_id, target_static_id, STORAGE_MANAGER)
+        except MicrocloudchipException as e:
+            # 실패 시 에러 데이터 삽입
+            err = e
         finally:
             return JsonResponse({'code': err.errorCode})
 

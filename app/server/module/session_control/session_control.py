@@ -17,8 +17,11 @@ def is_logined_event(request: Request) -> bool:
     return True
 
 
-def login_session_event(request: Request, static_id: str):
+def get_static_id_in_session(request: Request) -> str:
+    return request.session[SessionKeys.STATIC_ID.value]
 
+
+def login_session_event(request: Request, static_id: str):
     # 이미 로그인을 한 경우
     if is_logined_event(request):
         raise MicrocloudchipSystemAbnormalAccessError("Aleady Logined")
