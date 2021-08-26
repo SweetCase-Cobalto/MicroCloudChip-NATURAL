@@ -5,7 +5,7 @@ import app.models as model
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
     MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipStorageOverCapacityError
+    MicrocloudchipStorageOverCapacityError, MicrocloudchipFileNotFoundError, MicrocloudchipDirectoryNotFoundError
 
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
@@ -198,6 +198,7 @@ class ManagerOperationUnittest(TestCase):
                 self.user_manager
             )
         )
+
         self.assertRaises(
             MicrocloudchipAuthAccessError,
             lambda: self.storage_manager.generate_directory(
@@ -234,6 +235,31 @@ class ManagerOperationUnittest(TestCase):
                 file_add_req,
                 self.user_manager
             )
+        )
+
+        """ 파일 및 디렉토리 점검 """
+        file_add_req['static-id'] = self.admin_static_id
+
+        # 성공 케이스
+
+        # 파일 탐색
+        self.storage_manager.get_file_info(self.admin_static_id, file_add_req)
+        # 디렉토리 탐색
+        self.storage_manager.get_dir_info(self.admin_static_id, dir_add_req)
+
+        # 실패 케이스
+        file_add_req['static-id'] = self.client_static_id
+        dir_add_req['static-id'] = self.client_static_id
+
+        # 파일 탐색
+        self.assertRaises(
+            MicrocloudchipFileNotFoundError,
+            lambda: self.storage_manager.get_file_info(self.client_static_id, file_add_req)
+        )
+        # 디렉토리 탐색
+        self.assertRaises(
+            MicrocloudchipDirectoryNotFoundError,
+            lambda: self.storage_manager.get_dir_info(self.client_static_id, dir_add_req)
         )
 
     def test_update_datas(self):
@@ -346,6 +372,13 @@ class ManagerOperationUnittest(TestCase):
         self.assertRaises(
             MicrocloudchipAuthAccessError,
             lambda: self.storage_manager.get_dirlist(self.client_static_id, req_format)
+        )
+        # 디렉토리 못찾음
+        req_format['target-root'] = 'aaaa'
+        self.assertRaises(
+            MicrocloudchipDirectoryNotFoundError,
+            lambda: self.storage_manager.get_dirlist(self.admin_static_id, req_format)
+
         )
 
     def test_delete_datas(self):

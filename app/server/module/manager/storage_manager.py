@@ -1,3 +1,4 @@
+from module.MicrocloudchipException.base_exception import MicrocloudchipException
 from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
     MicrocloudchipStorageOverCapacityError, MicrocloudchipFileAlreadyExistError, MicrocloudchipFileNotFoundError, \
     MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryAlreadyExistError, \
@@ -63,6 +64,29 @@ class StorageManager(WorkerManager):
 
         except Exception as e:
             raise e
+
+    def get_file_info(self, req_static_id: str, req: dict) -> FileData:
+
+        try:
+            # req 데이터 추출
+            target_static_id: str = req['static-id']
+            target_root: str = req['target-root']
+        except KeyError as e:
+            raise e
+
+        # 권한 체크
+        if req_static_id != target_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access update file")
+
+        src_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+        try:
+            f = FileData(src_root)()
+        except MicrocloudchipException as e:
+            raise e
+        except Exception as e:
+            raise e
+        else:
+            return f
 
     def update_file(
             self,
@@ -166,6 +190,26 @@ class StorageManager(WorkerManager):
             # 기타 알수 없는 에러
             raise e
 
+    def get_dir_info(self, req_static_id: str, req: dict):
+        try:
+            target_static_id = req['static-id']
+            target_root = req['target-root']
+        except KeyError as e:
+            raise e
+
+        # 권한 체크
+        if target_static_id != req_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
+
+        full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+
+        try:
+            r: DirectoryData = DirectoryData(full_root)()
+        except MicrocloudchipDirectoryNotFoundError as e:
+            raise e
+        else:
+            return r
+
     def get_dirlist(self, req_static_id: str, req: dict):
         try:
             target_static_id = req['static-id']
@@ -182,6 +226,10 @@ class StorageManager(WorkerManager):
         d_list: list[DirectoryData] = []
 
         full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+
+        # 디렉토리 확인
+        if not os.path.isdir(full_root):
+            raise MicrocloudchipDirectoryNotFoundError("Directory is not exist")
 
         try:
 
