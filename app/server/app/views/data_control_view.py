@@ -119,15 +119,26 @@ class DataControlView(APIView):
         elif data_type == 'dir':
             try:
                 d: DirectoryData = STORAGE_MANAGER.get_dir_info(req_static_id, req)
+                f_list, d_list = STORAGE_MANAGER.get_dirlist(req_static_id, req)
+
+                f_list_arr = [{'name': _f['file-name'], 'type': _f['file-type'].name} for _f in f_list]
+                d_list_arr = [_d['dir-name'] for _d in d_list]
+
             except MicrocloudchipException as e:
                 return JsonResponse({'code': e.errorCode})
             return JsonResponse({
                 'code': 0,
                 'data': {
-                    'create-date': d['create-date'].strftime(TIME_FORMAT),
-                    'modify-date': d['modify-date'].strftime(TIME_FORMAT),
-                    'dir-name': d['dir-name'],
-                    'file-size': d['file-size']
+                    'info': {
+                        'create-date': d['create-date'].strftime(TIME_FORMAT),
+                        'modify-date': d['modify-date'].strftime(TIME_FORMAT),
+                        'dir-name': d['dir-name'],
+                        'file-size': d['file-size']
+                    },
+                    'list': {
+                        'file': f_list_arr,
+                        'dir': d_list_arr
+                    }
                 }
             })
         else:
