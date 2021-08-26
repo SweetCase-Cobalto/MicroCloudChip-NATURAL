@@ -3,7 +3,9 @@ from django.http import JsonResponse, QueryDict
 from rest_framework.request import Request
 from rest_framework.views import APIView
 from module.MicrocloudchipException.exceptions import *
+from module.data.storage_data import FileData, DirectoryData
 from module.session_control.session_control import is_logined_event, get_static_id_in_session
+from module.label.time import TIME_FORMAT
 from . import *
 
 
@@ -20,7 +22,13 @@ class DataControlView(APIView):
         if not is_logined_event(request):
             raise MicrocloudchipLoginConnectionExpireError("Login Expired")
 
+    @staticmethod
+    def get_real_root(root: str) -> str:
+        return '/'.join(root.split('/')[1:])
+
     def post(self, request: Request, data_type: str, static_id: str, root: str):
+
+        root: str = DataControlView.get_real_root(root)
 
         # Session 상태 확인
         try:
@@ -73,12 +81,63 @@ class DataControlView(APIView):
             return JsonResponse({'code': err.errorCode})
         return JsonResponse({"code": 0})
 
-    def get(self, request: Request, data_type: str, static_id: str, root: str):
+    def get(self, request: Request, data_type: str, static_id: str, root: str) -> JsonResponse:
         # 데이터[정보] 갖고오기
-        return JsonResponse({"code": 0})
+        root: str = DataControlView.get_real_root(root)
+
+        # Session 상태 확인
+        try:
+            DataControlView.check_is_logined(request)
+        except MicrocloudchipLoginConnectionExpireError as e:
+            return JsonResponse({'code': e.errorCode})
+
+        # 요청 아이디 획득
+        req_static_id: str = get_static_id_in_session(request)
+
+        req = {
+            'static-id': static_id,
+            'target-root': root
+        }
+        if data_type == 'file':
+            try:
+                f: FileData = STORAGE_MANAGER.get_file_info(req_static_id, req)
+            except MicrocloudchipException as e:
+                return JsonResponse({'code': e.errorCode})
+            return JsonResponse({
+                'code': 0,
+                'data': {
+                    'create-date': f['create-date'].strftime(TIME_FORMAT),
+                    'modify-date': f['modify-date'].strftime(TIME_FORMAT),
+                    'file-name': f['file-name'],
+                    'file-type': f['file-type'].name,
+                    'size': {
+                        'size-type': f['size'][0].name,
+                        'size-volume': f['size'][1]
+                    }
+                }
+            })
+        elif data_type == 'dir':
+            try:
+                d: DirectoryData = STORAGE_MANAGER.get_dir_info(req_static_id, req)
+            except MicrocloudchipException as e:
+                return JsonResponse({'code': e.errorCode})
+            return JsonResponse({
+                'code': 0,
+                'data': {
+                    'create-date': d['create-date'].strftime(TIME_FORMAT),
+                    'modify-date': d['modify-date'].strftime(TIME_FORMAT),
+                    'dir-name': d['dir-name'],
+                    'file-size': d['file-size']
+                }
+            })
+        else:
+            err = MicrocloudchipSystemAbnormalAccessError("Access Error")
+            return JsonResponse({'code': err.errorCode})
 
     def patch(self, request: Request, data_type: str, static_id: str, root: str):
         # 파일 및 디렉토리 수정
+
+        root: str = DataControlView.get_real_root(root)
 
         # Session 상태 확인
         try:
@@ -150,6 +209,9 @@ class DataControlView(APIView):
         return JsonResponse({"code": 0})
 
     def delete(self, request: Request, data_type: str, static_id: str, root: str):
+
+        root: str = DataControlView.get_real_root(root)
+
         # 파일 및 디렉토리 삭제
         # Session 상태 확인
         try:
@@ -174,6 +236,6 @@ class DataControlView(APIView):
                 return JsonResponse({'code': err.errorCode})
         except MicrocloudchipException as e:
             return JsonResponse({'code': e.errorCode})
-        
+
         # 성공 시
         return JsonResponse({"code": 0})

@@ -184,7 +184,6 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
 
     def test_add_modify_and_delete_data(self):
-        
         # 로그인
         self.client.post(
             '/server/user/login',
@@ -196,7 +195,7 @@ class TestAPIUnittest(TestCase):
 
         # 정상적인 파일 하나 생성을 해보자
         response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_binary_file
             }),
@@ -207,7 +206,7 @@ class TestAPIUnittest(TestCase):
         # 동일한 파일은 생성 불가
         example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
         response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_binary_file
             }),
@@ -216,21 +215,21 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.json()['code'], MicrocloudchipFileAlreadyExistError("").errorCode)
 
         # 디렉토리 생성
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요")
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
         self.assertFalse(response.json()['code'])
 
         # 동일 디렉토리 추가 안됨
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요")
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryAlreadyExistError("").errorCode)
 
         # 올바르지 않은 디렉토리명 생성 불가
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/esx:dfsd")
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/esx:dfsd")
         self.assertEqual(response.json()['code'], MicrocloudchipFileAndDirectoryValidateError("").errorCode)
 
         # 유니코드 이름으로 된 파일 추가
         example_text_file_unicode: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/텍스트파일.txt")
         response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/안냥하세요/{example_text_file_unicode.name}",
+            f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_text_file_unicode
             }),
@@ -239,16 +238,30 @@ class TestAPIUnittest(TestCase):
         self.assertFalse(response.json()['code'])
 
         # 파일 정보 갖고오기
-        """
         response = \
-            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/안냥하세요/{example_text_file_unicode.name}")
+            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}")
         self.assertFalse(response.json()['code'])
 
         # 존재하지 않는 파일은 정보 못 갖고옴
         response = \
-            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/asfkljasfdkljasfdklj")
+            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/asfkljasfdkljasfdklj")
         self.assertEqual(response.json()['code'], MicrocloudchipFileNotFoundError("").errorCode)
-        """
+
+        # 디렉토리 정보 갖고오기
+        # 루트부분
+        response = \
+            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root")
+        self.assertFalse(response.json()['code'])
+        
+        # 하위 디렉토리 부분
+        response = \
+            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
+        self.assertFalse(response.json()['code'])
+        
+        # 존재하지 않는 디렉토리는 못 갖고옴
+        response = \
+            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/야야야야야야")
+        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
 
         # TODO 다운로드를 위한 파일 바이너리 데이터 출력하기
 
@@ -257,7 +270,7 @@ class TestAPIUnittest(TestCase):
 
         # 올바르지 않은 파일 수정 불가능
         response = self.client.patch(
-            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "filename": "nf:S::FD::S"
             }),
@@ -267,7 +280,7 @@ class TestAPIUnittest(TestCase):
 
         # 수정 성공
         response = self.client.patch(
-            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "filename": "nest"
             }),
@@ -276,21 +289,21 @@ class TestAPIUnittest(TestCase):
         self.assertFalse(response.json()['code'])
 
         # 디렉토리와 피일 죄다 삭제하기
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요")
+        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
         self.assertFalse(response.json()['code'])
 
         # 없는 건 삭제 불가
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/안냥하세요")
+        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
 
         # 파일도 삭제하기
-        response = self.client.delete(f"/server/storage/data/file/{self.admin_static_id}/nest.jpg")
+        response = self.client.delete(f"/server/storage/data/file/{self.admin_static_id}/root/nest.jpg")
         self.assertFalse(response.json()['code'])
 
         # 삭제한 거 다시 생성
         example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
         response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}",
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_binary_file
             }),
@@ -299,7 +312,8 @@ class TestAPIUnittest(TestCase):
         self.assertFalse(response.json()['code'])
 
         # 파일 도로 삭제
-        response = self.client.delete(f"/server/storage/data/file/{self.admin_static_id}/{example_binary_file.name}")
+        response = self.client.delete(
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}")
         self.assertFalse(response.json()['code'])
 
     def test_size_overflow_when_add_file(self):
