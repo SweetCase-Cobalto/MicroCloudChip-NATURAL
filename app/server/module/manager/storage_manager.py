@@ -43,7 +43,7 @@ class StorageManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Auth Failed to access upload file")
 
         # 용량 체크
-        user_info = user_manager.get_user_by_static_id(target_static_id)
+        user_info = user_manager.get_user_by_static_id(req_static_id, target_static_id)
 
         available_storage: tuple = FileVolumeType.sub(user_info['volume-type'].to_tuple(),
                                                       user_manager.get_used_size(target_static_id))

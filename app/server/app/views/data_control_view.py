@@ -10,7 +10,7 @@ from . import *
 
 
 class DataControlView(APIView):
-    """
+    """ URL PARAMS
         data_type: file / dir(Directory)
         static_id: 유저 아이디
         root: 파일 및 디렉토리 범위
@@ -24,10 +24,16 @@ class DataControlView(APIView):
 
     @staticmethod
     def get_real_root(root: str) -> str:
+        """실제 루트 생성
+            url 로부터 받은 root는 앞에 root/ 가 붙어있기 때문에
+            root/ 를 제거하고 다시 정의한다
+
+            EX) /root/abc/cdf --> abc/cdf
+        """
         return '/'.join(root.split('/')[1:])
 
     def post(self, request: Request, data_type: str, static_id: str, root: str):
-
+        # 파일을 업로드 하거나, 디렉토리를 생성합니다.
         root: str = DataControlView.get_real_root(root)
 
         # Session 상태 확인
@@ -39,13 +45,16 @@ class DataControlView(APIView):
         # 요청 아이디 획득
         req_static_id: str = get_static_id_in_session(request)
 
-        # 파일 데이터 획득
+        # 타입 축정
         if data_type == 'file':
+            # 파일을 업로드 하는 경우
 
             data: QueryDict = request.data  # 파일 데이터가 포함되어 들어온다.
             try:
+                # 클라이언트로 받은 업로드 요청된 파일
                 uploaded_file: InMemoryUploadedFile = data.get('file')
             except KeyError:
+                # 데이터가 없는 경우
                 err = MicrocloudchipSystemAbnormalAccessError("Reqeust Data invalid Error")
                 return JsonResponse({'code': err.errorCode})
 
@@ -56,21 +65,22 @@ class DataControlView(APIView):
                 'raw-data': uploaded_file.read()
             }
             try:
-                # 생성
-                STORAGE_MANAGER.upload_file(
-                    req_static_id,
-                    req, USER_MANAGER
-                )
+                # 파일 생성
+                STORAGE_MANAGER.upload_file(req_static_id, req, USER_MANAGER)
             except MicrocloudchipException as e:
+                # 생성 실패
                 return JsonResponse({"code": e.errorCode})
 
             # 파일 및 디렉토리 업로드
         elif data_type == 'dir':
+            
+            # 요청 Input Data
             req = {
                 'static-id': static_id,
                 'target-root': root
             }
             try:
+                # 디렉토리 생성
                 STORAGE_MANAGER.generate_directory(req_static_id, req)
             except MicrocloudchipException as e:
                 return JsonResponse({"code": e.errorCode})
@@ -93,12 +103,14 @@ class DataControlView(APIView):
 
         # 요청 아이디 획득
         req_static_id: str = get_static_id_in_session(request)
-
+        
+        # Input Data
         req = {
             'static-id': static_id,
             'target-root': root
         }
         if data_type == 'file':
+            # 파일 정보 요청
             try:
                 f: FileData = STORAGE_MANAGER.get_file_info(req_static_id, req)
             except MicrocloudchipException as e:
@@ -117,10 +129,12 @@ class DataControlView(APIView):
                 }
             })
         elif data_type == 'dir':
+            # 디렉토리 정보 요청
             try:
                 d: DirectoryData = STORAGE_MANAGER.get_dir_info(req_static_id, req)
                 f_list, d_list = STORAGE_MANAGER.get_dirlist(req_static_id, req)
-
+                
+                # 디렉토리 안에 존재하는 파일 및 디렉토리 리스트 수집
                 f_list_arr = [{'name': _f['file-name'], 'type': _f['file-type'].name} for _f in f_list]
                 d_list_arr = [_d['dir-name'] for _d in d_list]
 
@@ -130,6 +144,7 @@ class DataControlView(APIView):
                 'code': 0,
                 'data': {
                     'info': {
+                        # Create Date와 Modify Date의 TimeFormat -> YYYY/MM/DD HH:MM:SS
                         'create-date': d['create-date'].strftime(TIME_FORMAT),
                         'modify-date': d['modify-date'].strftime(TIME_FORMAT),
                         'dir-name': d['dir-name'],

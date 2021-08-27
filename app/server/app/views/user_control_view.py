@@ -12,9 +12,9 @@ from . import *
 
 
 class UserControlView(APIView):
-    UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
 
     # 변경 항목(선택)
+    UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
 
     @staticmethod
     def check_is_logined(request: Request):
@@ -32,19 +32,25 @@ class UserControlView(APIView):
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
         target_static_id: str = static_id  # 수정 대상 유저
-        req_static_id: str = get_static_id_in_session(request)
-        is_img_change: bool = False  # 유저 이미지 변경 여부
+        req_static_id: str = get_static_id_in_session(request)  # 변경을 요청하는 아이디 갖고오기
 
         req: dict = {}  # UserManager 에 유저 수정을 위한 Input Data
-
+        
+        # 사용자로부터 요청받은 데이터 추출
         data: QueryDict = request.data
+
+        # Default는 성공 Exception
+        # Exception 으로 인한 수행 실패는 이 변수에 해당 Exception을 덮어쓴다.
         err: MicrocloudchipException = MicrocloudchipSucceed()
-        # Key 값 찾기
+
         try:
-            # 변경을 요청하는 아이디 갖고오기
+            # 이미지 변경 여부 값 갖고오기
+            # 0 -> False, 1 -> True
             is_img_change = True if int(data.get('img-changeable')) else False
         except KeyError:
+            # 값이 없는 경우
             err = MicrocloudchipSystemAbnormalAccessError("Reqeust Data invalid Error")
+            return JsonResponse({"code": err.errorCode})
 
         # UserManager에 변경을 요청하기 위한 데이터 생성
         req['static-id'] = target_static_id
@@ -79,11 +85,13 @@ class UserControlView(APIView):
             UserControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
+
+        req_static_id: str = get_static_id_in_session(request)
         
         # TODO 보안 처리 필요
         
         # 데이터 갖고오기
-        user_info: dict = USER_MANAGER.get_user_by_static_id(static_id)
+        user_info: dict = USER_MANAGER.get_user_by_static_id(req_static_id, static_id)
 
         # 못찾음
         if not user_info:
@@ -152,4 +160,3 @@ class UserControlView(APIView):
             err = e
         finally:
             return JsonResponse({'code': err.errorCode})
-
