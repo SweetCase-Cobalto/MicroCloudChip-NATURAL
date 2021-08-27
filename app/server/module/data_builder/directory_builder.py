@@ -18,6 +18,7 @@ class DirectoryBuilder(StorageBuilder):
 
     def save(self):
         try:
+            # 디렉토리를 생성 할 실제 루트 생성
             full_root = self.get_full_root()
         except ValueError as e:
             raise e
@@ -35,5 +36,5 @@ class DirectoryBuilder(StorageBuilder):
             if not os.path.isdir(full_root[:slash_idx]):
                 raise MicrocloudchipDirectoryNotFoundError(f"Prev Directory for add new directory does not exist: "
                                                            f"{full_root[:slash_idx]}")
-
+            # 생성
             os.mkdir(full_root)

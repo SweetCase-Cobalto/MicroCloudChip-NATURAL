@@ -12,4 +12,5 @@ class DataBuilder(metaclass=ABCMeta):
 
     @abstractmethod
     def is_all_have(self) -> bool:
+        # 데이터를 생성하기 위한 모든 요소들이 갖추어져 있는 지 확인
         pass
