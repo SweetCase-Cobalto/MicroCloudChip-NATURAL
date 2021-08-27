@@ -89,6 +89,11 @@ class MicrocloudchipStorageOverCapacityError(MicrocloudchipException):
         super().__init__(err_msg, 0x06 | STORAGE_PREFIX)
 
 
+class MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x07 | STORAGE_PREFIX)
+
+
 # AccessException
 class MicrocloudchipAuthAccessError(MicrocloudchipException):
     def __init__(self, err_msg: str):

@@ -6,7 +6,7 @@ from datetime import datetime
 from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
     MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, \
     MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipFileAndDirectoryValidateError
+    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData
 
 from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
@@ -18,7 +18,6 @@ class StorageData(metaclass=ABCMeta):
     name: str
     modify_date: datetime
     create_date: datetime
-    raw_volume: int
     full_root: str
     is_called: bool = False
     token: str = '\\' if sys.platform == 'win32' else '/'
@@ -55,11 +54,14 @@ class StorageData(metaclass=ABCMeta):
 
 
 class FileData(StorageData):
+
     file_type: FileType
     volume: int
     volume_unit: FileVolumeType
+    raw_volume: int
 
     def __init__(self, full_root: str):
+        # 대상 데이터의 루트 갖고오기
         super().__init__(full_root)
 
     def __call__(self):
@@ -219,7 +221,7 @@ class DirectoryData(StorageData):
 
     def update_name(self, new_name: str):
         # 디렉토리 이름 변경
-        # TODO: Warning: 루트 디렉토리 변경을 막는 부분은 Manager 단계에서 진행하므로 여기서는 예외처리를 하지 않는다.
+        # Warning: 루트 디렉토리 변경을 막는 부분은 Manager 단계에서 진행하므로 여기서는 예외처리를 하지 않는다.
 
         self.__call__()  # 업데이트 시도
         # 실패 시 Directory Not Found
@@ -227,7 +229,7 @@ class DirectoryData(StorageData):
         if new_name == self.name:
             raise ValueError("same directory name")
 
-        # Validator 측정
+        # 파일명 Validator 측정
         try:
             StorageValidator.validate_storage_with_no_django_validator_exception(new_name)
         except MicrocloudchipFileAndDirectoryValidateError as e:
@@ -254,5 +256,7 @@ class DirectoryData(StorageData):
                 self.is_called = False
             else:
                 self.is_called = True
-                return
+                raise MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData(
+                    "Directory delete failed because of some data")
+
         self.is_called = False

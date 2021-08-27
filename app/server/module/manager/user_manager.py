@@ -179,7 +179,8 @@ class UserManager(WorkerManager):
         return r
 
     def get_user_by_static_id(self,req_static_id: str, static_id: str) -> dict:
-
+        
+        # 유저 권한 체크
         if req_static_id != static_id and \
                 len(model.User.objects.filter(static_id=req_static_id).filter(is_admin=True)) == 0:
             raise MicrocloudchipAuthAccessError("Auth Err in get user information")

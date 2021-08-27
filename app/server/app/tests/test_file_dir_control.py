@@ -398,7 +398,8 @@ class FileDirControlTestUnittest(TestCase):
 
         # 삭제
         # 하위 데이터가 있다면 삭제를 할 수 없다.
-        d.remove()
+
+        self.assertRaises(MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData, lambda: d.remove())
 
         # 삭제 여부 확인
         # 삭제 되면 안됨

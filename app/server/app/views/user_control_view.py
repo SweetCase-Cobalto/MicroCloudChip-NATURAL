@@ -88,8 +88,6 @@ class UserControlView(APIView):
 
         req_static_id: str = get_static_id_in_session(request)
         
-        # TODO 보안 처리 필요
-        
         # 데이터 갖고오기
         user_info: dict = USER_MANAGER.get_user_by_static_id(req_static_id, static_id)
 
