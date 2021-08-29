@@ -3,6 +3,8 @@ import Footer from '../components/Footer';
 import {Helmet} from 'react-helmet'
 import styled from 'styled-components';
 
+import axios from 'axios';
+
 import MyAccountStatusComponent from '../components/accountComponent/MyAccountStatusComponent';
 import FileStatusComponent from '../components/storageComponent/FileStatusComponent';
 import FileListComponent from '../components/storageComponent/FileListComponent';
@@ -10,6 +12,9 @@ import FileListComponent from '../components/storageComponent/FileListComponent'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const StoragePage = () => {
+
+    // 서버로부터 데이터 요청
+
 
     return (
         <div>
