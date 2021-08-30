@@ -11,6 +11,7 @@ import json
 import app.models as model
 
 from module.manager.storage_manager import StorageManager
+from module.manager.token_manager import TokenManager
 from module.manager.user_manager import UserManager
 from module.specification.System_config import SystemConfig
 from module.MicrocloudchipException.exceptions import *
@@ -35,6 +36,7 @@ class TestAPIUnittest(TestCase):
         SYSTEM_CONFIG = SystemConfig("server/config.json")
         UserManager(SYSTEM_CONFIG)
         StorageManager(SYSTEM_CONFIG)
+        TokenManager(SYSTEM_CONFIG)
 
     @staticmethod
     def make_uploaded_file(root: str) -> SimpleUploadedFile:

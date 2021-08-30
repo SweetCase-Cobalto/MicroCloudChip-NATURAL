@@ -8,7 +8,7 @@ export async function getUserInformationFromServer(staticID) {
     // 유저 정보 갱신
     const URL = CONFIG.URL + "/server/user/" + staticID
     try {
-        let data = await axios.get(URL);
+        let data = await axios.get(URL, { withCredentials: true});
         data = data.data;
         if(data.code != 0) {
             return data;

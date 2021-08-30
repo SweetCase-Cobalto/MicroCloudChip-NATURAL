@@ -7,25 +7,33 @@ import { userLogin } from '../reducers/ConnectedUserReducer';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../asset/font/font.css';
 
+
 // imgs
 import LogoImg from '../asset/img/logo.svg';
-
 const LoginPage = (props) => {
     
     const hostToStr = "127.0.0.1";
     // 로그인 여부 확인
     if(props.maximumVolume != -1) {
         // 로그인 성공
-        window.location.assign("/storage/root");
+        props.history.push("/storage/root");
     }
 
-    const loginBtnEvent = (e) => {
+    const loginBtnEvent = async (e) => {
         e.preventDefault();
 
         let email = e.target.email.value;
         let password = e.target.password.value;
 
-        props.userLogin(email, password);
+        // 빈 문자열 확인
+        if(email === "") {
+            alert("Please Write your email");
+        } else if(password === "") {
+            alert("Please Write your password");
+        } else {
+            // 로그인 시도
+            props.userLogin(email, password);
+        }
     }
 
     return (

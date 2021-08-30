@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { Image, ProgressBar } from "react-bootstrap";
-import { useState } from "react";
 
 import { syncUserInfo, setUserInfoEmpty } from "../../reducers/ConnectedUserReducer";
 
@@ -8,33 +7,36 @@ import { connect } from "react-redux";
 
 import {getUserInformationFromServer} from '../../modules/api/userAPI';
 
+
 const MyAccountStatusComponent = (props) => {
 
-    const [ isConnectedWithServer, setIsConnectedwithServer] = useState(false)
-
-    console.log(props);
+    let isConnectedWithServer = false;
 
     // 서버 연결 프로세스
+    /*
     async function connectToServer() {
         if(!isConnectedWithServer) {
             let result = await getUserInformationFromServer(props.id);
+            isConnectedWithServer = true;
             
             // Code 측정
             if(result.code == 0) {
                 // 유저 정보가 맞는 경우
                 let info = result.data;
                 props.syncUserInfo(info);
-                setIsConnectedwithServer(true);
 
             } else {
+                if(result.code == 4) {
+                    alert("세션이 만료돠었습니다.");
+                }
                 // 로그인 페이지로 이동
                 props.setUserInfoEmpty();
-                setIsConnectedwithServer(true);
-                window.location.assign("/");
+                props.history.push("/");
             }
         }
     }
     connectToServer()
+    */
 
     /*
         내 계정에 대한 정보를 표시하는 컴포넌트

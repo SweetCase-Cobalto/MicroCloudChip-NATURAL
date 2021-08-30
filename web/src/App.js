@@ -8,7 +8,6 @@ import AccountsPage from './page/AccountsPage';
 import AccountAdderPage from './page/AccountAdderPage';
 import AccountModifyPage from './page/AccountModifyPage';
 
-
 const App = () => {
     
     return (

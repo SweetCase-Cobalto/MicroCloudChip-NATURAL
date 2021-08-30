@@ -14,6 +14,12 @@ export const UPDATE_INFO = "CONNECTED_USER_REDUCER/UPDATE_INFO";
 export const SYNC_USER_INFO = "CONNECTED_USER_REDUCER/SYNC_USER_INFO";
 export const RESET_USER_INFO = "CONNECTED_USER_REDUCER/RESET_USER_INFO";
 
+// Error Codes
+import {ErrorCodes} from '../modules/err/errorVariables';
+
+// tool
+import {volume_label_to_raw} from '../modules/tool/volume';
+
 // Initial
 const initialState = {
     id: "",             // 고유 아이디
@@ -70,33 +76,80 @@ export const setUserInfoEmpty = () => {
 
 export const userLogin = (email, pswd) => {
 
-    // Test Case
-    return {
-        type: LOGIN,
-        data: {
-            id: "abcdefg",
-            userName: "admin",
-            email: "seokbong60@gmail.com",
-            isAdmin: true,
-            maximumVolume: 100,
-            usrImgLink: usrIcon,
-            usedVolume: 34
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("pswd", pswd);
+
+    // 서버 요청
+    let URL = CONFIG.URL + "/server/user/login";
+
+    return dispatch => {axios.post(URL, formData, { withCredentials: true }).then((response) => {
+        
+        // TODO: Error 날 경우 예외처리 필요
+
+        let data = response.data;
+        if(data.code == ErrorCodes.ERR_LOGIN_FAILED) {
+            // 로그인 실패
+            alert("Login Failed");
+            return dispatch({
+                
+                type: LOGIN,
+                data: {
+                    id: "",
+                    userName: "",
+                    email: "",
+                    isAdmin: false,
+                    maximumVolume: -1,
+                    usrImgLink: usrIcon,
+                    usedVolume: -1
+                }
+            })
+        } else if(data.code == 0) {
+            // 로그인 성공
+            let raw_maximum_volume = volume_label_to_raw(
+                data.data['volume-type']['value']['unit'],
+                data.data['volume-type']['value']['volume']
+            )
+
+
+            return dispatch({
+                type: LOGIN,
+                data: {
+                    id: data.data['static-id'],
+                    userName: data.data['name'],
+                    email: data.data['email'],
+                    isAdmin: data.data['is-admin'],
+                    maximumVolume: raw_maximum_volume,
+                    usrImgLink: usrIcon,
+                    usedVolume: -1
+                }
+            })
         }
-    }
+    })}
 }
 export const userLogout = () => {
 
-    return {
-        type: LOGOUT,
-        data: {
-            id: "",
-            userName: "",
-            email: "",
-            isAdmin: false,
-            maximumVolume: -1,
-            usrImgLink: usrIcon,
-            usedVolume: -1
-        }
+    let URL = CONFIG.URL + '/server/user/logout';
+
+    return dispatch => {
+        axios.get(URL).then((response) => {
+            let data = response.data;
+            if(data.code == 0) {
+                // 로그아웃 성공
+                return dispatch({
+                    type: LOGIN,
+                    data: {
+                        id: "",
+                        userName: "",
+                        email: "",
+                        isAdmin: false,
+                        maximumVolume: -1,
+                        usrImgLink: usrIcon,
+                        usedVolume: -1
+                    }
+                })
+            }
+        })
     }
 }
 

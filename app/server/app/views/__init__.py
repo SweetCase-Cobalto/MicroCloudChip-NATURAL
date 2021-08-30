@@ -2,6 +2,7 @@
 """ global variables """
 from django.db import OperationalError
 
+from module.manager.token_manager import TokenManager
 from module.specification.System_config import SystemConfig
 from module.manager.user_manager import UserManager
 from module.manager.storage_manager import StorageManager
