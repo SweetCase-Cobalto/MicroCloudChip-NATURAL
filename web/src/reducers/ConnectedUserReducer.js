@@ -28,7 +28,8 @@ const initialState = {
     isAdmin: false,     // 어드민 여부
     usrImgLink: "",     // 유저 이미지 링크
     usedVolume: -1,     // 사용 용량 (KB 단위)
-    maximumType: -1     // 최대 이용 용량 (KB  단위)
+    maximumType: -1,    // 최대 이용 용량 (KB  단위)
+    token: "",          // 로그인을 하기 위한 토큰
 }
 // 로그인이 여부를 확인하는 방법은 usedVolume 또는 maximumType이 -1인 지 확인
 
@@ -47,13 +48,13 @@ export const syncUserInfo = (req) => {
     return {
         type: SYNC_USER_INFO,
         data: {
-            id: req['id'],
             userName: req['userName'],
             email: req['email'],
             isAdmin: req['isAdmin'],
             maximumVolume: req['maximumVolume'],
             usrImgLink: "",
-            usedVolume: req['usedVolume']
+            usedVolume: req['usedVolume'],
+            token: req['token']
         }
     }
     
@@ -69,7 +70,8 @@ export const setUserInfoEmpty = () => {
             isAdmin: false,
             maximumVolume: -1,
             usrImgLink: usrIcon,
-            usedVolume: -1
+            usedVolume: -1,
+            token: "",
         }
     }
 }
@@ -84,9 +86,7 @@ export const userLogin = (email, pswd) => {
     let URL = CONFIG.URL + "/server/user/login";
 
     return dispatch => {axios.post(URL, formData, { withCredentials: true }).then((response) => {
-        
-        // TODO: Error 날 경우 예외처리 필요
-
+    
         let data = response.data;
         if(data.code == ErrorCodes.ERR_LOGIN_FAILED) {
             // 로그인 실패
@@ -101,7 +101,8 @@ export const userLogin = (email, pswd) => {
                     isAdmin: false,
                     maximumVolume: -1,
                     usrImgLink: usrIcon,
-                    usedVolume: -1
+                    usedVolume: -1,
+                    token: "",
                 }
             })
         } else if(data.code == 0) {
@@ -121,7 +122,8 @@ export const userLogin = (email, pswd) => {
                     isAdmin: data.data['is-admin'],
                     maximumVolume: raw_maximum_volume,
                     usrImgLink: usrIcon,
-                    usedVolume: -1
+                    usedVolume: -1,
+                    token: data.data['token']
                 }
             })
         }
@@ -145,7 +147,8 @@ export const userLogout = () => {
                         isAdmin: false,
                         maximumVolume: -1,
                         usrImgLink: usrIcon,
-                        usedVolume: -1
+                        usedVolume: -1,
+                        token: ""
                     }
                 })
             }
@@ -179,7 +182,8 @@ export const ConnectedUserReducer = (state = initialState, action) => {
                 maximumVolume: action.data.maximumVolume,
                 usedVolume: action.data.usedVolume,
                 usrImgLink: action.data.usrImgLink,
-                id: action.data.id
+                id: action.data.id,
+                token: action.data.token
             }
         case UPDATE_INFO:
             return {
@@ -189,13 +193,15 @@ export const ConnectedUserReducer = (state = initialState, action) => {
             }
         case SYNC_USER_INFO: case RESET_USER_INFO:
             return {
+                ...state,
                 userName: action.data.userName,
                 email: action.data.email,
                 isAdmin: action.data.isAdmin,
                 maximumVolume: action.data.maximumVolume,
                 usedVolume: action.data.usedVolume,
                 usrImgLink: action.data.usrImgLink,
-                id: action.data.id
+                id: action.data.id,
+                token: action.data.token,
             }
         default:
             return state;

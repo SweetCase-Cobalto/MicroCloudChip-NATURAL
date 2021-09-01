@@ -17,13 +17,15 @@ class UserControlView(APIView):
     @staticmethod
     def check_is_logined(request: Request) -> str:
         try:
-            token: str = request.COOKIES['web-token']
+            token: str = request.headers['Set-Cookie']
             req_static_id = TOKEN_MANAGER.is_logined(token)
 
             if not req_static_id:
-                raise MicrocloudchipLoginConnectionExpireError("Login Is Expired")
+                e = MicrocloudchipLoginConnectionExpireError("Login Is Expired")
+                raise e
         except KeyError:
-            raise MicrocloudchipSystemAbnormalAccessError("token cookie is nothing")
+            e = MicrocloudchipSystemAbnormalAccessError("token cookie is nothing")
+            raise e
         else:
             return req_static_id
 
@@ -83,12 +85,10 @@ class UserControlView(APIView):
             return JsonResponse({"code": err.errorCode})
 
     def get(self, request: Request, static_id: str) -> JsonResponse:
-        # 유저 데이터 갖고오기
-
         # Session 상태 확인
         try:
             req_static_id: str = UserControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
+        except MicrocloudchipException as e:
             return JsonResponse({'code': e.errorCode})
 
         # 데이터 갖고오기

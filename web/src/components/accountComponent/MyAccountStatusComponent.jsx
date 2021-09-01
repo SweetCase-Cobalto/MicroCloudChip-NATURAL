@@ -7,35 +7,39 @@ import { connect } from "react-redux";
 
 import {getUserInformationFromServer} from '../../modules/api/userAPI';
 
+import { useState } from "react";
+
 
 const MyAccountStatusComponent = (props) => {
 
-    let isConnectedWithServer = false;
+    const [isConnectedWithServer, setIsConnectedWithServer] = useState(false);
 
-    // 서버 연결 프로세스
-    
     async function connectToServer() {
-        if(!isConnectedWithServer) {
-            let result = await getUserInformationFromServer(props.id);
-            isConnectedWithServer = true;
-            
-            // Code 측정
-            if(result.code == 0) {
-                // 유저 정보가 맞는 경우
-                let info = result.data;
-                props.syncUserInfo(info);
 
-            } else {
-                if(result.code == 4) {
-                    alert("세션이 만료돠었습니다.");
-                }
-                // 로그인 페이지로 이동
-                props.setUserInfoEmpty();
-                props.history.push("/");
+        let result = undefined;
+        // 서버로부터 데이터 갖고오기
+        if(!isConnectedWithServer) {
+            result = await getUserInformationFromServer(props.id, props.token);
+            setIsConnectedWithServer(true);
+        }
+            
+        // Code 측정
+        if(result.code == 0) {
+            // 유저 정보가 맞는 경우
+            let info = result.data;
+            props.syncUserInfo(info);
+
+        } else {
+            if(result.code == 4) {
+                alert("세션이 만료돠었습니다.");
             }
+            // 로그인 페이지로 이동
+            props.setUserInfoEmpty();
+            props.history.push("/");
         }
     }
-    connectToServer()
+    if(!isConnectedWithServer && props.id !== undefined)
+        connectToServer();
     
 
     /*

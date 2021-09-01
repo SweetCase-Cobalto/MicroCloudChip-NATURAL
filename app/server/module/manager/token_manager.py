@@ -35,16 +35,16 @@ class TokenManager(WorkerManager):
         # 해당 토큰이 기한 이상이면 삭제
         while True:
             time.sleep(1 / 10 ** 5)  # 10 microseconds
-            for token in self.user_table.keys():
+
+            self.process_locker.acquire()
+            tokens = list(self.user_table.keys())
+            for token in tokens:
                 if time.time() - self.user_table[token]['start'] >= self.time_limit:
-                    self.process_locker.acquire()
                     try:
                         del self.user_table[token]
                     except KeyError:
                         pass
-                    finally:
-                        self.process_locker.release()
-                    continue
+            self.process_locker.release()
 
     def login(self, user_static_id: str) -> str:
 
