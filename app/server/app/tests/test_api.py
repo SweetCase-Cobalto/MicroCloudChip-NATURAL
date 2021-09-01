@@ -5,8 +5,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
 from django.test.client import encode_multipart
 
-from http.cookies import SimpleCookie
-
 import json
 
 import app.models as model
@@ -268,7 +266,8 @@ class TestAPIUnittest(TestCase):
 
         # 존재하지 않는 파일은 정보 못 갖고옴
         response = \
-            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/asfkljasfdkljasfdklj", **token_header)
+            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/asfkljasfdkljasfdklj",
+                            **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipFileNotFoundError("").errorCode)
 
         # 디렉토리 정보 갖고오기
