@@ -2,7 +2,6 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 
 from module.MicrocloudchipException.exceptions import *
-from module.session_control import session_control
 from . import *
 
 from rest_framework.decorators import api_view
@@ -16,6 +15,11 @@ def view_user_login(request: Request) -> JsonResponse:
         email: str = request.data['email']
         pswd: str = request.data['pswd']
         user_data: dict = USER_MANAGER.login(email, pswd)
+
+        static_id: str = user_data['static-id']
+
+        # 토큰 저장
+        user_data['token'] = TOKEN_MANAGER.login(static_id)
     except KeyError:
         # request에 해당 데이터가 존재하지 않는 경우
         e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
@@ -26,17 +30,8 @@ def view_user_login(request: Request) -> JsonResponse:
         return JsonResponse({
             "code": e.errorCode
         })
-
-    # 통과
-    # 세션 저장
-    try:
-        session_control.login_session_event(request, user_data['static-id'])
-    except MicrocloudchipSystemAbnormalAccessError as e:
-        # 이미 로그인 했는데 또 로그인 한 경우
-        # Microcloudchip AccessError 호출
-        return JsonResponse({
-            'code': e.errorCode
-        })
+    
+    # 결과값 리턴
     return JsonResponse({
         "code": 0x00,
         "data": user_data
@@ -45,7 +40,12 @@ def view_user_login(request: Request) -> JsonResponse:
 
 @api_view(['GET'])
 def view_user_logout(request: Request) -> JsonResponse:
-    session_control.logout_session_event(request)
+    # 쿠키에 있는 토큰 갖고오기
+    try:
+        token: str = request.COOKIES['web-token']
+    except Exception:
+        raise MicrocloudchipSystemAbnormalAccessError("Token is nothing - error")
+    TOKEN_MANAGER.logout(token)
     return JsonResponse({
         "code": 0x00
     })
@@ -53,15 +53,20 @@ def view_user_logout(request: Request) -> JsonResponse:
 
 @api_view(['POST'])
 def view_add_user(request: Request) -> JsonResponse:
-    if not session_control.is_logined_event(request):
-        # 로그인 확인
-        return JsonResponse({
-            "code": MicrocloudchipLoginConnectionExpireError("").errorCode
-        })
+
+    # 로그인 확인
+    try:
+        token: str = request.COOKIES['web-token']
+        req_static_id: str = TOKEN_MANAGER.is_logined(token)
+        if not req_static_id:
+            e = MicrocloudchipLoginConnectionExpireError("Login expired")
+            return JsonResponse({'code': e.errorCode})
+    except KeyError:
+        e = MicrocloudchipSystemAbnormalAccessError("Token is nothing - error")
+        return JsonResponse({'code': e.errorCode})
 
     try:
         # 데이터 확인
-        req_static_id: str = session_control.get_static_id_in_session(request)
         email: str = request.data['email']
         pswd: str = request.data['password']
         volume_type_str: str = request.data['volume-type']

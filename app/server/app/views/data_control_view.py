@@ -4,7 +4,6 @@ from rest_framework.request import Request
 from rest_framework.views import APIView
 from module.MicrocloudchipException.exceptions import *
 from module.data.storage_data import FileData, DirectoryData
-from module.session_control.session_control import is_logined_event, get_static_id_in_session
 from module.label.time import TIME_FORMAT
 from . import *
 
@@ -17,10 +16,17 @@ class DataControlView(APIView):
     """
 
     @staticmethod
-    def check_is_logined(request: Request):
-        # 로그인 되어있는 지 체크
-        if not is_logined_event(request):
-            raise MicrocloudchipLoginConnectionExpireError("Login Expired")
+    def check_is_logined(request: Request) -> str:
+        try:
+            token: str = request.COOKIES['web-token']
+            req_static_id = TOKEN_MANAGER.is_logined(token)
+
+            if not req_static_id:
+                raise MicrocloudchipLoginConnectionExpireError("Login Is Expired")
+        except KeyError:
+            raise MicrocloudchipSystemAbnormalAccessError("token cookie is nothing")
+        else:
+            return req_static_id
 
     @staticmethod
     def get_real_root(root: str) -> str:
@@ -38,12 +44,9 @@ class DataControlView(APIView):
 
         # Session 상태 확인
         try:
-            DataControlView.check_is_logined(request)
+            req_static_id = DataControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
-
-        # 요청 아이디 획득
-        req_static_id: str = get_static_id_in_session(request)
 
         # 타입 축정
         if data_type == 'file':
@@ -73,7 +76,7 @@ class DataControlView(APIView):
 
             # 파일 및 디렉토리 업로드
         elif data_type == 'dir':
-            
+
             # 요청 Input Data
             req = {
                 'static-id': static_id,
@@ -97,13 +100,10 @@ class DataControlView(APIView):
 
         # Session 상태 확인
         try:
-            DataControlView.check_is_logined(request)
+            req_static_id = DataControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
 
-        # 요청 아이디 획득
-        req_static_id: str = get_static_id_in_session(request)
-        
         # Input Data
         req = {
             'static-id': static_id,
@@ -133,7 +133,7 @@ class DataControlView(APIView):
             try:
                 d: DirectoryData = STORAGE_MANAGER.get_dir_info(req_static_id, req)
                 f_list, d_list = STORAGE_MANAGER.get_dirlist(req_static_id, req)
-                
+
                 # 디렉토리 안에 존재하는 파일 및 디렉토리 리스트 수집
                 f_list_arr = [{'name': _f['file-name'], 'type': _f['file-type'].name} for _f in f_list]
                 d_list_arr = [_d['dir-name'] for _d in d_list]
@@ -167,12 +167,9 @@ class DataControlView(APIView):
 
         # Session 상태 확인
         try:
-            DataControlView.check_is_logined(request)
+            req_static_id: str = DataControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
-
-        # 요청 아이디 획득
-        req_static_id: str = get_static_id_in_session(request)
 
         # 변경 데이터
         data: QueryDict = request.data
@@ -241,11 +238,9 @@ class DataControlView(APIView):
         # 파일 및 디렉토리 삭제
         # Session 상태 확인
         try:
-            DataControlView.check_is_logined(request)
+            req_static_id: str = DataControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
-
-        req_static_id: str = get_static_id_in_session(request)
 
         req = {
             'static-id': static_id,

@@ -6,36 +6,41 @@ from rest_framework.views import APIView
 from module.MicrocloudchipException.exceptions import *
 from module.label.file_type import FileVolumeType
 from module.label.user_volume_type import UserVolumeType
-from module.session_control.session_control import is_logined_event, get_static_id_in_session
 
 from . import *
 
 
 class UserControlView(APIView):
-
     # 변경 항목(선택)
     UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
 
     @staticmethod
-    def check_is_logined(request: Request):
-        if not is_logined_event(request):
-            raise MicrocloudchipLoginConnectionExpireError("Login Expired")
+    def check_is_logined(request: Request) -> str:
+        try:
+            token: str = request.COOKIES['web-token']
+            req_static_id = TOKEN_MANAGER.is_logined(token)
+
+            if not req_static_id:
+                raise MicrocloudchipLoginConnectionExpireError("Login Is Expired")
+        except KeyError:
+            raise MicrocloudchipSystemAbnormalAccessError("token cookie is nothing")
+        else:
+            return req_static_id
 
     def patch(self, request: Request, static_id: str) -> JsonResponse:
 
-        # Session 상태 확인
+        # Session 상태 확인 및 static_id 갖고오기
         try:
-            UserControlView.check_is_logined(request)
+            req_static_id: str = UserControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
 
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
         target_static_id: str = static_id  # 수정 대상 유저
-        req_static_id: str = get_static_id_in_session(request)  # 변경을 요청하는 아이디 갖고오기
 
         req: dict = {}  # UserManager 에 유저 수정을 위한 Input Data
-        
+
         # 사용자로부터 요청받은 데이터 추출
         data: QueryDict = request.data
 
@@ -82,12 +87,10 @@ class UserControlView(APIView):
 
         # Session 상태 확인
         try:
-            UserControlView.check_is_logined(request)
+            req_static_id: str = UserControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
 
-        req_static_id: str = get_static_id_in_session(request)
-        
         # 데이터 갖고오기
         user_info: dict = USER_MANAGER.get_user_by_static_id(req_static_id, static_id)
 
@@ -133,7 +136,7 @@ class UserControlView(APIView):
                 'value': volume_val
             }
         }
-        
+
         # 출력
         return JsonResponse(res)
 
@@ -141,13 +144,12 @@ class UserControlView(APIView):
 
         # Session 상태 확인
         try:
-            UserControlView.check_is_logined(request)
+            req_static_id: str = UserControlView.check_is_logined(request)
         except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
 
         """ 유저 삭제 """
         target_static_id: str = static_id
-        req_static_id: str = get_static_id_in_session(request)
         # 성공으로 가정
         err: MicrocloudchipException = MicrocloudchipSucceed()
         try:

@@ -1,10 +1,11 @@
 import os
-
 from django.test import TestCase, Client
 from django.http.response import JsonResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
 from django.test.client import encode_multipart
+
+from http.cookies import SimpleCookie
 
 import json
 
@@ -36,7 +37,7 @@ class TestAPIUnittest(TestCase):
         SYSTEM_CONFIG = SystemConfig("server/config.json")
         UserManager(SYSTEM_CONFIG)
         StorageManager(SYSTEM_CONFIG)
-        TokenManager(SYSTEM_CONFIG)
+        TokenManager(SYSTEM_CONFIG, 60)
 
     @staticmethod
     def make_uploaded_file(root: str) -> SimpleUploadedFile:
@@ -73,20 +74,22 @@ class TestAPIUnittest(TestCase):
             dict(email='seokbong60@gmail.com', pswd='12345678')
         )
         self.assertEqual(response.json()['code'], 0)
+        self.assertIsNotNone(response.json()['data']['token'])
 
-        # 다시 로그인 불가
-        response = self.client.post(
-            '/server/user/login',
-            dict(email='seokbong60@gmail.com', pswd='12345678')
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipSystemAbnormalAccessError("").errorCode)
+        admin_token: str = response.json()['data']['token']
 
+        # 로그아웃
+        self.client.cookies = SimpleCookie({'web-token': admin_token})
         self.client.get(
             '/server/user/logout'
         )
 
     def test_user_add_and_delete(self):
         # 로그인이 안 된 상태에서 수행 불가
+
+        # 만료되었다고 가정하는 임의의 쿠키
+        self.client.cookies = SimpleCookie({'web-token': "aldifjalsdkfjaldfkjaldskf"})
+
         response = self.client.post(
             '/server/user', {
                 'name': 'the-client',
@@ -104,9 +107,13 @@ class TestAPIUnittest(TestCase):
             dict(email='seokbong60@gmail.com', pswd='12345678')
         )
         self.assertEqual(response.json()['code'], 0)
+        self.assertIsNotNone(response.json()['data']['token'])
 
-        # 유저 생성
+        # 토큰 발행
+        admin_token: str = response.json()['data']['token']
 
+        self.client.cookies = SimpleCookie({'web-token': admin_token})
+        
         # Success
         response = self.client.post(
             '/server/user', {
@@ -129,7 +136,7 @@ class TestAPIUnittest(TestCase):
         )
         self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
 
-        # 테스트용 클라리언트 고정 아이디를 구해보자
+        # 테스트용 클라이언트 고정 아이디를 구해보자
         client_static_id: str = model.User.objects.get(is_admin=False).static_id
 
         # 데이터 수정 -> 이름 바꾸기
@@ -186,11 +193,15 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
 
     def test_add_modify_and_delete_data(self):
+
         # 로그인
-        self.client.post(
+        response: JsonResponse = self.client.post(
             '/server/user/login',
             dict(email='seokbong60@gmail.com', pswd='12345678')
         )
+
+        admin_token: str = response.json()['data']['token']
+        self.client.cookies = SimpleCookie({'web-token': admin_token})
 
         # 테스트 대상 파일
         example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
@@ -255,12 +266,12 @@ class TestAPIUnittest(TestCase):
         response = \
             self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root")
         self.assertFalse(response.json()['code'])
-        
+
         # 하위 디렉토리 부분
         response = \
             self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
         self.assertFalse(response.json()['code'])
-        
+
         # 존재하지 않는 디렉토리는 못 갖고옴
         response = \
             self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/야야야야야야")

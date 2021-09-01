@@ -178,7 +178,7 @@ class UserManager(WorkerManager):
             r.append(u)
         return r
 
-    def get_user_by_static_id(self,req_static_id: str, static_id: str) -> dict:
+    def get_user_by_static_id(self, req_static_id: str, static_id: str) -> dict:
         
         # 유저 권한 체크
         if req_static_id != static_id and \

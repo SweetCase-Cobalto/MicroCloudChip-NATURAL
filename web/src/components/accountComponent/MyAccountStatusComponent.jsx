@@ -13,7 +13,7 @@ const MyAccountStatusComponent = (props) => {
     let isConnectedWithServer = false;
 
     // 서버 연결 프로세스
-    /*
+    
     async function connectToServer() {
         if(!isConnectedWithServer) {
             let result = await getUserInformationFromServer(props.id);
@@ -36,7 +36,7 @@ const MyAccountStatusComponent = (props) => {
         }
     }
     connectToServer()
-    */
+    
 
     /*
         내 계정에 대한 정보를 표시하는 컴포넌트
