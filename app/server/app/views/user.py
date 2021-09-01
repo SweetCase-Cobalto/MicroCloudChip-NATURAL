@@ -42,7 +42,7 @@ def view_user_login(request: Request) -> JsonResponse:
 def view_user_logout(request: Request) -> JsonResponse:
     # 쿠키에 있는 토큰 갖고오기
     try:
-        token: str = request.COOKIES['web-token']
+        token: str = request.headers['Set-Cookie']
     except Exception:
         raise MicrocloudchipSystemAbnormalAccessError("Token is nothing - error")
     TOKEN_MANAGER.logout(token)
@@ -56,7 +56,7 @@ def view_add_user(request: Request) -> JsonResponse:
 
     # 로그인 확인
     try:
-        token: str = request.COOKIES['web-token']
+        token: str = request.headers['Set-Cookie']
         req_static_id: str = TOKEN_MANAGER.is_logined(token)
         if not req_static_id:
             e = MicrocloudchipLoginConnectionExpireError("Login expired")

@@ -18,7 +18,7 @@ class DataControlView(APIView):
     @staticmethod
     def check_is_logined(request: Request) -> str:
         try:
-            token: str = request.COOKIES['web-token']
+            token: str = request.headers['Set-Cookie']
             req_static_id = TOKEN_MANAGER.is_logined(token)
 
             if not req_static_id:

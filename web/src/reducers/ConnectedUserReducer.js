@@ -28,7 +28,7 @@ const initialState = {
     isAdmin: false,     // 어드민 여부
     usrImgLink: "",     // 유저 이미지 링크
     usedVolume: -1,     // 사용 용량 (KB 단위)
-    maximumType: -1,    // 최대 이용 용량 (KB  단위)
+    maximumVolume: -1,    // 최대 이용 용량 (KB  단위)
     token: "",          // 로그인을 하기 위한 토큰
 }
 // 로그인이 여부를 확인하는 방법은 usedVolume 또는 maximumType이 -1인 지 확인
@@ -40,24 +40,64 @@ const initialState = {
     Server API를 직접 추가하지 않고 따로 돌린다.
 */
 
-export const syncUserInfo = (req) => {
+export const syncUserInfo = (id, token) => {
 
     // 유저 데이터 동기화
-    // 해당 Reducer를 사용하는 매 페이지 마다 이 함수를 사용해야 한다.
-    
-    return {
-        type: SYNC_USER_INFO,
-        data: {
-            userName: req['userName'],
-            email: req['email'],
-            isAdmin: req['isAdmin'],
-            maximumVolume: req['maximumVolume'],
-            usrImgLink: "",
-            usedVolume: req['usedVolume'],
-            token: req['token']
-        }
+    // 나의 유저 상태를 갱신하는 컴포넌트에 추가한다.
+    const URL = CONFIG.URL + '/server/user/' + id;
+
+    return dispatch => {
+        axios.get(URL, {
+                headers: { "Set-Cookie": token },
+                withCredentials: true,
+                crossDomain: true,
+            })
+            .then((response) => {
+                // 데이터 갖고오기
+                let data = response.data;
+
+                if(data.code != 0) {
+                    // 데이터 갖고오기 실패
+                    if(data.code == 4) {
+                        // 만료
+                        alert("세션이 만료되었습니다.");
+                    } else {
+                        alert("Server Error");
+                    }
+                    // 서버 접속 및 데이터를 갱신하는 데 실패했기 때문에
+                    // 비어있는 상태로 맨들어 놓는다.
+                    return dispatch({
+                        type: SYNC_USER_INFO,
+                        data: initialState
+                    })
+                } else {
+                    // 송신 성공
+                    
+                    // Volume Types
+                    let capacityVolume = volume_label_to_raw(
+                        data['user-info']['volume-type']['type'],
+                        data['user-info']['volume-type']['value']
+                    )
+                    let usedVolume = volume_label_to_raw(
+                        data['used-volume']['type'],
+                        data['used-volume']['value']
+                    )
+                    return dispatch({
+                        type: SYNC_USER_INFO,
+                        data: {
+                            id: id,
+                            userName: data['user-info'].name,
+                            email: data['user-info'].email,
+                            isAdmin: data['user-info']['is-admin'],
+                            maximumVolume: capacityVolume,
+                            usedVolume: usedVolume,
+                            usrImgLink: usrIcon,
+                            token: token
+                        }
+                    })
+                }
+            })
     }
-    
 }
 export const setUserInfoEmpty = () => {
     
@@ -112,7 +152,6 @@ export const userLogin = (email, pswd) => {
                 data.data['volume-type']['value']['volume']
             )
 
-
             return dispatch({
                 type: LOGIN,
                 data: {
@@ -129,12 +168,16 @@ export const userLogin = (email, pswd) => {
         }
     })}
 }
-export const userLogout = () => {
+export const userLogout = (token) => {
 
     let URL = CONFIG.URL + '/server/user/logout';
 
     return dispatch => {
-        axios.get(URL).then((response) => {
+        axios.get(URL, {
+            headers: { "Set-Cookie": token },
+            withCredentials: true,
+            crossDomain: true,
+        }).then((response) => {
             let data = response.data;
             if(data.code == 0) {
                 // 로그아웃 성공
@@ -193,15 +236,14 @@ export const ConnectedUserReducer = (state = initialState, action) => {
             }
         case SYNC_USER_INFO: case RESET_USER_INFO:
             return {
-                ...state,
                 userName: action.data.userName,
                 email: action.data.email,
                 isAdmin: action.data.isAdmin,
                 maximumVolume: action.data.maximumVolume,
                 usedVolume: action.data.usedVolume,
-                usrImgLink: action.data.usrImgLink,
                 id: action.data.id,
                 token: action.data.token,
+                usrImgLink: action.data.usrImgLink
             }
         default:
             return state;

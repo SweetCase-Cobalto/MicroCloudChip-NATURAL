@@ -14,7 +14,7 @@ const LoginPage = (props) => {
     
     const hostToStr = "127.0.0.1";
     // 로그인 여부 확인
-    if(props.maximumVolume != -1) {
+    if(props.maximumVolume !== undefined && props.maximumVolume != -1) {
         // 로그인 성공
         props.history.push("/storage/root");
     }

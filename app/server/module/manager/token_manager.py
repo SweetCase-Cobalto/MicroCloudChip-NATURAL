@@ -90,8 +90,12 @@ class TokenManager(WorkerManager):
     def is_logined(self, token: str) -> str:
         # 로그인이 되어있는 지 확인
         # 로그인이 되어있으면 static id를 반환한다.
-        return self.user_table[token]['user-static-id'] if token in self.user_table \
-            else None
+        if token not in self.user_table:
+            return None
+
+        self.__update_token(token)
+
+        return self.user_table[token]['user-static-id']
 
     def logout(self, token: str):
         # 로그아웃

@@ -10,8 +10,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Navbar = (props) => {
 
     const logoutEvent = () => {
-        props.userLogout();
-        window.location.assign("/");
+        props.userLogout(props.token);
     }
 
     let displaySetting = props.isAdmin ? "block" : "none";

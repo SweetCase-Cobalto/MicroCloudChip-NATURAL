@@ -2,45 +2,33 @@ import styled from "styled-components";
 import { Image, ProgressBar } from "react-bootstrap";
 
 import { syncUserInfo, setUserInfoEmpty } from "../../reducers/ConnectedUserReducer";
-
 import { connect } from "react-redux";
-
-import {getUserInformationFromServer} from '../../modules/api/userAPI';
-
-import { useState } from "react";
+import { useEffect } from "react";
 
 
 const MyAccountStatusComponent = (props) => {
 
-    const [isConnectedWithServer, setIsConnectedWithServer] = useState(false);
-
-    async function connectToServer() {
-
-        let result = undefined;
-        // 서버로부터 데이터 갖고오기
-        if(!isConnectedWithServer) {
-            result = await getUserInformationFromServer(props.id, props.token);
-            setIsConnectedWithServer(true);
-        }
-            
-        // Code 측정
-        if(result.code == 0) {
-            // 유저 정보가 맞는 경우
-            let info = result.data;
-            props.syncUserInfo(info);
-
-        } else {
-            if(result.code == 4) {
-                alert("세션이 만료돠었습니다.");
-            }
-            // 로그인 페이지로 이동
-            props.setUserInfoEmpty();
-            props.history.push("/");
-        }
+    let isConnected = false;
+    if(!isConnected && props.id != "") {
+        isConnected = true;
+        props.syncUserInfo(props.id, props.token);
     }
-    if(!isConnectedWithServer && props.id !== undefined)
-        connectToServer();
+    if(props.maximumVolume === undefined || props.maximumVolume == -1 || props.id == "") {
+        // 데이터받기에 실패할 경우(대부분 로그인 만료임)
+        window.location.href = "/";
+    }
     
+
+    const convertRawVolumeToString = (value) => {
+        let unit = 'BYTE';
+
+        if(value < Math.pow(10, 3))         { unit = 'KB'; }
+        else if(value < Math.pow(10, 6))    { unit = 'MB'; value = Math.floor((value / Math.pow(10, 3))); }
+        else if(value < Math.pow(10, 9))    { unit = 'GB'; value = Math.floor((value / Math.pow(10, 6))); }
+        else                                { unit = 'TB'; value = Math.floor((value / Math.pow(10, 9))); }
+
+        return `${value} ${unit}`;
+    }
 
     /*
         내 계정에 대한 정보를 표시하는 컴포넌트
@@ -58,29 +46,23 @@ const MyAccountStatusComponent = (props) => {
 
     let gage = (usedStorage / capacityStorage) * 100; // 사용용량 Percentage
 
-    if(!isConnectedWithServer) {
-        // 로딩 페이지 구현 필요
-        return <div>Loading</div>
-    } else {
-
-        return (
-            <Layout>
-                <center style={{ marginBottom: "80px" }} >
-                    <Image src={usrIcon} width="150px" height="150px" roundedCircle />
-                    <h3 style={{ marginTop: "20px", fontWeight: "bold", color: "#137813" }}>{name}</h3>
-                    <p style={{ color: "#707070"}}>{email}</p>
-                    <p>{type}</p>
-                </center>
-                <div style={{ fontWeight: "bold" }}>
-                    <div style={{ marginBottom: "15px" }}>
-                        <span style={{color: "#137813" }}>{usedStorage}G</span>
-                        <span>/{capacityStorage}G</span>
-                    </div>
-                    <ProgressBar style={{ width: "100%", backgroundColor: "#7D7D7D"}} striped variant="success" now={gage} />
+     return (
+        <Layout>
+            <center style={{ marginBottom: "80px" }} >
+                <Image src={usrIcon} width="150px" height="150px" roundedCircle />
+                <h3 style={{ marginTop: "20px", fontWeight: "bold", color: "#137813" }}>{name}</h3>
+                <p style={{ color: "#707070"}}>{email}</p>
+                <p>{type}</p>
+            </center>
+            <div style={{ fontWeight: "bold" }}>
+                <div style={{ marginBottom: "15px" }}>
+                    <span style={{color: "#137813" }}>{convertRawVolumeToString(usedStorage)}</span>
+                    <span>/{convertRawVolumeToString(capacityStorage)}</span>
                 </div>
-            </Layout>
-        );
-    }
+                <ProgressBar style={{ width: "100%", backgroundColor: "#7D7D7D"}} striped variant="success" now={gage} />
+            </div>
+        </Layout>
+    );
 }
 
 const mapStateToProps = (state) => {
