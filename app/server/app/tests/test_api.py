@@ -77,18 +77,19 @@ class TestAPIUnittest(TestCase):
         self.assertIsNotNone(response.json()['data']['token'])
 
         admin_token: str = response.json()['data']['token']
+        token_header: dict = {"HTTP_Set-Cookie": admin_token}
 
         # 로그아웃
-        self.client.cookies = SimpleCookie({'web-token': admin_token})
         self.client.get(
-            '/server/user/logout'
+            '/server/user/logout',
+            **token_header
         )
 
     def test_user_add_and_delete(self):
         # 로그인이 안 된 상태에서 수행 불가
 
         # 만료되었다고 가정하는 임의의 쿠키
-        self.client.cookies = SimpleCookie({'web-token': "aldifjalsdkfjaldfkjaldskf"})
+        token_header: dict = {"HTTP_Set-Cookie": "aldifjalsdkfjaldfkjaldskf"}
 
         response = self.client.post(
             '/server/user', {
@@ -97,7 +98,8 @@ class TestAPIUnittest(TestCase):
                 'password': '098765432',
                 'volume-type': 'TEST',
                 'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
-            }
+            },
+            **token_header
         )
         self.assertEqual(response.json()['code'], MicrocloudchipLoginConnectionExpireError("").errorCode)
 
@@ -111,8 +113,7 @@ class TestAPIUnittest(TestCase):
 
         # 토큰 발행
         admin_token: str = response.json()['data']['token']
-
-        self.client.cookies = SimpleCookie({'web-token': admin_token})
+        token_header = {"HTTP_Set-Cookie": admin_token}
         
         # Success
         response = self.client.post(
@@ -121,7 +122,8 @@ class TestAPIUnittest(TestCase):
                 'email': 'napalosense@gmail.com',
                 'password': '098765432',
                 'volume-type': 'TEST'
-            }
+            },
+            **token_header
         )
         self.assertEqual(response.json()['code'], 0)
 
@@ -132,7 +134,8 @@ class TestAPIUnittest(TestCase):
                 'email': 'napalosense@gmail.com',
                 'password': '934852323',
                 'volume-type': 'TEST',
-            }
+            },
+            **token_header
         )
         self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
 
@@ -146,7 +149,8 @@ class TestAPIUnittest(TestCase):
                 'name': 'sclient2',
                 'img-changeable': 0
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
@@ -156,7 +160,8 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 'img-changeable': 1
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertEqual(response.json()['code'], MicrocloudchipUserInformationValidateError("").errorCode)
 
@@ -167,29 +172,30 @@ class TestAPIUnittest(TestCase):
                 'img-changeable': 1,
                 'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
         # 데이터 갖고오기
-        response = self.client.get(f"/server/user/{client_static_id}")
+        response = self.client.get(f"/server/user/{client_static_id}", **token_header)
         self.assertFalse(response.json()['code'])
 
         # 잘못된 결과
-        response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa")
+        response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
 
         # 유저 삭제하기
         # 정상적인 삭제
-        response = self.client.delete(f"/server/user/{client_static_id}")
+        response = self.client.delete(f"/server/user/{client_static_id}", **token_header)
         self.assertFalse(response.json()['code'])
 
         # Admin 삭제 불가 [적어도 현재 버전은 Admin 삭제가 불가하다]
-        response = self.client.delete(f"/server/user/{self.admin_static_id}")
+        response = self.client.delete(f"/server/user/{self.admin_static_id}", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
 
         # 존재하지 않는 클라이언트 삭제 시 실패 송출
-        response = self.client.delete(f"/server/user/{client_static_id}")
+        response = self.client.delete(f"/server/user/{client_static_id}", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
 
     def test_add_modify_and_delete_data(self):
@@ -201,7 +207,7 @@ class TestAPIUnittest(TestCase):
         )
 
         admin_token: str = response.json()['data']['token']
-        self.client.cookies = SimpleCookie({'web-token': admin_token})
+        token_header: dict = {"HTTP_Set-Cookie": admin_token}
 
         # 테스트 대상 파일
         example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
@@ -212,7 +218,8 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_binary_file
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
@@ -223,20 +230,21 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_binary_file
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertEqual(response.json()['code'], MicrocloudchipFileAlreadyExistError("").errorCode)
 
         # 디렉토리 생성
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요", **token_header)
         self.assertFalse(response.json()['code'])
 
         # 동일 디렉토리 추가 안됨
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryAlreadyExistError("").errorCode)
 
         # 올바르지 않은 디렉토리명 생성 불가
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/esx:dfsd")
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/esx:dfsd", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipFileAndDirectoryValidateError("").errorCode)
 
         # 유니코드 이름으로 된 파일 추가
@@ -246,35 +254,37 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_text_file_unicode
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
         # 파일 정보 갖고오기
         response = \
             self.client.get(
-                f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}")
+                f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}",
+                **token_header)
         self.assertFalse(response.json()['code'])
 
         # 존재하지 않는 파일은 정보 못 갖고옴
         response = \
-            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/asfkljasfdkljasfdklj")
+            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/asfkljasfdkljasfdklj", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipFileNotFoundError("").errorCode)
 
         # 디렉토리 정보 갖고오기
         # 루트부분
         response = \
-            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root")
+            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root", **token_header)
         self.assertFalse(response.json()['code'])
 
         # 하위 디렉토리 부분
         response = \
-            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요")
+            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요", **token_header)
         self.assertFalse(response.json()['code'])
 
         # 존재하지 않는 디렉토리는 못 갖고옴
         response = \
-            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/야야야야야야")
+            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/야야야야야야", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
 
         # TODO 다운로드를 위한 파일 바이너리 데이터 출력하기
@@ -288,7 +298,8 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "filename": "nf:S::FD::S"
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertEqual(response.json()['code'], MicrocloudchipFileAndDirectoryValidateError("").errorCode)
 
@@ -298,7 +309,8 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "filename": "nest"
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
@@ -308,20 +320,21 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 'dir-name': '연녕하세요'
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
         # 디렉토리와 피일 죄다 삭제하기
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요")
+        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요", **token_header)
         self.assertFalse(response.json()['code'])
 
         # 없는 건 삭제 불가
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요")
+        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요", **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
 
         # 파일도 삭제하기
-        response = self.client.delete(f"/server/storage/data/file/{self.admin_static_id}/root/nest.jpg")
+        response = self.client.delete(f"/server/storage/data/file/{self.admin_static_id}/root/nest.jpg", **token_header)
         self.assertFalse(response.json()['code'])
 
         # 삭제한 거 다시 생성
@@ -331,13 +344,14 @@ class TestAPIUnittest(TestCase):
             data=encode_multipart(self.BOUNDARY_VALUE, {
                 "file": example_binary_file
             }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}'
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
         )
         self.assertFalse(response.json()['code'])
 
         # 파일 도로 삭제
         response = self.client.delete(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}")
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}", **token_header)
         self.assertFalse(response.json()['code'])
 
     def test_size_overflow_when_add_file(self):
