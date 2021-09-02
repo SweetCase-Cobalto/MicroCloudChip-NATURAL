@@ -36,7 +36,7 @@ export const updateDirList = (newUrl, token, static_id) => {
                 })
                 const __newDirList = raw_dir_list.map((d) => {
                     return {
-                        "filename": d['dir-name'],
+                        "filename": d,
                         "type": "dir",
                         "isDir": true
                     }

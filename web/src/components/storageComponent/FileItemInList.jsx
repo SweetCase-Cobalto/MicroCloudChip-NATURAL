@@ -49,9 +49,10 @@ const FileItemInList = (props) => {
         if(isDir) {
             imgLink = dirImg;
         } else {
+            fileType = fileType.toLowerCase();
             switch(fileType) {
                 case 'text': imgLink = txtFileImg; break;
-                case 'exe': imgLink = exeFileImg; break;
+                case 'execute': imgLink = exeFileImg; break;
                 case 'pdf': imgLink = pdfFileImg; break;
                 case 'image': imgLink = imgFileImg; break;
                 case 'audio': imgLink = audioFileImg;  break;

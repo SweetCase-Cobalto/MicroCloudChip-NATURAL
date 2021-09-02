@@ -10,6 +10,9 @@ import { useState } from "react";
 import { updateDirList } from "../../reducers/DirListReducer";
 import { updateDirs } from "../../reducers/SelectedDirReducer";
 
+
+import CONFIG from '../../asset/config.json';
+
 const FileListComponent = (props) => {
     const [directoryAdderShow, setDirectoryAdderShow] = useState(false);
 
@@ -51,6 +54,32 @@ const FileListComponent = (props) => {
         }
     }
 
+    // 디렉토리 생성 이벤트
+    const createDirectoryEvent = async (e) => {
+        let newDirectoryName = e.target.newDirectory.value;
+        
+        // 디렉토리명 검토
+        if(newDirectoryName == "") {
+            alert("생성할 디렉토리 이름을 입력하세요");
+            e.preventDefault();
+        }
+
+        // 슬래시 있는 지 확인
+        if(newDirectoryName.indexOf('/') != -1) {
+            alert("디렉토리에 슬래시가 들어갈 수 없습니다.");
+            return;
+        } else {
+            // 서버로부터 데이터를 받아요
+            let token = userInfo.token;
+            let staticId = userInfo.id;
+            let targetRoot = allRootArr.join('/') + "/" + newDirectoryName;
+            let URL = CONFIG.URL + "/server/storage/data/dir/" + staticId + "/" + targetRoot;
+
+        }
+        
+    }
+
+
     // Start
     if(props.DirListReducer.curInfo == undefined) {
         // 해당 디렉토리로부터 데이터를 서버로부터 갖고와서 업데이트
@@ -79,7 +108,7 @@ const FileListComponent = (props) => {
                     <FileItemInList 
                             isDir={f['isDir']}
                             filename={f['filename']}
-                            fileType={f['file-type']} />
+                            fileType={f['type']} />
                 </div>
             );
         });
@@ -98,18 +127,18 @@ const FileListComponent = (props) => {
                     <Modal.Header closeButton>
                         <Modal.Title>디렉토리 생성</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group className="mb-3" controId="newDirectoryName">
+                    <Form onSubmit={createDirectoryEvent}>
+                        <Modal.Body>
+                            <Form.Group className="mb-3" controlId="newDirectoryName">
                                 <Form.Label>생성할 디렉토리 이름을 입력하세요</Form.Label>
-                                <Form.Control type="text" placeholder="디렉토리 이름 입력" />
+                                <Form.Control type="text" placeholder="디렉토리 이름 입력" name="newDirectory" />
                             </Form.Group>
-                        </Form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="success">생성</Button>
-                        <Button variant="secondary" onClick={closeEvent}>취소</Button>
-                    </Modal.Footer>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button type="submit" variant="success">생성</Button>
+                            <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                        </Modal.Footer>
+                    </Form>
                 </Modal>
             );
         }
