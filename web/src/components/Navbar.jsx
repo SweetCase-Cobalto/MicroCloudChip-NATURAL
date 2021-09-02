@@ -8,7 +8,6 @@ import NavIcon from "../asset/img/nav-icon.svg"
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navbar = (props) => {
-
     const logoutEvent = () => {
         props.userLogout(props.token);
     }

@@ -3,7 +3,6 @@ import { Image, ProgressBar } from "react-bootstrap";
 
 import { syncUserInfo, setUserInfoEmpty } from "../../reducers/ConnectedUserReducer";
 import { connect } from "react-redux";
-import { useEffect } from "react";
 
 
 const MyAccountStatusComponent = (props) => {

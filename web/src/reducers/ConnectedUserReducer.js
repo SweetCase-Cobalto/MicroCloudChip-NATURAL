@@ -40,11 +40,11 @@ const initialState = {
     Server API를 직접 추가하지 않고 따로 돌린다.
 */
 
-export const syncUserInfo = (id, token) => {
+export const syncUserInfo = (staticId, token) => {
 
     // 유저 데이터 동기화
     // 나의 유저 상태를 갱신하는 컴포넌트에 추가한다.
-    const URL = CONFIG.URL + '/server/user/' + id;
+    const URL = CONFIG.URL + '/server/user/' + staticId;
 
     return dispatch => {
         axios.get(URL, {
@@ -85,7 +85,7 @@ export const syncUserInfo = (id, token) => {
                     return dispatch({
                         type: SYNC_USER_INFO,
                         data: {
-                            id: id,
+                            id: staticId,
                             userName: data['user-info'].name,
                             email: data['user-info'].email,
                             isAdmin: data['user-info']['is-admin'],

@@ -18,6 +18,9 @@ const FileListComponent = (props) => {
     let datas = []; // 파일리스트와 디렉토리 리스트를 저정하는 배열
     let selectedDirList = props.SelectedDirReducer.dirList;
 
+    // 내 정보
+    let userInfo = props.ConnectedUserReducer;
+
     // 체크박스 클릭 핸들러
     const checkBoxClickHandler = (f) => {
 
@@ -49,10 +52,9 @@ const FileListComponent = (props) => {
     }
 
     // Start
-    if(props.DirListReducer.curUrl.length == 0) {
-
+    if(props.DirListReducer.curInfo == undefined) {
         // 해당 디렉토리로부터 데이터를 서버로부터 갖고와서 업데이트
-        props.updateDirList(allRootArr);
+        props.updateDirList(allRootArr, userInfo.token, userInfo.id);
 
         // TODO: 로딩 페이지 디자인 필요
         return(
@@ -150,10 +152,10 @@ const FileListComponent = (props) => {
     }
 }
 const mapStateToProps = (state) => {
-    // return state.DirListReducer;
     return {
         "DirListReducer": state.DirListReducer,
         "SelectedDirReducer": state.SelectedDirReducer,
+        "ConnectedUserReducer": state.ConnectedUserReducer
     }
 }
 
