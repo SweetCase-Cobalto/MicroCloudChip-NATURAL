@@ -12,6 +12,7 @@ import { updateDirs } from "../../reducers/SelectedDirReducer";
 
 
 import CONFIG from '../../asset/config.json';
+import axios from "axios";
 
 const FileListComponent = (props) => {
     const [directoryAdderShow, setDirectoryAdderShow] = useState(false);
@@ -30,7 +31,7 @@ const FileListComponent = (props) => {
         // 각 파일의 체크박스 선택 시 사용되는 핸들러
         // 주로 선택된 파일 리스트를 redux를 사용해 관리하는데 사용한다.
 
-        let __key = f["filename"]+"/"+String(f["file-type"]);
+        let __key = f["filename"]+"/"+String(f["type"]);
         let targetIdx = selectedDirList.indexOf(__key);
 
         if(targetIdx > -1) {
@@ -75,6 +76,17 @@ const FileListComponent = (props) => {
             let targetRoot = allRootArr.join('/') + "/" + newDirectoryName;
             let URL = CONFIG.URL + "/server/storage/data/dir/" + staticId + "/" + targetRoot;
 
+            axios.post(URL, null, {
+                headers: { "Set-Cookie": token },
+                withCredentials: true,
+                crossDomain: true
+            }).then((r) => {
+                let data = r.data;
+                if(data.code != 0) {
+                    alert("디렉토리를 생성하는 데 문제가 발생했습니다.");
+                }
+            })
+
         }
         
     }
@@ -108,7 +120,8 @@ const FileListComponent = (props) => {
                     <FileItemInList 
                             isDir={f['isDir']}
                             filename={f['filename']}
-                            fileType={f['type']} />
+                            fileType={f['type']} 
+                            history={props.history} />
                 </div>
             );
         });

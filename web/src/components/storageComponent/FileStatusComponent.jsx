@@ -40,6 +40,8 @@ const FileStatusComponent = (props) => {
     // 선택된 파일이 한 개 일 경우
     else if(selectedDirList.length == 1) {
 
+        console.log(selectedDirList);
+
         let splited = selectedDirList[0].split('/');
         filename = splited[0];
         let fileType = splited[1];
@@ -87,6 +89,8 @@ const FileStatusComponent = (props) => {
             )
         } else {
             let imgUrl = "";
+            fileType = fileType.toLowerCase();
+            console.log(fileType);
             switch(fileType) {
                 case 'text': imgUrl = txtFileImg; break;
                 case 'exe': imgUrl = exeFileImg; break;

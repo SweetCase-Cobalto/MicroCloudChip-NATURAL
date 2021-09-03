@@ -7,8 +7,8 @@ export const updateDirList = (newUrl, token, static_id) => {
     // 현재 위치의 디렉토리와 파일을 갖고온다.
 
     // 검색 URL
-    const URL = CONFIG.URL + "/server/storage/data/dir/" + static_id + "/" + newUrl;
-
+    let urlStr = newUrl.join('/')
+    const URL = CONFIG.URL + "/server/storage/data/dir/" + static_id + "/" + urlStr;
     return dispatch => {
         // 서버 통신
         axios.get(URL, {
@@ -54,7 +54,7 @@ export const updateDirList = (newUrl, token, static_id) => {
                         "file-type": "dir",
                     })
                 }
-
+                
                 return dispatch ({
                     type: UPDATE_DIRLIST,
                     curUrl: newUrl,
@@ -87,7 +87,7 @@ export const DirListReducer = (state = initialState, action) => {
         case UPDATE_DIRLIST:
             return {
                 curInfo: action.curInfo,
-                curUrl: action.newUrl,
+                curUrl: action.curUrl,
                 fileList: action.newFileList,
                 directoryList: action.newDirList
             };

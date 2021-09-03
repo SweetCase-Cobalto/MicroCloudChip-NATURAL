@@ -12,7 +12,6 @@ import '../asset/font/font.css';
 import LogoImg from '../asset/img/logo.svg';
 const LoginPage = (props) => {
     
-    const hostToStr = "127.0.0.1";
     // 로그인 여부 확인
     if(props.maximumVolume !== undefined && props.maximumVolume != -1) {
         // 로그인 성공
@@ -44,7 +43,6 @@ const LoginPage = (props) => {
             <Container>
                 <center>
                     <img src={LogoImg} alt="logo" width="60%" style={{ marginBottom: "15px" }}/>
-                    <p>server: {hostToStr}</p>
                     <LoginSection onSubmit={loginBtnEvent}>
                         <EditSection>
                             <EditLabel>EMAIL</EditLabel>

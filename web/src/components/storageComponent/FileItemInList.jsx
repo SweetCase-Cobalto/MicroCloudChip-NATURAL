@@ -32,9 +32,8 @@ const FileItemInList = (props) => {
        if(isDir) {
            // 디렉토링 경우
            // 해당 루트로 이동
-           let curUrl = props.curUrl;
-           let nextUrlToString = curUrl.join('/') + "/" + filename;
-           window.location.assign("/storage/"+nextUrlToString);
+           let targetUrl = "/storage/" + props.prevDirInfo.curUrl.join('/') + "/" + filename;
+           props.history.push(targetUrl);
        } else {
            // TODO: 파일 다운로드
            // TODO: 차기 버전은 특정 타입에 따라 다른 작업을 수행해야 함
@@ -49,6 +48,8 @@ const FileItemInList = (props) => {
         if(isDir) {
             imgLink = dirImg;
         } else {
+            // 서버에서 받아온 filetype중에 대문자일 수도 있으니
+            // 미리 소문자로 처리
             fileType = fileType.toLowerCase();
             switch(fileType) {
                 case 'text': imgLink = txtFileImg; break;
@@ -88,6 +89,8 @@ const FileItemInList = (props) => {
    );
 }
 const mapStateProps = (state) => {
-    return state.DirListReducer;
+    return {
+        "prevDirInfo": state.DirListReducer
+    }
 }
 export default connect(mapStateProps)(FileItemInList);

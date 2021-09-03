@@ -19,7 +19,7 @@ const StoragePage = (props) => {
             <Navbar />
             <Layout>
                 <MyAccountStatusComponent history={props.history} />
-                <FileListComponent />
+                <FileListComponent history={props.history} />
                 <FileStatusComponent />
             </Layout>
             <Footer />
