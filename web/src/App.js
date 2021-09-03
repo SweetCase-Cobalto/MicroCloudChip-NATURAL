@@ -1,4 +1,4 @@
-import {Route} from 'react-router-dom';
+import {Route, Switch} from 'react-router-dom';
 
 // Path
 import LoginPage from './page/LoginPage';
@@ -12,16 +12,14 @@ const App = () => {
     
     return (
         <div>
-            <Route exact path='/' component={LoginPage} />
-            
-            <Route exact path='/settings' component={SettingsPage} />
-            
-            <Route path="/storage/" component={StoragePage} />
-
-            <Route exact path="/accounts" component={AccountsPage} />
-            <Route exact path="/accounts/account-adder" component={AccountAdderPage} />
-            <Route exact path="/accounts/modify/:staticId" component={AccountModifyPage} />
-
+            <Switch>
+                <Route exact path='/' component={LoginPage} />
+                <Route exact path='/settings' component={SettingsPage} />
+                <Route path="/storage/" component={StoragePage} />
+                <Route exact path="/accounts" component={AccountsPage} />
+                <Route exact path="/accounts/account-adder" component={AccountAdderPage} />
+                <Route exact path="/accounts/modify/:staticId" component={AccountModifyPage} />
+            </Switch>
         </div>
     );
 }

@@ -29,16 +29,12 @@ class UserManager(WorkerManager):
         storage_root = super_dir_root + ['root']
         asset_root = super_dir_root + ['asset']
 
-        if os.path.isdir(os.path.join(*super_dir_root)):
-            shutil.rmtree(os.path.join(*super_dir_root))
-        if os.path.isdir(os.path.join(*storage_root)):
-            shutil.rmtree(os.path.join(*storage_root))
-        if os.path.isdir(os.path.join(*asset_root)):
-            shutil.rmtree(os.path.join(*asset_root))
-
-        os.mkdir(os.path.join(*super_dir_root))
-        os.mkdir(os.path.join(*storage_root))
-        os.mkdir(os.path.join(*asset_root))
+        if not os.path.isdir(os.path.join(*super_dir_root)):
+            os.mkdir(os.path.join(*super_dir_root))
+        if not os.path.isdir(os.path.join(*storage_root)):
+            os.mkdir(os.path.join(*storage_root))
+        if not os.path.isdir(os.path.join(*asset_root)):
+            os.mkdir(os.path.join(*asset_root))
 
         return super_dir_root
 
@@ -71,6 +67,10 @@ class UserManager(WorkerManager):
 
             # DB 저장
             new_admin_builder.build().save()
+        else:
+            admin_static_id: str = model.User.objects.get(is_admin=True).static_id
+            # 어드민 디렉토리가 사라진 경우 복구
+            self.__make_user_directory(admin_static_id)
 
     def login(self, user_email: str, user_password: str) -> dict:
 

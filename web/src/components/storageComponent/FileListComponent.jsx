@@ -17,7 +17,14 @@ import axios from "axios";
 const FileListComponent = (props) => {
     const [directoryAdderShow, setDirectoryAdderShow] = useState(false);
 
-    let allRootArr = window.location.pathname.split('/').slice(2); // url 파라미터로부터 가져온다
+    let allRootArr = decodeURI(window.location.pathname).split('/').slice(2); // url 파라미터로부터 가져온다
+    
+    // 공백 제거
+    if(allRootArr[allRootArr.length - 1] == "") {
+        allRootArr.pop();
+    }
+
+
     let allRootArrToString = ""; // allRootArr를 화면에 출력하기 위해 String 변환
     let datas = []; // 파일리스트와 디렉토리 리스트를 저정하는 배열
     let selectedDirList = props.SelectedDirReducer.dirList;
@@ -93,7 +100,7 @@ const FileListComponent = (props) => {
 
 
     // Start
-    if(props.DirListReducer.curInfo == undefined) {
+    if(props.DirListReducer.errCode == undefined) {
         // 해당 디렉토리로부터 데이터를 서버로부터 갖고와서 업데이트
         props.updateDirList(allRootArr, userInfo.token, userInfo.id);
 
@@ -103,7 +110,10 @@ const FileListComponent = (props) => {
                 <h1>Loading</h1>
             </Layout>
         );
-    } else {
+    } else if (props.DirListReducer.errCode != 0) {
+        alert("해당 디렉토리는 존재하지 않습니다.");
+        props.history.goBack();
+    }else {
 
         // 파일 리스트와 디렉토리 리스트를 전부 data에 저장
         datas = props.DirListReducer.fileList.concat(props.DirListReducer.directoryList);

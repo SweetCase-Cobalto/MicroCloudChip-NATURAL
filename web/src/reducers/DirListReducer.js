@@ -5,10 +5,15 @@ export const UPDATE_DIRLIST = "DIR_LIST_REDUCER/UPDATE_DIR_LIST";
 
 export const updateDirList = (newUrl, token, static_id) => {
     // 현재 위치의 디렉토리와 파일을 갖고온다.
+    
+    // 맨 마지막 부분이 .. 인 경우 뒤로가기를 의미하므로
+    // 맨 뒤로부터 아이템 두 개를 제거한다
 
     // 검색 URL
     let urlStr = newUrl.join('/')
+
     const URL = CONFIG.URL + "/server/storage/data/dir/" + static_id + "/" + urlStr;
+
     return dispatch => {
         // 서버 통신
         axios.get(URL, {
@@ -26,6 +31,7 @@ export const updateDirList = (newUrl, token, static_id) => {
                 let raw_file_list = data.data.list.file;
                 let raw_dir_list = data.data.list.dir;
                 
+
                 // 프론트 단에 출력하기 위한 데이터로 정제
                 const __newFileList = raw_file_list.map((f) => {
                     return {
@@ -48,7 +54,7 @@ export const updateDirList = (newUrl, token, static_id) => {
                 if(newUrl.length > 1) {
                     // 즉 newUrl에 루트가 2개 이상이면 최상위 루트가 아니다
                     // 따라서 뒤로가가 (..를 누른다.)
-                    __newDirList.push({
+                    __newDirList.unshift({
                         "filename": "..",
                         "isDir": true,
                         "file-type": "dir",
@@ -60,15 +66,18 @@ export const updateDirList = (newUrl, token, static_id) => {
                     curUrl: newUrl,
                     newFileList: __newFileList,
                     newDirList: __newDirList,
-                    curInfo: data.data.info
+                    curInfo: data.data.info,
+                    errCode: data.code
                 })
             } else {
+
                 return dispatch ({
                     type: UPDATE_DIRLIST,
                     curUrl: newUrl,
                     newFileList: [],
                     newDirList: [],
-                    curInfo: data.code
+                    curInfo: data.code,
+                    errCode: data.code,
                 })
             }
         })
@@ -79,7 +88,8 @@ const initialState = {
     curUrl : [],
     fileList : [],
     directoryList : [],
-    curInfo: undefined
+    curInfo: undefined,
+    errCode: undefined,
 };
 
 export const DirListReducer = (state = initialState, action) => {
@@ -89,7 +99,8 @@ export const DirListReducer = (state = initialState, action) => {
                 curInfo: action.curInfo,
                 curUrl: action.curUrl,
                 fileList: action.newFileList,
-                directoryList: action.newDirList
+                directoryList: action.newDirList,
+                errCode: action.errCode,
             };
         default:
             return state;

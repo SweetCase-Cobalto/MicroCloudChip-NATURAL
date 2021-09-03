@@ -12,6 +12,11 @@ class StorageValidator:
         naming_failed_char_set = StorageValidator.NAMING_FAILED_CHAR_SET
         if any(char in storage_root for char in naming_failed_char_set):
             return False
+        
+        # 점 한/두개 짜리 이름의 파일은 만들 수 없음
+        final_root: str = storage_root.split('/')[-1]
+        if final_root == "." or final_root == "..":
+            return False
         return True
 
     @staticmethod

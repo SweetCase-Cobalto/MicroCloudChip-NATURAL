@@ -30,13 +30,21 @@ const FileItemInList = (props) => {
 
    const onClickEvent = () => {
        if(isDir) {
-           // 디렉토링 경우
-           // 해당 루트로 이동
-           let targetUrl = "/storage/" + props.prevDirInfo.curUrl.join('/') + "/" + filename;
-           props.history.push(targetUrl);
+            // 디렉토링 경우
+            // 해당 루트로 이동
+            let targetUrl = "";
+            //뒤로가기 할 경우
+            if(filename == ".." || filename == ".") {
+                
+                targetUrl = "/storage/" + props.prevDirInfo.curUrl.slice(0, -1).join('/');
+            }
+            else
+                targetUrl = "/storage/" + props.prevDirInfo.curUrl.join('/') + "/" + filename;
+            window.location.href = targetUrl;
+
        } else {
-           // TODO: 파일 다운로드
-           // TODO: 차기 버전은 특정 타입에 따라 다른 작업을 수행해야 함
+            // TODO: 파일 다운로드
+            // TODO: 차기 버전은 특정 타입에 따라 다른 작업을 수행해야 함
        }
    }
 

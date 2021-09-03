@@ -36,7 +36,26 @@ class DataControlView(APIView):
 
             EX) /root/abc/cdf --> abc/cdf
         """
-        return '/'.join(root.split('/')[1:])
+        # 올바르지 않는 Root 확인
+
+        """실제 루트 생성
+            url 로부터 받은 root는 앞에 root/ 가 붙어있기 때문에
+            root/ 를 제거하고 다시 정의한다
+            EX) /root/abc/cdf --> abc/cdf
+        """
+        root_list = root.split('/')
+
+        # URL 유효성 검토
+        if len(root_list) == 1:
+            if root_list[0] == 'root':
+                return '/'.join(root_list[1:])
+            else:
+                raise MicrocloudchipFileAndDirectoryValidateError("Root Error")
+        else:
+            if '' in root_list:
+                raise MicrocloudchipFileAndDirectoryValidateError("Root Error")
+            else:
+                return '/'.join(root_list[1:])
 
     def post(self, request: Request, data_type: str, static_id: str, root: str):
         # 파일을 업로드 하거나, 디렉토리를 생성합니다.
@@ -96,8 +115,11 @@ class DataControlView(APIView):
 
     def get(self, request: Request, data_type: str, static_id: str, root: str) -> JsonResponse:
         # 데이터[정보] 갖고오기
-        root: str = DataControlView.get_real_root(root)
-
+        try:
+            root: str = DataControlView.get_real_root(root)
+        except MicrocloudchipFileAndDirectoryValidateError as e:
+            return JsonResponse({'code': e.errorCode})
+        # Parsing 실패
         # Session 상태 확인
         try:
             req_static_id = DataControlView.check_is_logined(request)
@@ -140,6 +162,7 @@ class DataControlView(APIView):
 
             except MicrocloudchipException as e:
                 return JsonResponse({'code': e.errorCode})
+
             return JsonResponse({
                 'code': 0,
                 'data': {

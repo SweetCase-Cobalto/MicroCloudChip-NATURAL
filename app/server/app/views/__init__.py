@@ -17,6 +17,6 @@ try:
     SYSTEM_CONFIG = SystemConfig("server/config.json")
     USER_MANAGER = UserManager(SYSTEM_CONFIG)
     STORAGE_MANAGER = StorageManager(SYSTEM_CONFIG)
-    TOKEN_MANAGER = TokenManager(SYSTEM_CONFIG, 60)
+    TOKEN_MANAGER = TokenManager(SYSTEM_CONFIG, 300)
 except OperationalError:
     pass
