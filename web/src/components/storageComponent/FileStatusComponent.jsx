@@ -18,6 +18,9 @@ import { ErrorCodes } from '../../modules/err/errorVariables';
 import styled from "styled-components";
 import { Image, Button, Form, Modal } from "react-bootstrap";
 
+import { floorVolume } from '../../modules/tool/volume';
+
+
 import { connect } from "react-redux";
 import { useState } from 'react';
 import axios from 'axios';
@@ -147,6 +150,7 @@ const FileStatusComponent = (props) => {
                     if(data.code == 0) {
                         alert("이름을 변경했습니다.");
                     } else {
+                        // 적용 실패
                         if(data.code == ErrorCodes.ERR_DIR_ALEADY_EXISTS_ERR) {
                             // 새로 변경할 이름의 디렉토리가 이미 존재하는 경우
                             alert("해당 이름의 디렉토리가 이미 존재합니다.");
@@ -165,7 +169,6 @@ const FileStatusComponent = (props) => {
             let modalTitle = "";
             let keyword = "";
             let placeholder = "";
-            let applyBtnName = "";
 
             // 파일/디렉토리에 따른 문구 세팅
             if(fileType == 'dir') {
@@ -283,7 +286,8 @@ const FileStatusComponent = (props) => {
                 default: imgUrl = otherFileImg; break;
 
             }
-
+            let __printedVolume = `${floorVolume(dataInfo['size']['size-volume'], 3)} ${dataInfo['size']['size-type']}`
+            
             return (
                 <Layout>
                     <center style={{ marginBottom: "40px" }}>
@@ -297,18 +301,18 @@ const FileStatusComponent = (props) => {
                         </TextLayer>
     
                         <TextLayer>
-                            <KeyLayer>수정 날짜</KeyLayer>
-                            <ValueLayer>2021-01-01 4:13 am</ValueLayer>
+                            <KeyLayer>생성 날짜</KeyLayer>
+                            <ValueLayer>{dataInfo['create-date']}</ValueLayer>
                         </TextLayer>
     
                         <TextLayer>
                             <KeyLayer>파일 유형</KeyLayer>
-                            <ValueLayer>Text</ValueLayer>
+                            <ValueLayer>{fileType}</ValueLayer>
                         </TextLayer>
                     
                         <TextLayer>
                             <KeyLayer>용량</KeyLayer>
-                            <ValueLayer>1KB</ValueLayer>
+                            <ValueLayer>{__printedVolume}</ValueLayer>
                         </TextLayer>
                     </div>
     

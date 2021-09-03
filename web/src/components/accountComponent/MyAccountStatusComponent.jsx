@@ -46,9 +46,6 @@ const MyAccountStatusComponent = (props) => {
     let usrIcon = props.usrImgLink;                 // 업로드한 유저 이미지
 
     let gage = (usedStorage / capacityStorage) * 100; // 사용용량 Percentage
-
-    console.log(gage);
-
      return (
         <Layout>
             <center style={{ marginBottom: "80px" }} >

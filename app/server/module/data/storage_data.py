@@ -85,7 +85,7 @@ class FileData(StorageData):
         # 데이터 크기 갖고오기
         _volume = file_stat.st_size
         self.raw_volume = _volume
-        self.volume_unit, self.volume = FileVolumeType.get_file_volume_type(_volume, 2)
+        self.volume_unit, self.volume = FileVolumeType.get_file_volume_type(_volume)
 
         self.is_called = True
 

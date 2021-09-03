@@ -11,3 +11,9 @@ const VOLUME_TYPES = {
 export function volume_label_to_raw(_type, _vol) {
     return _vol * VOLUME_TYPES[_type]
 }
+
+
+// 소수점 버림
+export function floorVolume(_val, _zfill) {
+    return Math.floor(_val * Math.pow(10, _zfill)) / Math.pow(10, _zfill); 
+}
