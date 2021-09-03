@@ -6,7 +6,8 @@ from datetime import datetime
 from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
     MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, \
     MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData
+    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData, \
+    MicrocloudchipSystemAbnormalAccessError
 
 from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
@@ -24,6 +25,9 @@ class StorageData(metaclass=ABCMeta):
 
     def __init__(self, full_root: str):
         # 데이터를 가져올 대상 루트를 저장
+
+        # URL 루트를 Raw 루트로 변경
+        # OS 가 Windows 환경일 경우 루트를 /에서 \로 변경한다.
         self.full_root = full_root
 
     @abstractmethod
@@ -135,7 +139,7 @@ class FileData(StorageData):
         # 파일 이름 변경
         if new_name == self.name:
             # 이름이 같은건 생성 불가
-            raise ValueError("same filename")
+            raise MicrocloudchipSystemAbnormalAccessError("same directory name invalid")
         
         # Validator 측정
         try:
@@ -227,7 +231,7 @@ class DirectoryData(StorageData):
         # 실패 시 Directory Not Found
 
         if new_name == self.name:
-            raise ValueError("same directory name")
+            raise MicrocloudchipSystemAbnormalAccessError("same directory name invalid")
 
         # 파일명 Validator 측정
         try:

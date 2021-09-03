@@ -1,8 +1,4 @@
-from module.MicrocloudchipException.base_exception import MicrocloudchipException
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
-    MicrocloudchipStorageOverCapacityError, MicrocloudchipFileAlreadyExistError, MicrocloudchipFileNotFoundError, \
-    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipDirectoryNotFoundError
+from module.MicrocloudchipException.exceptions import *
 from module.data.storage_data import FileData, DirectoryData
 from module.data_builder.directory_builder import DirectoryBuilder
 from module.data_builder.file_builder import FileBuilder
@@ -105,7 +101,11 @@ class StorageManager(WorkerManager):
         if req_static_id != target_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access update file")
 
-        src_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+        # Target Root는 URL 상의 루트이므로 토큰을 바꾼다
+        # 예를 들어 Windows Platform 일 경우 해당 루트가 aaa/bbb 이면 aaa\bbb로 변경한다
+        __target_root = self.TOKEN.join(target_root.split('/'))
+
+        src_root: str = os.path.join(self.__get_user_root(target_static_id), __target_root)
 
         try:
             # 파일 정보 검색
@@ -114,14 +114,7 @@ class StorageManager(WorkerManager):
             # 이름 바꾸기
             f.update_name(change_elements['name'])
 
-        except (MicrocloudchipFileNotFoundError, MicrocloudchipFileAndDirectoryValidateError) as e:
-            # 파일을 찾지 못한 경우, 파일 명이 유효하지 않은 경우
-            raise e
-        except ValueError:
-            # 동일한 이름으로 저장하려는 경우
-            raise MicrocloudchipAuthAccessError("Same name does not be changeable")
-        except MicrocloudchipFileAlreadyExistError as e:
-            # 파일 이름 변경 실패
+        except MicrocloudchipException as e:
             raise e
         except Exception as e:
             raise e
@@ -167,8 +160,12 @@ class StorageManager(WorkerManager):
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
 
+        # Target Root는 URL 상의 루트이므로 토큰을 바꾼다
+        # 예를 들어 Windows Platform 일 경우 해당 루트가 aaa/bbb 이면 aaa\bbb로 변경한다
+        __target_root = self.TOKEN.join(target_root.split('/'))
+
         # 변경 대상 절대루트 생성
-        src_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+        src_root: str = os.path.join(self.__get_user_root(target_static_id), __target_root)
 
         # 업데이트
         try:
@@ -177,14 +174,7 @@ class StorageManager(WorkerManager):
             # 이름 바꾸기
             d.update_name(change_elements['name'])
 
-        except MicrocloudchipFileNotFoundError as e:
-            # 파일을 찾지 못한 경우, 파일 명이 유효하지 않은 경우
-            raise e
-        except ValueError:
-            # 동일한 이름으로 저장하려는 경우
-            raise MicrocloudchipAuthAccessError("Same name does not be changeable")
-        except (MicrocloudchipDirectoryAlreadyExistError, MicrocloudchipFileAndDirectoryValidateError) as e:
-            # 파일 이름 변경 실패, 파일명 유효하지 않음
+        except MicrocloudchipException as e:
             raise e
         except Exception as e:
             # 기타 알수 없는 에러

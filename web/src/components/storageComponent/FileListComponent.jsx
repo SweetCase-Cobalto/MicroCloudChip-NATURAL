@@ -121,7 +121,7 @@ const FileListComponent = (props) => {
     }else {
 
         // 파일 리스트와 디렉토리 리스트를 전부 data에 저장
-        datas = props.DirListReducer.fileList.concat(props.DirListReducer.directoryList);
+        datas = props.DirListReducer.directoryList.concat(props.DirListReducer.fileList);
 
         // List로 정의되어있는 루트를 문자열로 변환
         allRootArrToString = allRootArr.join('/');
@@ -151,6 +151,7 @@ const FileListComponent = (props) => {
                 <Modal
                     show={directoryAdderShow}
                     onHide={closeEvent}
+                    centered
                 >
                     <Modal.Header closeButton>
                         <Modal.Title>디렉토리 생성</Modal.Title>

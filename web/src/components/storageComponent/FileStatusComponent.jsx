@@ -13,26 +13,41 @@ import multiDirImg from '../../asset/img/icons/multiple-dirs-icon.svg';
 import multiAllImg from '../../asset/img/icons/multiple-all-icon.svg';
 
 import CONFIG from '../../asset/config.json';
+import { ErrorCodes } from '../../modules/err/errorVariables';
 
 import styled from "styled-components";
-import { Image, Button } from "react-bootstrap";
+import { Image, Button, Form, Modal } from "react-bootstrap";
 
 import { connect } from "react-redux";
 import { useState } from 'react';
 import axios from 'axios';
 
 const FileStatusComponent = (props) => {
+    /*
+        Storage Page의 우측 하단에 배치되어 있는 컴포넌트로
+        파일 및 디렉토리의 정보를 나타내는 데 사용한다
+    */
 
-    let selectedDirList = props.selectedDir.dirList;
+    let selectedDirList = props.selectedDir.dirList;    // 선택된 파일 및 디렉토리 리스트
+    const [dataInfo, setDataInfo] = useState(undefined);
+    // 선택된 데이터에 대한 정보
+    /*
+        선택된 객체가 한개일 때만 서버로부터 정보 데이터를 가져온다
+        선택하지 않거나 다중 선택할 경우 undefined로 전환
+    */
 
-    let [dataInfo, setDataInfo] = useState(undefined);
-
-
-    // 컴포넌트에 출력될 데이터들
     let filename = "";
+    // 하나를 선택할 경우 객체 이름이 저장된다.
+
+
+    // 모달 컴포넌트
+    // 파일 및 디렉토리 내용을 수정할 때
+    let [isModifyObjectModalOpen, setIsModifyObjectModalOpen] = useState(false);
     
     if(!selectedDirList.length) {
         // 선택된 파일이 없음
+        // 선택된 파일이 없는데도 dataInfo에 데이터가 남아있다면
+        // 없앤다.
         if(dataInfo != undefined)
             setDataInfo(undefined);
         return (
@@ -45,16 +60,17 @@ const FileStatusComponent = (props) => {
     // 선택된 파일이 한 개 일 경우
     else if(selectedDirList.length == 1) {
 
+        // Reducer에 저장된 선택된 객체의 정보를 갖고온다
+        // RAW: 파일이름/파일타입
+        // splited => [파일 이름, 파일 타입]
         let splited = selectedDirList[0].split('/');
         filename = splited[0];
         let fileType = splited[1];
         
-        // TODO: 해당 파일에 대한 정보를
-        // 서버로부터 받아와야 함
-        
         if(dataInfo === undefined) {
             // 아직 받아오지 못했거나 다른 파일 및 디렉토리를 선택한 경우
             
+
             // 서버와 통신하기 위한 URL 생성
             let TARGET_URL = CONFIG.URL + "/server/storage/data/";
             if(fileType == 'dir')
@@ -72,9 +88,17 @@ const FileStatusComponent = (props) => {
             .then((response) => {
                 let data = response.data;
                 if(data.code != 0) {
+                    // TODO: 오류에 따른 처리 필요
                     alert("오류 발생");
                 } else {
-                    setDataInfo(data.data.info);
+                    // 정상적을 데이터를 받는 경우
+
+                    // TODO: data.data.info 데이터가
+                    // 받지 못하는 경우에 대한 예외처리가 필요
+                    if(fileType == "dir")
+                        setDataInfo(data.data.info);
+                    else
+                        setDataInfo(data.data);
                 }
             })
             
@@ -82,6 +106,132 @@ const FileStatusComponent = (props) => {
             return (<div>
                 Loading
             </div>)
+        }
+
+        // 정보를 다운받았을 경우
+        // 위 서버 통신은 패싱하고 컴포넌트를 리턴한다.
+
+        
+        // Modal Components
+        const ModifyObjectModal = () => {
+            // 객체 이름 수정 컴포넌트
+
+            const closeEvent = () => setIsModifyObjectModalOpen(false);
+            const modifyHandler = (e) => {
+                // 이름 변경 요청
+
+                let newName = e.target.newName.value;
+                let formData = new FormData();
+                
+                // URL 과 FormData 세팅
+                let URL = CONFIG.URL + "/server/storage/data";
+                if(fileType == "dir") {
+                    URL += "/dir/";
+                    formData.append("dir-name", newName);
+                }
+                else {
+                    URL += "/file/";
+                    formData.append("filename", newName);
+                }
+                URL += props.userInfo.id + "/" + props.parentDir.curUrl.join("/") + "/" +filename;
+
+                // 송신
+                
+                axios.patch(URL, formData, {
+                    headers: {"Set-Cookie": props.userInfo.token },
+                    crossDomain: true,
+                    withCredentials: true
+                }).then((response) => {
+                    // 전송 결과 받기
+                    let data = response.data;
+                    if(data.code == 0) {
+                        alert("이름을 변경했습니다.");
+                    } else {
+                        if(data.code == ErrorCodes.ERR_DIR_ALEADY_EXISTS_ERR) {
+                            // 새로 변경할 이름의 디렉토리가 이미 존재하는 경우
+                            alert("해당 이름의 디렉토리가 이미 존재합니다.");
+                        } else if(data.code == ErrorCodes.ERR_FILE_ALEADY_EXISTS_ERR) {
+                            // 새로 변경 할 이름의 파일ㄹ이 이미 존재하는 경우
+                            alert("해당 이름의 파일이 이미 존재합니다.");
+                        } else if(data.code == ErrorCodes.ERR_SYSTEM_ABNORMAL_ACCESS_ERR) {
+                            // 동일한 이름으로 변경하려는 경우
+                            alert("동일한 이름으로 변경할 수 없습니다.");
+                        }
+                    }
+                })
+                
+            }
+            
+            let modalTitle = "";
+            let keyword = "";
+            let placeholder = "";
+            let applyBtnName = "";
+
+            // 파일/디렉토리에 따른 문구 세팅
+            if(fileType == 'dir') {
+               modalTitle = "디렉토리 이름 수정";
+               keyword = "디렉토리";
+               placeholder = "디렉토리 이름 입력";
+            } else {
+                modalTitle = "파일 이름 수정"
+                keyword = "파일";
+                placeholder = "파일 이름 입력 (확장자는 변경되지 않습니다.)";
+            }
+
+            const EditComponent = () => {
+
+                /* 파일 이름 수정 컴포넌트
+                    따로 분리한 이유는 다음과 같다.
+                        - 확장자가 달린 파일일 경우 
+                            확장자는 변경되지 않으므로 확장자를 에디터 오른쪼겡
+                            보기 쉽게 출력되어야 한다.
+                */
+
+                if(fileType == 'dir') {
+                    return (
+                        <Form.Control type="text" placeholder={placeholder} name="newName"/>
+                    )
+                } else {
+                    let __extension = "";
+                    
+                    let __splitedFilename = filename.split('.');
+                    if(__splitedFilename.length > 1) {
+                        // 확장자가 존재하는 경우
+                        __extension = __splitedFilename[__splitedFilename.length - 1];
+                    }
+
+                    return (
+                        <div style={{ display: "flex" }}>
+                            <Form.Control type="text" placeholder={placeholder} style={{ marginRight: "10px" }} name="newName" />
+                            <h5>.{__extension}</h5>
+                        </div>
+                    )
+                }
+            }
+
+            return (
+                <Modal
+                    show={isModifyObjectModalOpen}
+                    onHide={closeEvent}
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>{modalTitle}</Modal.Title>
+                    </Modal.Header>
+                    <Form onSubmit={modifyHandler}>
+                        <Modal.Body>
+                            <Form.Group className="mb-3" controlId="newDirectoryName">
+                                <Form.Label>새로운 {keyword} 이름을 입력하세요</Form.Label>
+                                <EditComponent />
+                            </Form.Group>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="success" type="submit">수정</Button>
+                            <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                        </Modal.Footer>
+                    </Form>
+                </Modal>
+            )
         }
         if(fileType == "dir") {
             // 디렉토리
@@ -110,16 +260,19 @@ const FileStatusComponent = (props) => {
     
                     <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
-                        <Button variant="outline-success" style={{ width: "100%"}}>이름 변경</Button>
+                        <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
                     </div>
                     <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+
+                    <ModifyObjectModal />
                 </Layout>
             )
         } else {
+            // 파일
             let imgUrl = "";
             fileType = fileType.toLowerCase();
-            console.log(fileType);
             switch(fileType) {
+                // 파일 타입에 따른 파일 이미지 세팅
                 case 'text': imgUrl = txtFileImg; break;
                 case 'exe': imgUrl = exeFileImg; break;
                 case 'pdf': imgUrl = pdfFileImg; break;
@@ -130,6 +283,7 @@ const FileStatusComponent = (props) => {
                 default: imgUrl = otherFileImg; break;
 
             }
+
             return (
                 <Layout>
                     <center style={{ marginBottom: "40px" }}>
@@ -160,10 +314,11 @@ const FileStatusComponent = (props) => {
     
                     <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
-                        <Button variant="outline-success" style={{ width: "50%", marginRight: "10%"}}>이름 변경</Button>
-                        <Button variant="outline-success" style={{ width: "50%"}}>공유 설정</Button>
+                        <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
                     </div>
                     <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+
+                    <ModifyObjectModal />
                 </Layout>
             )
         }
@@ -177,6 +332,8 @@ const FileStatusComponent = (props) => {
         let imgUrl = ""
         let fileTypes = selectedDirList.map((data) => data.split('/')[1]);
         let dirCount = fileTypes.filter(t => 'dir' == t).length;
+
+        
         if(dirCount == 0) {
             // 파일만 선택한 경우
             imgUrl = multiFileImg;
@@ -187,6 +344,9 @@ const FileStatusComponent = (props) => {
             // 섞어서 선택한 경우
             imgUrl = multiAllImg;
         }
+
+        // 파일 수정 Modal
+
         return (
             <Layout>
                 <center style={{ marginBottom: "40px" }}>

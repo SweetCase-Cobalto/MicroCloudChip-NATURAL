@@ -289,7 +289,7 @@ class FileDirControlTestUnittest(TestCase):
             self.assertEqual(os.path.isfile(f['full-root']), True)
 
             # 같은 상태로 파일 수정 불가
-            self.assertRaises(ValueError, lambda: f.update_name(new_file_name))
+            self.assertRaises(MicrocloudchipSystemAbnormalAccessError, lambda: f.update_name(new_file_name))
 
         def failed_case_removed_file_does_not_modify_name():
             # 실패 케이스: 삭제된 파일은 생성 불능

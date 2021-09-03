@@ -17,15 +17,17 @@ const MyAccountStatusComponent = (props) => {
         window.location.href = "/";
     }
     
-
     const convertRawVolumeToString = (value) => {
+        
         let unit = 'BYTE';
 
         if(value < Math.pow(10, 3))         { unit = 'KB'; }
-        else if(value < Math.pow(10, 6))    { unit = 'MB'; value = Math.floor((value / Math.pow(10, 3))); }
-        else if(value < Math.pow(10, 9))    { unit = 'GB'; value = Math.floor((value / Math.pow(10, 6))); }
-        else                                { unit = 'TB'; value = Math.floor((value / Math.pow(10, 9))); }
+        else if(value < Math.pow(10, 6))    { unit = 'MB'; value = (value / Math.pow(10, 3)); }
+        else if(value < Math.pow(10, 9))    { unit = 'GB'; value = (value / Math.pow(10, 6)); }
+        else                                { unit = 'TB'; value = (value / Math.pow(10, 9)); }
 
+        // 소수점 이하 세자리 버림
+        value = Math.floor(value * 1000) / 1000;
         return `${value} ${unit}`;
     }
 
@@ -44,6 +46,8 @@ const MyAccountStatusComponent = (props) => {
     let usrIcon = props.usrImgLink;                 // 업로드한 유저 이미지
 
     let gage = (usedStorage / capacityStorage) * 100; // 사용용량 Percentage
+
+    console.log(gage);
 
      return (
         <Layout>
