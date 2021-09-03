@@ -12,24 +12,29 @@ import multiFileImg from '../../asset/img/icons/multiple-file-icon.svg';
 import multiDirImg from '../../asset/img/icons/multiple-dirs-icon.svg';
 import multiAllImg from '../../asset/img/icons/multiple-all-icon.svg';
 
+import CONFIG from '../../asset/config.json';
+
 import styled from "styled-components";
 import { Image, Button } from "react-bootstrap";
 
-import ExampleImg from '../../asset/img/icons/dir.svg'
 import { connect } from "react-redux";
+import { useState } from 'react';
+import axios from 'axios';
 
 const FileStatusComponent = (props) => {
 
-    let selectedDirList = props.dirList;
+    let selectedDirList = props.selectedDir.dirList;
+
+    let [dataInfo, setDataInfo] = useState(undefined);
 
 
     // 컴포넌트에 출력될 데이터들
     let filename = "";
-    let imgUrl = "";
-    
     
     if(!selectedDirList.length) {
         // 선택된 파일이 없음
+        if(dataInfo != undefined)
+            setDataInfo(undefined);
         return (
             <Layout>
                 <h5>선택된 파일 없음</h5>
@@ -40,15 +45,44 @@ const FileStatusComponent = (props) => {
     // 선택된 파일이 한 개 일 경우
     else if(selectedDirList.length == 1) {
 
-        console.log(selectedDirList);
-
         let splited = selectedDirList[0].split('/');
         filename = splited[0];
         let fileType = splited[1];
         
         // TODO: 해당 파일에 대한 정보를
         // 서버로부터 받아와야 함
+        
+        if(dataInfo === undefined) {
+            // 아직 받아오지 못했거나 다른 파일 및 디렉토리를 선택한 경우
+            
+            // 서버와 통신하기 위한 URL 생성
+            let TARGET_URL = CONFIG.URL + "/server/storage/data/";
+            if(fileType == 'dir')
+                TARGET_URL += "dir/"
+            else
+                TARGET_URL += "file/"
+            TARGET_URL += props.userInfo.id + "/" + props.parentDir.curUrl.join('/') + "/" + filename;
 
+            // 전송
+            axios.get(TARGET_URL, {
+                headers: {"Set-Cookie": props.userInfo.token },
+                withCredentials: true,
+                crossDomain: true
+            })
+            .then((response) => {
+                let data = response.data;
+                if(data.code != 0) {
+                    alert("오류 발생");
+                } else {
+                    setDataInfo(data.data.info);
+                }
+            })
+            
+            // TODO: 로딩 페이지 구현 필요
+            return (<div>
+                Loading
+            </div>)
+        }
         if(fileType == "dir") {
             // 디렉토리
             return (
@@ -65,24 +99,18 @@ const FileStatusComponent = (props) => {
     
                         <TextLayer>
                             <KeyLayer>수정 날짜</KeyLayer>
-                            <ValueLayer>2021-01-01 4:13 am</ValueLayer>
-                        </TextLayer>
-    
-                        <TextLayer>
-                            <KeyLayer>파일 유형</KeyLayer>
-                            <ValueLayer>Text</ValueLayer>
+                            <ValueLayer>{dataInfo['create-date']}</ValueLayer>
                         </TextLayer>
                     
                         <TextLayer>
-                            <KeyLayer>용량</KeyLayer>
-                            <ValueLayer>1KB</ValueLayer>
+                            <KeyLayer>파일 갯수</KeyLayer>
+                            <ValueLayer>{dataInfo['file-size']}</ValueLayer>
                         </TextLayer>
                     </div>
     
                     <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
-                        <Button variant="outline-success" style={{ width: "50%", marginRight: "10%"}}>이름 변경</Button>
-                        <Button variant="outline-success" style={{ width: "50%"}}>공유 설정</Button>
+                        <Button variant="outline-success" style={{ width: "100%"}}>이름 변경</Button>
                     </div>
                     <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
                 </Layout>
@@ -141,6 +169,11 @@ const FileStatusComponent = (props) => {
         }
     } else {
         // 여러개
+        
+        // 여러개기 때문에 전에 선택된 단일 파일 및 디렉토리 정보는 갖다버려 ㅋ
+        if(dataInfo != undefined)
+            setDataInfo(undefined);
+
         let imgUrl = ""
         let fileTypes = selectedDirList.map((data) => data.split('/')[1]);
         let dirCount = fileTypes.filter(t => 'dir' == t).length;
@@ -173,7 +206,11 @@ const FileStatusComponent = (props) => {
 }
 
 const mapStateToProps = (state) => {
-    return state.SelectedDirReducer;
+    return {
+        "selectedDir": state.SelectedDirReducer,
+        "userInfo": state.ConnectedUserReducer,
+        "parentDir": state.DirListReducer
+    }
 }
 export default connect(mapStateToProps)(FileStatusComponent);
 

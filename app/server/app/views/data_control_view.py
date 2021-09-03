@@ -179,6 +179,9 @@ class DataControlView(APIView):
                     }
                 }
             })
+
+        
+
         else:
             err = MicrocloudchipSystemAbnormalAccessError("Access Error")
             return JsonResponse({'code': err.errorCode})

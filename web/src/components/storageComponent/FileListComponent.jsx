@@ -111,6 +111,11 @@ const FileListComponent = (props) => {
             </Layout>
         );
     } else if (props.DirListReducer.errCode != 0) {
+
+        // 세션 만료로 인해 id가 소멸된 경우
+        if(userInfo.id === undefined || userInfo.id == "")
+            props.hisotory.push("/");
+        
         alert("해당 디렉토리는 존재하지 않습니다.");
         props.history.goBack();
     }else {
