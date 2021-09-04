@@ -88,8 +88,8 @@ const FileItemInList = (props) => {
                         textDecoration: isMouseEntered ? "underline" : "none"
                     }}
                     onClick={onClickEvent} 
-                    onMouseEnter={e => { setIsMouseEntered(true)}} 
-                    onMouseLeave={e => { setIsMouseEntered(false)}}
+                    onMouseEnter={() => { if(filename != "." && filename != "..") { setIsMouseEntered(true); }}} 
+                    onMouseLeave={()=> { if(filename != "." && filename != "..") { setIsMouseEntered(false); }}}
                 >{filename}</h5>
             </div>
             <div style={{ borderBottom: "1px solid gray"}} />

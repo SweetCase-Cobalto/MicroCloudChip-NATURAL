@@ -42,6 +42,11 @@ const FileListComponent = (props) => {
         // 각 파일의 체크박스 선택 시 사용되는 핸들러
         // 주로 선택된 파일 리스트를 redux를 사용해 관리하는데 사용한다.
 
+        if(f["filename"] == ".." || f["filename"] == ".") {
+            // 뒤로 가기 버튼 예외처리
+            return;
+        }
+
         let __key = f["filename"]+"/"+String(f["type"]);
         let targetIdx = selectedDirList.indexOf(__key);
 
@@ -130,11 +135,14 @@ const FileListComponent = (props) => {
         allRootArrToString = allRootArr.join('/');
 
         const FileItemsComponent = datas.map((f, index) => {
+
+            let __color = ( (f['filename'] == '.' || f['filename'] == '..') ? '#FFFFFF': "#137813" )
+
             // Make File List Component
             return (
                 <div key={index} style={{ display: "flex", marginBottom: "20px" }}>
-                    <CustomCheckbox color="#137813" 
-                                    onClick={() => { checkBoxClickHandler(f); }} />
+                    <CustomCheckbox color={__color}
+                            onClick={() => { checkBoxClickHandler(f); }} />
                     <FileItemInList 
                             isDir={f['isDir']}
                             filename={f['filename']}
@@ -142,6 +150,7 @@ const FileListComponent = (props) => {
                             history={props.history} />
                 </div>
             );
+
         });
 
 
