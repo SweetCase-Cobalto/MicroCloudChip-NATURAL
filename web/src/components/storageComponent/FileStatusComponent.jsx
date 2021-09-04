@@ -16,7 +16,7 @@ import CONFIG from '../../asset/config.json';
 import { ErrorCodes } from '../../modules/err/errorVariables';
 
 import styled from "styled-components";
-import { Image, Button, Form, Modal } from "react-bootstrap";
+import { Image, Button, Form, Modal, ProgressBar } from "react-bootstrap";
 
 import { floorVolume } from '../../modules/tool/volume';
 
@@ -392,6 +392,7 @@ const FileStatusComponent = (props) => {
 
         let imgUrl = ""
 
+        // 파일 리스트 (파일 타입 / 파일 이름)
         let fileTypes = [];
         let fileNames = [];
 
@@ -418,12 +419,26 @@ const FileStatusComponent = (props) => {
 
         // 다중 파일/디렉토리 삭제 Modal
         const MultipleDeleteObjectModal = () => {
-            const closeEvent = () => { setIsDeleteMultipleModalOpen(false); }
+
+            // 컴포넌트 변화를 위한 useState
+            const [deleteProcess, setDeleteProcess] = useState({
+                "targetFileName": undefined,
+                "deletedFileNum": -1,
+                /*
+                    targetFileName: 삭제 중인 파일 이름
+                    deletedFileNum: 삭제한 파일 갯수
+                        -1 => 작업 전
+                        0 ~ => 삭제한 파일 수
+                        == fileNames.length => 파일 삭제 완료
+                */
+            })
+
             
             // 제거 대상 파일/디렉토리 리스트 컴포넌트
             let DeletedObjectListShowComponentList = [];
 
             for(let i = 0; i < fileNames.length; i++) {
+                // 파일 순회 돌면서 파일 리스트 컴포넌트 만들기
 
                 let __fileTypeForPrint = "";
                 let __fontColor = "";
@@ -436,39 +451,112 @@ const FileStatusComponent = (props) => {
                     __fileTypeForPrint = "[File]";
                     __fontColor = "black";
                 }
-
+                
+                // 컴포넌트 만들기
                 DeletedObjectListShowComponentList.push(
-                    <p style={{ fontSize: "0.9em", marginBottom: "-2px"}}>
+                    <p style={{ fontSize: "0.9em", marginBottom: "-2px"}} key={i}>
                         <strong style={{ color: `${__fontColor}` }}>{__fileTypeForPrint}</strong>:{fileNames[i]}
                     </p>
                 )
             }
+            
+            const closeEvent = () => { setIsDeleteMultipleModalOpen(false); }
+            // 창닫기 이벤트
 
+            const deleteEvent = async () => {
+                // 삭제 이벤트
+                
+                // URL 세팅
+                let URL = CONFIG.URL + "/server/storage/data"
+
+                for(let i = 0; i < fileNames.length; i++) {
+                    // 순회 돌면서 파일 및 디렉토리 없애버리기
+
+                    let TARGET_URL = URL;
+                    if(fileTypes[i] == 'dir') {
+                        TARGET_URL += "/dir";
+                    } else {
+                        TARGET_URL += "/file";
+                    }
+                    
+                    TARGET_URL += `/${props.userInfo.id}/${props.parentDir.curUrl.join('/')}/${fileNames[i]}`;
+                }
+            }
+
+            // 하위 컴포넌트
+            const ModalBodyComponent = () => {
+                // Modal.Body 컴포넌트
+                if(deleteProcess.deletedFileNum == -1 && deleteProcess.targetFileName === undefined) {
+                    // 작업 전
+                    return (
+                        <Modal.Body>
+                            <h5>다음과 같은 파일 및 디렉토리를 삭제합니다.</h5>
+                            <div style={{
+                                margin: "10px", padding: "10px",
+                                height: "300px",  width: "100%",
+                                overflow: "scroll",
+                                border: "1px solid gray",
+                            }}>
+                                {DeletedObjectListShowComponentList}
+                            </div>
+                            <h5>삭제하시겠습니까?</h5>         
+                        </Modal.Body>
+                    )
+                } else if(0 <= deleteProcess.deletedFileNum && deleteProcess.deletedFileNum < fileNames.length ) {
+                    // 진행 중
+                    let percentage = (deleteProcess.deletedFileNum / fileNames.length) * 100;
+                    return (
+                        <Modal.Body>
+                            <h5>Delete: {fileNames[deleteProcess.deletedFileNum]}</h5>
+                            <ProgressBar striped variant="success" now={percentage} />
+                        </Modal.Body>
+                    )
+                } else {
+                    // 완료
+                    <Modal.Body>
+                        <h5>삭제 완료</h5>
+                        <ProgressBar striped variant="success" now={100} />
+                    </Modal.Body>
+                }
+            }
+            const ModalFooterComponent = () => {
+                // Modal.Footer 컴포넌트
+                if(deleteProcess.deletedFileNum == -1 && deleteProcess.targetFileName === undefined) {
+                    // 작업 전
+                    return (
+                        <Modal.Footer>
+                            <Button variant="danger" onClick={deleteEvent}>삭제</Button>
+                            <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                        </Modal.Footer>
+                    )
+                } else if (0 <= deleteProcess.deletedFileNum && deleteProcess.deletedFileNum < fileNames.length ) {
+                    // 작업중
+                    return (
+                        <Modal.Footer />
+                    )
+                } else {
+                    // 작업 완료
+                    return (
+                        <Modal.Footer>
+                            
+                            <Button variant="success" onClick={() => {
+                                window.location.reload();
+                            }}>확인</Button>
+                        </Modal.Footer>
+                    )
+                }
+            }
             return (
                 <Modal
                     show={isDeleteMultipleModalOpen}
                     onHide={closeEvent}
                     centered
                 >
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>파일 및 디렉토리 삭제</Modal.Title>
                     </Modal.Header>
-                    <Modal.Body>
-                        <h5>다음과 같은 파일 및 디렉토리를 삭제합니다.</h5>
-                        <div style={{
-                            margin: "10px", padding: "10px",
-                            height: "300px",  width: "100%",
-                            overflow: "scroll",
-                            border: "1px solid gray",
-                        }}>
-                            {DeletedObjectListShowComponentList}
-                        </div>
-                        <h5>삭제하시겠습니까?</h5>                        
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="danger">삭제</Button>
-                        <Button variant="secondary" onClick={closeEvent}>취소</Button>
-                    </Modal.Footer>
+                    <ModalBodyComponent />
+                    <ModalFooterComponent />
                 </Modal>
             )
         }

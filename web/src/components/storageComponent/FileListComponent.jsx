@@ -189,7 +189,7 @@ const FileListComponent = (props) => {
                 uploadedFilesLength: 업로드 완료된 파일의 갯수
                     -1 => 시작 전
                     0 ~ ... => 업로드가 완료된 파일 갯수
-                    -2 => 완료
+                    선택된 파일 갯수와 일치 => 완료
 
                 progressFileName: 업로드 진행 중인 파일의 이름
             */
@@ -394,9 +394,9 @@ const FileListComponent = (props) => {
                 </div>
     
                 <div style={{ backgroundColor: "gray", width: "100%", height:"1.4px", marginTop: "20px", marginBottom: "20px" }} />
-                <div>
+                <ListLayout>
                     {FileItemsComponent}
-                </div>
+                </ListLayout>
 
                 <DirectoryUploadModal />
                 <FileUploadModal />
@@ -421,9 +421,28 @@ const Layout = styled.div`
 
     font-family: "Gothic A1";
     width: 65%;
+    height: 100vh;
 
     border: 1.2px solid #1DB21D;
     box-shadow: 2px 2px 3px gray;
 
     padding: 30px;
 `;
+const ListLayout = styled.div`
+
+    overflow: scroll;
+    height: 70%;
+    
+    &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+
+        border-radius: 6px;
+        background: rgba(255 255, 255, 0.4);
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(19, 120, 19, 0.4);
+        border-radius: 6px;
+    }
+    
+`
