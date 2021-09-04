@@ -44,8 +44,9 @@ const FileStatusComponent = (props) => {
 
 
     // 모달 컴포넌트
-    // 파일 및 디렉토리 내용을 수정할 때
-    let [isModifyObjectModalOpen, setIsModifyObjectModalOpen] = useState(false);
+    // 파일/디렉토리 삭제/수정할 때 뜨는 모달 Flag
+    const [isModifyObjectModalOpen, setIsModifyObjectModalOpen] = useState(false);
+    const [isDeleteObjectModalOpen, setIsDeleteObjectModalOpen] = useState(false);
     
     if(!selectedDirList.length) {
         // 선택된 파일이 없음
@@ -236,6 +237,61 @@ const FileStatusComponent = (props) => {
                 </Modal>
             )
         }
+
+        const DeleteObjectModal = () => {
+            
+            const closeEvent = () => { setIsDeleteObjectModalOpen(false); }
+
+            const deleteEvent = () => {
+                // URL 세팅
+                let URL = CONFIG.URL + "/server/storage/data/";
+                if(fileType == 'dir') {
+                    URL += "dir/";
+                } else {
+                    URL += "file/";
+                }
+                URL += `${props.userInfo.id}/${props.parentDir.curUrl.join('/')}/${filename}`;
+
+                // 삭제
+                axios.delete(URL, {
+                    headers: {'Set-Cookie': props.userInfo.token },
+                    crossDomain: true,
+                    withCredentials: true
+                }).then((response) => {
+                    let data = response.data;
+                    if(data.code == 0) {
+                        alert("삭제에 성공했습니다.");
+                    } else {
+                        alert("삭제에 실패했습니다.");
+                    }
+                    window.location.reload();
+                })
+            }
+
+            return (
+                <Modal
+                    show={isDeleteObjectModalOpen}
+                    onHide={closeEvent}
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>파일 및 디렉토리 삭제</Modal.Title>
+                    </Modal.Header>
+                    
+                    <Modal.Body>
+                            <h5>정말로 삭제하시겠습니까?</h5>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="danger" onClick={deleteEvent}>삭제</Button>
+                        <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                    </Modal.Footer>
+
+                </Modal>
+            )
+
+            
+        }
+
         if(fileType == "dir") {
             // 디렉토리
             return (
@@ -265,9 +321,10 @@ const FileStatusComponent = (props) => {
                     <div style={{ marginBottom: "15px", display: "flex" }}>
                         <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
                     </div>
-                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={() => setIsDeleteObjectModalOpen(true)}>삭제</Button>
 
                     <ModifyObjectModal />
+                    <DeleteObjectModal />
                 </Layout>
             )
         } else {
@@ -320,9 +377,10 @@ const FileStatusComponent = (props) => {
                     <div style={{ marginBottom: "15px", display: "flex" }}>
                         <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
                     </div>
-                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={() => setIsDeleteObjectModalOpen(true)}>삭제</Button>
 
                     <ModifyObjectModal />
+                    <DeleteObjectModal />
                 </Layout>
             )
         }
