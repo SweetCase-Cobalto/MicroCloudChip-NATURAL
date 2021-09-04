@@ -469,6 +469,12 @@ const FileStatusComponent = (props) => {
                 // URL 세팅
                 let URL = CONFIG.URL + "/server/storage/data"
 
+                // 진행 중 표시
+                setDeleteProcess({
+                    "targetFileName": fileNames[0],
+                    "deletedFileNum": 0,
+                })
+
                 for(let i = 0; i < fileNames.length; i++) {
                     // 순회 돌면서 파일 및 디렉토리 없애버리기
 
@@ -480,6 +486,50 @@ const FileStatusComponent = (props) => {
                     }
                     
                     TARGET_URL += `/${props.userInfo.id}/${props.parentDir.curUrl.join('/')}/${fileNames[i]}`;
+
+                    // Delete
+                    // 파일, 디렉토리에 따라 다른 URL을 송신한다.
+                    let result = await axios.delete(TARGET_URL, {
+                        headers: {'Set-Cookie': props.userInfo.token},
+                        withCredentials: true,
+                        crossDomain: true,
+                    }).then((response) => response.data)
+                    .catch((err) => {
+                        // 서버 연결 시도 실패
+                        return {
+                            "code": ErrorCodes.ERR_AXIOS_FAILED,
+                            "data": err,
+                        };
+                    });
+
+                    // 전송 결과
+                    if(result.code == ErrorCodes.ERR_AXIOS_FAILED) {
+                        // Axios Error: 주로 서버와 연결이 끊어졌을 대 발생한다.
+                        alert("서버로부터 연결이 끊어졌습니다.");
+                        break;
+                    } else if(result.code == 0) {
+                        // 삭제 성공
+                        let nextFileName = undefined;
+                        
+                        // 다음 삭제 대상 파일 출력
+                        if(i == fileNames.length - 1) {
+                            nextFileName = "삭제 완료";
+                        } else {
+                            nextFileName = fileNames[i + 1];
+                        }
+                        console.log(nextFileName);
+                        setDeleteProcess({
+                            "targetFileName": nextFileName,
+                            "deletedFileNum": i + 1,
+                        });
+
+                    } else {
+                        // 서버상의 에러
+                        alert("파일에 삭제에 문제가 생겼습니다.");
+                        break;
+                    }
+
+                
                 }
             }
 
@@ -513,10 +563,12 @@ const FileStatusComponent = (props) => {
                     )
                 } else {
                     // 완료
-                    <Modal.Body>
-                        <h5>삭제 완료</h5>
-                        <ProgressBar striped variant="success" now={100} />
-                    </Modal.Body>
+                    return (
+                        <Modal.Body>
+                            <h5>삭제 완료</h5>
+                            <ProgressBar striped variant="success" now={100} />
+                        </Modal.Body>
+                    );
                 }
             }
             const ModalFooterComponent = () => {
