@@ -1,11 +1,11 @@
 import styled from "styled-components";
-import { Button, Dropdown, Form, Modal } from "react-bootstrap";
+import { Button, Dropdown, Form, Modal, ProgressBar } from "react-bootstrap";
 
 import FileItemInList from "./FileItemInList";
 import CustomCheckbox from "../atomComponents/CustomCheckbox";
 import { connect } from "react-redux";
 
-import { useState } from "react";
+import { useState, setState } from "react";
 
 import { updateDirList } from "../../reducers/DirListReducer";
 import { updateDirs } from "../../reducers/SelectedDirReducer";
@@ -13,9 +13,13 @@ import { updateDirs } from "../../reducers/SelectedDirReducer";
 
 import CONFIG from '../../asset/config.json';
 import axios from "axios";
+import { ErrorCodes } from "../../modules/err/errorVariables";
 
 const FileListComponent = (props) => {
+
+    // Modal Events
     const [directoryAdderShow, setDirectoryAdderShow] = useState(false);
+    const [fileUploaderShow, setFileUploaderShow] = useState(false);
 
     let allRootArr = decodeURI(window.location.pathname).split('/').slice(2); // url 파라미터로부터 가져온다
     
@@ -98,7 +102,6 @@ const FileListComponent = (props) => {
         
     }
 
-
     // Start
     if(props.DirListReducer.errCode == undefined) {
         // 해당 디렉토리로부터 데이터를 서버로부터 갖고와서 업데이트
@@ -171,7 +174,198 @@ const FileListComponent = (props) => {
                 </Modal>
             );
         }
+        const FileUploadModal = () => {
 
+            const closeEvent = () => setFileUploaderShow(false);
+
+            const [uploadProcess, setUploadProcess] = useState({
+                "targetFilesLength": -1,
+                "uploadedFilesLength": -1,
+                "progressFileName": undefined,
+            });
+            /*
+                targetFilesLength: targetFiles의 길이
+                
+                uploadedFilesLength: 업로드 완료된 파일의 갯수
+                    -1 => 시작 전
+                    0 ~ ... => 업로드가 완료된 파일 갯수
+                    -2 => 완료
+
+                progressFileName: 업로드 진행 중인 파일의 이름
+            */
+
+            const uploadHandler = async (e) => {
+                
+                e.preventDefault();
+
+                
+                // 업로드 대상 파일 및 파일 갯수 저장
+                let targetFiles = e.target.newUploadedFileList.files;
+                let targetFilesLength = targetFiles.length;
+
+                // 파일 업로드 진행바 생성을 위해 선택된 파일 갯수 갱신
+
+
+                setUploadProcess({
+                    "targetFilesLength": targetFilesLength,
+                    "uploadedFilesLength": -1,
+                    "progressFileName": undefined,
+                })
+                
+                // 파일이 없는 경우
+                if(targetFilesLength < 1) {
+                    alert("파일을 선택해 주세요");
+                    return;
+                }
+
+                // URL 생성
+                let URL = `${CONFIG.URL}/server/storage/data/file/${props.ConnectedUserReducer.id}/${props.DirListReducer.curUrl.join('/')}/`;
+
+                // 업로드 시작
+                setUploadProcess({
+                    "targetFilesLength": targetFilesLength,
+                    "uploadedFilesLength": 0,
+                    "progressFileName": targetFiles[0].name
+                });
+
+                // 파일 순차적으로 업로드
+                // filelist는 object가 아니기 때문에 For를 사용해야 한다
+                for(let i = 0; i < targetFilesLength; i++) {
+                    let file = targetFiles[i];
+                    
+                    //  URL 생성
+                    let FILE_URL = URL += file.name;
+                    
+                    // 파일 업로드를 위한 FormData 생성
+                    let formData = new FormData();
+                    formData.append('file', file);
+
+
+                    // 전송 시작
+                    let result = await axios.post(FILE_URL, formData, {
+                        headers: { 'Set-Cookie': props.ConnectedUserReducer.token},
+                        withCredentials: true,
+                        crossDomain: true
+                    }).then((response) => response.data)
+                    .catch((err) => {
+                        // 전송 실패
+                        return {
+                            "code": ErrorCodes.ERR_AXIOS_FAILED,
+                            "err": err
+                        }
+                    })
+
+                    // 전송 결과
+                    if(result.code == ErrorCodes.ERR_AXIOS_FAILED) {
+                        // Axios Error: 주로 서버와 연결이 끊어졌을 때 발생한다.
+                        alert("서버로부터 연결이 끊어졌습니다.");
+                        break;
+                    } else if(result.code == 0) {
+
+                        // 전송 성공
+                        let nextFileName = undefined;
+                        if(i == targetFilesLength - 1) {
+                            nextFileName = "업로드 완료"
+                        } else {
+                            nextFileName = targetFiles[i + 1].name;
+                        }
+
+                        setUploadProcess({
+                            "targetFilesLength": targetFilesLength,
+                            "uploadedFilesLength": i + 1,
+                            "progressFileName": nextFileName,
+                        });
+                    } else {
+                        // 서버상의 에러
+                        alert("파일에 문제가 있습니다. 다시 업로드해 주세요");
+                        break;
+                    }
+                    
+                }
+            }
+
+            const ModalBodyComponent = () => {
+                // 업로드 진행 상태에 따라 내용도 달라져야 한다
+                
+                if(uploadProcess.uploadedFilesLength == -1) {
+                    // 업로드 시작 전
+                    return (
+                        <Modal.Body>
+                            <Form.Group className="mb-3" controlId="newUploadedFileName">
+                                <Form.Label>업로드 할 파일을 선택해 주세요</Form.Label>
+                                <Form.Control type="file" name="newUploadedFileList" multiple />
+                            </Form.Group>
+                        </Modal.Body>
+                    );
+                } else {
+                    // 업로드 진행
+                    let percentage = (uploadProcess.uploadedFilesLength / uploadProcess.targetFilesLength) * 100;
+                    // 진행 상황 Percentage
+
+
+                    return (
+                        <Modal.Body>
+                            <h5>Upload: {uploadProcess.progressFileName}</h5>
+                            <ProgressBar striped variant="success" now={percentage} />
+                        </Modal.Body>
+                    );
+                }
+            }
+            const ModalFooterComponent = () => {
+
+                // 업로드 진행 상태에 따라 버튼 이벤트도 달라진단다
+                if(uploadProcess.uploadedFilesLength == -1) {
+                    // 업로드 전
+                    return (
+                        <Modal.Footer>
+                            <Button variant="success" type="submit">업로드</Button>
+                            <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                        </Modal.Footer>
+                    );
+                } else if (uploadProcess.progressFileName !== undefined && 
+                    uploadProcess.uploadedFilesLength < uploadProcess.targetFilesLength) {
+                    // 진행중
+                    return (
+                        <Modal.Footer />
+                    );
+                } else {
+                    // 업로드 완료
+                    return (
+                        <Modal.Footer>
+                            <Button variant="success" onClick={() => {
+                                window.location.reload();
+                            }}>확인</Button>
+                        </Modal.Footer>
+                    );
+                }
+            }
+            
+            return (<Modal
+                show={fileUploaderShow}
+                onHide={() => {
+                    if(uploadProcess.uploadedFilesLength == uploadProcess.targetFilesLength &&
+                        uploadProcess.progressFileName !== undefined) {
+                            // 업로드 완료 시 새로고침
+                            window.location.reload();
+                    } else {
+                        closeEvent();
+                    }
+                    
+                }}
+                centered
+            >
+                <Modal.Header closeButton>
+                    <Modal.Title>파일 업로드</Modal.Title>
+                </Modal.Header>
+                <Form onSubmit={uploadHandler}>
+                    <ModalBodyComponent />
+                    <ModalFooterComponent />
+                </Form>
+            </Modal>);
+        }
+
+
+        // Component Render
         return (
             <Layout>
                 <h4 style={{ fontWeight: "bold" }}>{allRootArrToString}</h4>
@@ -183,7 +377,7 @@ const FileListComponent = (props) => {
                             업로드
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item>파일 업로드</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setFileUploaderShow(true)}>파일 업로드</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
 
@@ -205,6 +399,7 @@ const FileListComponent = (props) => {
                 </div>
 
                 <DirectoryUploadModal />
+                <FileUploadModal />
             </Layout>
         );
     }

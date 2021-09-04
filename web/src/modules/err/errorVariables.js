@@ -6,6 +6,10 @@ const ERR_PREFIX_ACCESS = 0x03000000
 /* ACCESS ERRORS */
 export const ErrorCodes = {
 
+    // AxiosError
+    ERR_AXIOS_FAILED: -1,
+
+
     // System error
     ERR_SYSTEM_ABNORMAL_ACCESS_ERR: ERR_PREFIX_SYSTEM | 0x03,
 
