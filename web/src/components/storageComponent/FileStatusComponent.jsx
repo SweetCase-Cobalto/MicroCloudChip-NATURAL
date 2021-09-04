@@ -47,6 +47,7 @@ const FileStatusComponent = (props) => {
     // 파일/디렉토리 삭제/수정할 때 뜨는 모달 Flag
     const [isModifyObjectModalOpen, setIsModifyObjectModalOpen] = useState(false);
     const [isDeleteObjectModalOpen, setIsDeleteObjectModalOpen] = useState(false);
+    const [isDeleteMultipleModalOpen, setIsDeleteMultipleModalOpen] = useState(false);
     
     if(!selectedDirList.length) {
         // 선택된 파일이 없음
@@ -241,8 +242,8 @@ const FileStatusComponent = (props) => {
         const DeleteObjectModal = () => {
             
             const closeEvent = () => { setIsDeleteObjectModalOpen(false); }
-
             const deleteEvent = () => {
+                
                 // URL 세팅
                 let URL = CONFIG.URL + "/server/storage/data/";
                 if(fileType == 'dir') {
@@ -288,8 +289,6 @@ const FileStatusComponent = (props) => {
 
                 </Modal>
             )
-
-            
         }
 
         if(fileType == "dir") {
@@ -392,7 +391,17 @@ const FileStatusComponent = (props) => {
             setDataInfo(undefined);
 
         let imgUrl = ""
-        let fileTypes = selectedDirList.map((data) => data.split('/')[1]);
+
+        let fileTypes = [];
+        let fileNames = [];
+
+        selectedDirList.map((data) => {
+            // 할당
+            let splited = data.split('/');
+
+            fileNames.push(splited[0]);
+            fileTypes.push(splited[1]);
+        })
         let dirCount = fileTypes.filter(t => 'dir' == t).length;
 
         
@@ -407,7 +416,62 @@ const FileStatusComponent = (props) => {
             imgUrl = multiAllImg;
         }
 
-        // 파일 수정 Modal
+        // 다중 파일/디렉토리 삭제 Modal
+        const MultipleDeleteObjectModal = () => {
+            const closeEvent = () => { setIsDeleteMultipleModalOpen(false); }
+            
+            // 제거 대상 파일/디렉토리 리스트 컴포넌트
+            let DeletedObjectListShowComponentList = [];
+
+            for(let i = 0; i < fileNames.length; i++) {
+
+                let __fileTypeForPrint = "";
+                let __fontColor = "";
+
+                // File 타입: Dir -> 디렉토리, Other -> 파일
+                if(fileTypes[i] == 'dir') {
+                    __fileTypeForPrint = "[Directory]";
+                    __fontColor = "blue"
+                } else {
+                    __fileTypeForPrint = "[File]";
+                    __fontColor = "black";
+                }
+
+                DeletedObjectListShowComponentList.push(
+                    <p style={{ fontSize: "0.9em", marginBottom: "-2px"}}>
+                        <strong style={{ color: `${__fontColor}` }}>{__fileTypeForPrint}</strong>:{fileNames[i]}
+                    </p>
+                )
+            }
+
+            return (
+                <Modal
+                    show={isDeleteMultipleModalOpen}
+                    onHide={closeEvent}
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>파일 및 디렉토리 삭제</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <h5>다음과 같은 파일 및 디렉토리를 삭제합니다.</h5>
+                        <div style={{
+                            margin: "10px", padding: "10px",
+                            height: "300px",  width: "100%",
+                            overflow: "scroll",
+                            border: "1px solid gray",
+                        }}>
+                            {DeletedObjectListShowComponentList}
+                        </div>
+                        <h5>삭제하시겠습니까?</h5>                        
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="danger">삭제</Button>
+                        <Button variant="secondary" onClick={closeEvent}>취소</Button>
+                    </Modal.Footer>
+                </Modal>
+            )
+        }
 
         return (
             <Layout>
@@ -421,7 +485,9 @@ const FileStatusComponent = (props) => {
                     </TextLayer>
                 </div>
                 <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
-                <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
+                <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={() => {setIsDeleteMultipleModalOpen(true)}}>삭제</Button>
+
+                <MultipleDeleteObjectModal />
             </Layout>
         );
     }
