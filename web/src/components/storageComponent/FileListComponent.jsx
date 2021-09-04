@@ -219,7 +219,7 @@ const FileListComponent = (props) => {
                 }
 
                 // URL 생성
-                let URL = `${CONFIG.URL}/server/storage/data/file/${props.ConnectedUserReducer.id}/${props.DirListReducer.curUrl.join('/')}/`;
+                let URL = `${CONFIG.URL}/server/storage/data/file/${props.ConnectedUserReducer.id}/${props.DirListReducer.curUrl.join('/')}`;
 
                 // 업로드 시작
                 setUploadProcess({
@@ -234,7 +234,7 @@ const FileListComponent = (props) => {
                     let file = targetFiles[i];
                     
                     //  URL 생성
-                    let FILE_URL = URL += file.name;
+                    let FILE_URL = `${URL}/${file.name}`;
                     
                     // 파일 업로드를 위한 FormData 생성
                     let formData = new FormData();
