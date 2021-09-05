@@ -23,14 +23,14 @@ def view_download_single_object(
         static_id: str,
         root: str,
         req_static_id: str) -> HttpResponse:
-
     # parent root 찾기
     splited_root: list[str] = DataControlView.get_real_root(root).split('/')
     parent_root: str = ""
     target_obj: str = splited_root[-1]
     if len(splited_root) > 1:
         parent_root = '/'.join(splited_root[:-1])
-
+    
+    # 다운로드 요청 데이터 작성
     req = {
         "static-id": static_id,
         "parent-root": parent_root,
@@ -61,9 +61,22 @@ def view_download_single_object(
         # Zip파일일 경우 없애부리기
         if is_zip:
             os.remove(result_file_root)
-        
+
         # 파일 HttpResponse 객체
         return response
-    
+
     except MicrocloudchipException as e:
         return JsonResponse({'code': e.errorCode})
+
+
+@check_token
+@api_view(['GET'])
+def view_download_multiple_object(
+        request: Request,
+        static_id: str,
+        parent_root: str,
+        req_static_id: str) -> HttpResponse:
+
+    print(request.GET)
+
+    return JsonResponse({'code': 0})

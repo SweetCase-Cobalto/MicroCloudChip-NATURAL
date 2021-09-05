@@ -398,7 +398,7 @@ class TestAPIUnittest(TestCase):
         self.assertFalse(response.json()['code'])
 
         # 파일 다운로드
-        response = self.client.get(f"/server/storage/download/file/{self.admin_static_id}/root/{EX_FILENAME}",
+        response = self.client.get(f"/server/storage/download/single/file/{self.admin_static_id}/root/{EX_FILENAME}",
                                    **token_header)
         # 온전한 파일 데이터 이므로 Json도 아니고 zip도 아니다
         self.assertNotEquals(response.headers['Content-Type'],
@@ -407,7 +407,7 @@ class TestAPIUnittest(TestCase):
                              CONTENT_TYPE_ZIP, msg="This File Download Test is Failed")
 
         # 디렉토리 압축파일 다운로드
-        response = self.client.get(f"/server/storage/download/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
+        response = self.client.get(f"/server/storage/download/single/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
                                    **token_header)
         # Zip File 이어야 한다
         self.assertEqual(response.headers['Content-Type'],
@@ -415,7 +415,7 @@ class TestAPIUnittest(TestCase):
 
         # 디렉토리 속 파일 다운로드
         response = self.client.get(
-            f"/server/storage/download/file/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}/{EX_FILENAME}",
+            f"/server/storage/download/single/file/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}/{EX_FILENAME}",
             **token_header)
         self.assertNotEquals(response.headers['Content-Type'],
                              CONTENT_TYPE_JSON, msg="This File Download Test is Failed")
@@ -423,6 +423,7 @@ class TestAPIUnittest(TestCase):
                              CONTENT_TYPE_ZIP, msg="This File Download Test is Failed")
 
         # 이름이 잘못된 파일 출력
-        response = self.client.get(f"/server/storage/download/dir/{self.admin_static_id}/root/aaaa",
+        response = self.client.get(f"/server/storage/download/single/dir/{self.admin_static_id}/root/aaaa",
                                    **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
+
