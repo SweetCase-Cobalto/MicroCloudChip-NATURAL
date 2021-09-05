@@ -8,6 +8,9 @@ from module.specification.System_config import SystemConfig
 
 import os
 import stat
+import datetime
+
+import module.tools.zip as custom_zip
 
 
 class StorageManager(WorkerManager):
@@ -19,6 +22,9 @@ class StorageManager(WorkerManager):
 
     def __get_user_root(self, static_id: str) -> str:
         return os.path.join(self.config.get_system_root(), 'storage', static_id, 'root')
+
+    def __get_user_tmp_root(self, static_id: str) -> str:
+        return os.path.join(self.config.get_system_root(), 'storage', static_id, 'tmp')
 
     def upload_file(
             self,
@@ -334,3 +340,103 @@ class StorageManager(WorkerManager):
 
         except Exception as e:
             raise e
+
+    def download_objects(self, req_static_id: str, req: dict) -> tuple:
+        # return: (결과 파일 루트, zip파일 여부)
+        # zip 같은 경우 사용자 루트의 tmp 디렉토리에 저장한다.
+        try:
+            target_static_id: str = req['static_id']
+            parent_root: str = req['parent-root']
+            object_list: list[tuple] = req['object-list']
+            """
+                object_list_element = {
+                    "object-name": "XXXXX",
+                    "type": "dir" or "file"
+                }
+            """
+
+        except KeyError as e:
+            raise e
+
+        # 권한 체크
+        if target_static_id != req_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access donwload file")
+
+        # zip 파일로 출력될 파일 이름
+        result_file_name: str = f"Microcloudchip-f{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}.zip"
+
+        if not object_list or len(object_list) == 0:
+            # 다운로드 대상의 Object가 없는 경우
+            raise MicrocloudchipSystemAbnormalAccessError("Object is nothing")
+        elif len(object_list) == 1:
+            # 단일 파일 또는 디렉토리 인 경우
+            obj = object_list[0]
+            if obj['type'] == 'dir':
+                # 디렉토리 인 경우
+                # Full_Root를 구한 다음 Zip를 만든다.
+
+                req_full_root: str = os.path.join(
+                    self.__get_user_root(target_static_id),
+                    parent_root,
+                    obj['object-name'],
+                )
+                save_full_root: str = os.path.join(
+                    self.__get_user_tmp_root(target_static_id),
+                    result_file_name
+                )
+                # 디렉토리 확인
+                try:
+                    DirectoryData(req_full_root)()
+                except MicrocloudchipException as e:
+                    # 못찾음
+                    raise e
+
+                # Zip 파일
+                custom_zip.zip_multiple([req_full_root], save_full_root)
+
+                return save_full_root, True
+
+            elif obj['type'] == 'file':
+                # 파일인 경우
+                # zip으로 묶지 않는다
+
+                full_root: str = os.path.join(
+                    self.__get_user_root(target_static_id),
+                    parent_root,
+                    obj['object-name']
+                )
+
+                try:
+                    # 파일 찾기
+                    FileData(full_root)()
+                except MicrocloudchipException as e:
+                    # 못찾음
+                    raise e
+                else:
+                    # 찾음
+                    return full_root, False
+            else:
+                raise MicrocloudchipSystemAbnormalAccessError("type of object is illeagal")
+        else:
+            # 두개 이상
+            req_full_root_list: list[str] = []
+            save_full_root: str = os.path.join(
+                self.__get_user_root(target_static_id),
+                result_file_name
+            )
+
+            # req full root list 채우기
+            for obj in object_list:
+
+                # 파일이 존재하지 않는 경우 패싱
+                req_full_root: str = os.path.join(
+                    self.__get_user_root(target_static_id),
+                    parent_root,
+                    obj['object-name']
+                )
+                req_full_root_list.append(req_full_root)
+
+            # 작업 시작
+            custom_zip.zip_multiple(req_full_root_list, save_full_root)
+
+            return save_full_root, True

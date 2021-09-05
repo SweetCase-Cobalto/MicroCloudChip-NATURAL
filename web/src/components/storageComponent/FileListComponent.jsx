@@ -5,7 +5,7 @@ import FileItemInList from "./FileItemInList";
 import CustomCheckbox from "../atomComponents/CustomCheckbox";
 import { connect } from "react-redux";
 
-import { useState, setState } from "react";
+import { useState } from "react";
 
 import { updateDirList } from "../../reducers/DirListReducer";
 import { updateDirs } from "../../reducers/SelectedDirReducer";
