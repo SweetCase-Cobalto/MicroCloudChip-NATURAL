@@ -427,3 +427,29 @@ class TestAPIUnittest(TestCase):
                                    **token_header)
         self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
 
+        # 다중파일 다운로드
+        multiple_param: dict = {
+            'file-0': EX_FILENAME,
+            'dir-0': EX_DIRECTORY_NAME
+        }
+        response = self.client.get(
+            f'/server/storage/download/multiple/{self.admin_static_id}/root',
+            data=multiple_param,
+            **token_header
+        )
+        self.assertEqual(response.headers['Content-Type'],
+                         CONTENT_TYPE_ZIP, msg="Multiple Download response must be zip file")
+
+        # 다중 파일 리스트 중에 올바르지 않은 파일이 있다고 해도 무시하고 진행해야 한다.
+        multiple_param['dir-0'] = "aaaaaa"
+        response = self.client.get(
+            f'/server/storage/download/multiple/{self.admin_static_id}/root',
+            data=multiple_param,
+            **token_header
+        )
+        self.assertEqual(response.headers['Content-Type'],
+                         CONTENT_TYPE_ZIP,
+                         msg="Multiple Download response must be zip file if some of req file is not exist")
+
+
+

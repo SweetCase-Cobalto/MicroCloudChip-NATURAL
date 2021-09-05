@@ -1,6 +1,6 @@
 import os
 
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, QueryDict
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -29,7 +29,7 @@ def view_download_single_object(
     target_obj: str = splited_root[-1]
     if len(splited_root) > 1:
         parent_root = '/'.join(splited_root[:-1])
-    
+
     # 다운로드 요청 데이터 작성
     req = {
         "static-id": static_id,
@@ -76,7 +76,45 @@ def view_download_multiple_object(
         static_id: str,
         parent_root: str,
         req_static_id: str) -> HttpResponse:
+    # get param 갖고오기
+    params: QueryDict = request.GET
+    # root를 제외한 실제 Root 구하기
+    __parent_root = DataControlView.get_real_root(parent_root)
 
-    print(request.GET)
+    req = {
+        'static-id': static_id,
+        'parent-root': '',
+        'object-list': []
+    }
+    for raw_obj_type, obj_name in params.items():
+        # raw_obj_type --> [OBJ TYPE]-[NUM]
+        __splited = raw_obj_type.split('-')
 
-    return JsonResponse({'code': 0})
+        if len(__splited) != 2:
+            e = MicrocloudchipSystemAbnormalAccessError("Parameter Error: key format")
+            return JsonResponse({'code': e.errorCode})
+
+        # file Type Checking
+        if __splited[0] not in ['dir', 'file']:
+            e = MicrocloudchipSystemAbnormalAccessError("Parameter Error: key type error")
+            return JsonResponse({'code': e.errorCode})
+
+        req['object-list'].append({
+            'object-name': obj_name,
+            'type': __splited[0]
+        })
+
+    try:
+        # 작업 시작
+        result_file_root, is_zip = STORAGE_MANAGER.download_objects(req_static_id, req)
+    except MicrocloudchipException as e:
+        return JsonResponse({'code': e.errorCode})
+    with open(result_file_root, 'rb') as f:
+        content_type, _ = mimetypes.guess_type(result_file_root)
+        response = HttpResponse(f, content_type=content_type)
+
+    # Zip파일일 경우 없애부리기 (원래 zip으로 저장되지만 만일을 대비해서)
+    if is_zip:
+        os.remove(result_file_root)
+
+    return response

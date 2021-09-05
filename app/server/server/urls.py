@@ -34,6 +34,6 @@ urlpatterns = [
     
     # Storage Data 다운로드
     path(r'server/storage/download/single/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object),
-    path(r'server/storage/download/multiple/<str:static_id>/<path:root>', view_download_multiple_object)
+    path(r'server/storage/download/multiple/<str:static_id>/<path:parent_root>', view_download_multiple_object)
 
 ]
