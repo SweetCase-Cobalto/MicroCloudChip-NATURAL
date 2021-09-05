@@ -20,6 +20,8 @@ import { Image, Button, Form, Modal, ProgressBar } from "react-bootstrap";
 
 import { floorVolume } from '../../modules/tool/volume';
 
+import fileDownload from 'js-file-download';
+
 
 import { connect } from "react-redux";
 import { useState } from 'react';
@@ -112,9 +114,42 @@ const FileStatusComponent = (props) => {
                 Loading
             </div>)
         }
-
         // 정보를 다운받았을 경우
         // 위 서버 통신은 패싱하고 컴포넌트를 리턴한다.
+
+        
+        // Events
+        const downloadSingleObjectEvent = async () => {
+
+            // 파일 한개 다운로드
+            let URL = `${CONFIG.URL}/server/storage/download/single`;
+
+            if(fileType == 'dir') {
+               URL += `/dir/`; 
+            } else {
+                URL += `/file/`;
+            }
+            URL += `${props.userInfo.id}/${props.parentDir.curUrl.join("/")}/${filename}`;
+            
+            // 요청
+            axios.get(URL, {
+                headers: {'Set-Cookie': props.userInfo.token},
+                crossDomain: true,
+                withCredentials: true,
+                responseType: 'blob',
+            }).then((response) => {
+                let data = response.data;
+                if(fileType == 'dir') {
+                    fileDownload(data, `${filename}.zip`)
+                } else {
+                    fileDownload(data, filename);
+                }
+            }).catch((err) => {
+                alert("서버로부터 문제가 발생했습니다.");
+                window.location.reload();
+            })
+            
+        }
 
         
         // Modal Components
@@ -316,7 +351,7 @@ const FileStatusComponent = (props) => {
                         </TextLayer>
                     </div>
     
-                    <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
+                    <Button variant="success" style={{ width: "100%", marginBottom: "15px"}} onClick={() =>{downloadSingleObjectEvent()}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
                         <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
                     </div>
@@ -372,7 +407,7 @@ const FileStatusComponent = (props) => {
                         </TextLayer>
                     </div>
     
-                    <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
+                    <Button variant="success" style={{ width: "100%", marginBottom: "15px"}} onClick={() =>{downloadSingleObjectEvent()}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
                         <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
                     </div>

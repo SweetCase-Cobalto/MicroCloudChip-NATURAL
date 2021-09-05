@@ -1,6 +1,4 @@
-import os
-
-from django.http import JsonResponse, HttpResponse, QueryDict
+from django.http import JsonResponse, HttpResponse, QueryDict, FileResponse
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -11,6 +9,7 @@ from module.MicrocloudchipException.base_exception import MicrocloudchipExceptio
 from module.MicrocloudchipException.exceptions import MicrocloudchipSystemAbnormalAccessError
 
 import mimetypes
+import os
 
 from . import *
 
@@ -22,7 +21,7 @@ def view_download_single_object(
         data_type: str,
         static_id: str,
         root: str,
-        req_static_id: str) -> HttpResponse:
+        req_static_id: str):
     # parent root 찾기
     splited_root: list[str] = DataControlView.get_real_root(root).split('/')
     parent_root: str = ""
@@ -54,9 +53,17 @@ def view_download_single_object(
     # 요창
     try:
         result_file_root, is_zip = STORAGE_MANAGER.download_objects(req_static_id, req)
-        with open(result_file_root, 'rb') as f:
-            content_type, _ = mimetypes.guess_type(result_file_root)
-            response = HttpResponse(f, content_type=content_type)
+
+        f = open(result_file_root, mode='rb')
+
+        content_type, _ = mimetypes.guess_type(result_file_root)
+        response = HttpResponse(f, content_type=content_type)
+
+        if is_zip:
+            result_file_name: str = f'{result_file_root.split(os.sep)[-1]}.zip'
+        else:
+            result_file_name: str = f'{result_file_root.split(os.sep)[-1]}'
+        response['Content-Disposition'] = f'attachment; filename={result_file_name}'
 
         # Zip파일일 경우 없애부리기
         if is_zip:
