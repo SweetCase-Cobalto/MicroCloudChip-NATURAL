@@ -8,34 +8,15 @@ from module.label.file_type import FileVolumeType
 from module.label.user_volume_type import UserVolumeType
 
 from . import *
+from .custom_decorators import check_token_in_class_view
 
 
 class UserControlView(APIView):
     # 변경 항목(선택)
     UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
 
-    @staticmethod
-    def check_is_logined(request: Request) -> str:
-        try:
-            token: str = request.headers.get('Set-Cookie')
-            req_static_id = TOKEN_MANAGER.is_logined(token)
-
-            if not req_static_id:
-                e = MicrocloudchipLoginConnectionExpireError("Login Is Expired")
-                raise e
-        except KeyError:
-            e = MicrocloudchipSystemAbnormalAccessError("token cookie is nothing")
-            raise e
-        else:
-            return req_static_id
-
-    def patch(self, request: Request, static_id: str) -> JsonResponse:
-
-        # Session 상태 확인 및 static_id 갖고오기
-        try:
-            req_static_id: str = UserControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
-            return JsonResponse({'code': e.errorCode})
+    @check_token_in_class_view
+    def patch(self, request: Request, static_id: str, req_static_id: str) -> JsonResponse:
 
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
@@ -84,12 +65,8 @@ class UserControlView(APIView):
         finally:
             return JsonResponse({"code": err.errorCode})
 
-    def get(self, request: Request, static_id: str) -> JsonResponse:
-        # Session 상태 확인
-        try:
-            req_static_id: str = UserControlView.check_is_logined(request)
-        except MicrocloudchipException as e:
-            return JsonResponse({'code': e.errorCode})
+    @check_token_in_class_view
+    def get(self, request: Request, static_id: str, req_static_id: str) -> JsonResponse:
 
         # 데이터 갖고오기
         user_info: dict = USER_MANAGER.get_user_by_static_id(req_static_id, static_id)
@@ -140,13 +117,8 @@ class UserControlView(APIView):
         # 출력
         return JsonResponse(res)
 
-    def delete(self, request: Request, static_id: str):
-
-        # Session 상태 확인
-        try:
-            req_static_id: str = UserControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
-            return JsonResponse({'code': e.errorCode})
+    @check_token_in_class_view
+    def delete(self, request: Request, static_id: str, req_static_id: str):
 
         """ 유저 삭제 """
         target_static_id: str = static_id

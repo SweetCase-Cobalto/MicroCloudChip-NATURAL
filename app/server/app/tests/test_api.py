@@ -112,7 +112,7 @@ class TestAPIUnittest(TestCase):
         # 토큰 발행
         admin_token: str = response.json()['data']['token']
         token_header = {"HTTP_Set-Cookie": admin_token}
-        
+
         # Success
         response = self.client.post(
             '/server/user', {
@@ -150,6 +150,7 @@ class TestAPIUnittest(TestCase):
             content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
             **token_header
         )
+
         self.assertFalse(response.json()['code'])
 
         # 데이터 수정 -> 이미지 변경을 하려고 하는데 이미지 데이터가 없음 -> 실패
@@ -197,7 +198,6 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
 
     def test_add_modify_and_delete_data(self):
-
         # 로그인
         response: JsonResponse = self.client.post(
             '/server/user/login',
@@ -353,6 +353,64 @@ class TestAPIUnittest(TestCase):
             f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}", **token_header)
         self.assertFalse(response.json()['code'])
 
-    def test_size_overflow_when_add_file(self):
-        # 한계 이상인 파일을 저장했을 때 반응
-        pass
+    def test_storge_data_download(self):
+        # 로그인
+        response: JsonResponse = self.client.post(
+            '/server/user/login',
+            dict(email='seokbong60@gmail.com', pswd='12345678')
+        )
+
+        admin_token: str = response.json()['data']['token']
+        token_header: dict = {"HTTP_Set-Cookie": admin_token}
+
+        # 파일과 디렉토리 생성
+        EX_FILENAME: str = 'example-jpg.jpg'
+        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/{EX_FILENAME}")
+        EX_DIRECTORY_NAME: str = "test"
+
+        # 정상적인 파일 하나 생성을 해보자
+        response = self.client.post(
+            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                "file": example_binary_file
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
+        )
+        self.assertFalse(response.json()['code'])
+
+        # 디렉토리 생성하고  그 안에 파일도 생성
+        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
+                                    **token_header)
+        self.assertEqual(response.json()['code'], 0)
+
+        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/{EX_FILENAME}")
+        response = self.client.post(
+            f"/server/storage/data/file/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}/{example_binary_file.name}",
+            data=encode_multipart(self.BOUNDARY_VALUE, {
+                "file": example_binary_file
+            }),
+            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+            **token_header
+        )
+        self.assertFalse(response.json()['code'])
+
+        # 파일 다운로드
+        response = self.client.get(f"/server/storage/download/file/{self.admin_static_id}/root/{EX_FILENAME}",
+                                   **token_header)
+        self.assertEqual(response.json()['code'], 0)
+
+        # 디렉토리 압축파일 다운로드
+        response = self.client.get(f"/server/storage/download/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
+                                   **token_header)
+        self.assertEqual(response.json()['code'], 0)
+
+        # 디렉토리 속 파일 다운로드
+        response = self.client.get(f"/server/storage/download/file/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}/{EX_FILENAME}",
+                                   **token_header)
+        self.assertEqual(response.json()['code'], 0)
+
+        # 이름이 잘못된 파일 출력
+        response = self.client.get(f"/server/storage/download/dir/{self.admin_static_id}/root/aaaa",
+                                   **token_header)
+        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)

@@ -19,7 +19,7 @@ from django.urls import path
 from app.views.user import *
 from app.views.user_control_view import UserControlView
 from app.views.data_control_view import DataControlView
-
+from app.views.downloaders import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +29,7 @@ urlpatterns = [
     path(r'server/user', view_add_user),
     path(r'server/user/<str:static_id>', UserControlView.as_view()),
 
-    path(r'server/storage/data/<str:data_type>/<str:static_id>/<path:root>', DataControlView.as_view())
+    path(r'server/storage/data/<str:data_type>/<str:static_id>/<path:root>', DataControlView.as_view()),
+    path(r'server/storage/download/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object)
 
 ]

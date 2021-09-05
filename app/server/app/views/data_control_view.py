@@ -1,10 +1,10 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import JsonResponse, QueryDict
-from rest_framework.request import Request
+from django.http import QueryDict
 from rest_framework.views import APIView
 from module.MicrocloudchipException.exceptions import *
 from module.data.storage_data import FileData, DirectoryData
 from module.label.time import TIME_FORMAT
+from app.views.custom_decorators import *
 from . import *
 
 
@@ -14,19 +14,6 @@ class DataControlView(APIView):
         static_id: 유저 아이디
         root: 파일 및 디렉토리 범위
     """
-
-    @staticmethod
-    def check_is_logined(request: Request) -> str:
-        try:
-            token: str = request.headers.get('Set-Cookie')
-            req_static_id = TOKEN_MANAGER.is_logined(token)
-
-            if not req_static_id:
-                raise MicrocloudchipLoginConnectionExpireError("Login Is Expired")
-        except KeyError:
-            raise MicrocloudchipSystemAbnormalAccessError("token cookie is nothing")
-        else:
-            return req_static_id
 
     @staticmethod
     def get_real_root(root: str) -> str:
@@ -57,15 +44,10 @@ class DataControlView(APIView):
             else:
                 return '/'.join(root_list[1:])
 
-    def post(self, request: Request, data_type: str, static_id: str, root: str):
+    @check_token_in_class_view
+    def post(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
         # 파일을 업로드 하거나, 디렉토리를 생성합니다.
         root: str = DataControlView.get_real_root(root)
-
-        # Session 상태 확인
-        try:
-            req_static_id = DataControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
-            return JsonResponse({'code': e.errorCode})
 
         # 타입 축정
         if data_type == 'file':
@@ -113,17 +95,12 @@ class DataControlView(APIView):
             return JsonResponse({'code': err.errorCode})
         return JsonResponse({"code": 0})
 
-    def get(self, request: Request, data_type: str, static_id: str, root: str) -> JsonResponse:
+    @check_token_in_class_view
+    def get(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str) -> JsonResponse:
         # 데이터[정보] 갖고오기
         try:
             root: str = DataControlView.get_real_root(root)
         except MicrocloudchipFileAndDirectoryValidateError as e:
-            return JsonResponse({'code': e.errorCode})
-        # Parsing 실패
-        # Session 상태 확인
-        try:
-            req_static_id = DataControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
             return JsonResponse({'code': e.errorCode})
 
         # Input Data
@@ -183,16 +160,11 @@ class DataControlView(APIView):
             err = MicrocloudchipSystemAbnormalAccessError("Access Error")
             return JsonResponse({'code': err.errorCode})
 
-    def patch(self, request: Request, data_type: str, static_id: str, root: str):
+    @check_token_in_class_view
+    def patch(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
         # 파일 및 디렉토리 수정
 
         root: str = DataControlView.get_real_root(root)
-
-        # Session 상태 확인
-        try:
-            req_static_id: str = DataControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
-            return JsonResponse({'code': e.errorCode})
 
         # 변경 데이터
         data: QueryDict = request.data
@@ -254,16 +226,10 @@ class DataControlView(APIView):
 
         return JsonResponse({"code": 0})
 
-    def delete(self, request: Request, data_type: str, static_id: str, root: str):
+    @check_token_in_class_view
+    def delete(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
 
         root: str = DataControlView.get_real_root(root)
-
-        # 파일 및 디렉토리 삭제
-        # Session 상태 확인
-        try:
-            req_static_id: str = DataControlView.check_is_logined(request)
-        except MicrocloudchipLoginConnectionExpireError as e:
-            return JsonResponse({'code': e.errorCode})
 
         req = {
             'static-id': static_id,

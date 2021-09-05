@@ -1,6 +1,7 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 
+from app.views.downloaders import *
 from module.MicrocloudchipException.exceptions import *
 from . import *
 
@@ -30,7 +31,7 @@ def view_user_login(request: Request) -> JsonResponse:
         return JsonResponse({
             "code": e.errorCode
         })
-    
+
     # 결과값 리턴
     return JsonResponse({
         "code": 0x00,
@@ -51,20 +52,9 @@ def view_user_logout(request: Request) -> JsonResponse:
     })
 
 
+@check_token
 @api_view(['POST'])
-def view_add_user(request: Request) -> JsonResponse:
-
-    # 로그인 확인
-    try:
-        token: str = request.headers.get('Set-Cookie')
-        req_static_id: str = TOKEN_MANAGER.is_logined(token)
-        if not req_static_id:
-            e = MicrocloudchipLoginConnectionExpireError("Login expired")
-            return JsonResponse({'code': e.errorCode})
-    except KeyError:
-        e = MicrocloudchipSystemAbnormalAccessError("Token is nothing - error")
-        return JsonResponse({'code': e.errorCode})
-
+def view_add_user(request: Request, req_static_id: str) -> JsonResponse:
     try:
         # 데이터 확인
         email: str = request.data['email']
