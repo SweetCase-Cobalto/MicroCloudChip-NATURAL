@@ -262,6 +262,85 @@ class ManagerOperationUnittest(TestCase):
             lambda: self.storage_manager.get_dir_info(self.client_static_id, dir_add_req)
         )
 
+    def test_object_download(self):
+        # 파일 및 디렉토리 생성
+        """
+        TEST_FILES[0]
+        TEST_FILES[1]
+        [dir]test
+            TEST_FILES[2]
+        """
+        file_add_req = {
+            'static-id': self.admin_static_id,
+            'target-root': None,
+            'raw-data': None,
+        }
+        dir_add_req = {
+            'static-id': self.admin_static_id,
+            'target-root': 'test'
+        }
+
+        # 파일 및 디렉토리 생성
+        for i in range(0, 2):
+            file_add_req['target-root'] = self.TEST_FILES[i]
+            file_add_req['raw-data'] = read_test_file(os.path.join(self.TEST_FILE_ROOT, self.TEST_FILES[i]))
+            self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
+        self.storage_manager.generate_directory(self.admin_static_id, dir_add_req)
+        file_add_req['target-root'] = 'test' + "/" + self.TEST_FILES[2]
+        file_add_req['raw-data'] = read_test_file(os.path.join(self.TEST_FILE_ROOT, self.TEST_FILES[2]))
+        self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
+
+        req = {
+            'static-id': self.admin_static_id,
+            'parent-root': '',
+            'object-list': [{'object-name': self.TEST_FILES[0], 'type': 'file'}]
+        }
+        # 파일 데이터 다운로드
+        self.storage_manager.download_objects(self.admin_static_id, req)
+
+        # 디렉토리 데이터 다운로드
+        req['object-list'] = [{'object-name': 'test', 'type': 'dir'}]
+        result_root, _ = self.storage_manager.download_objects(self.admin_static_id, req)
+        self.assertTrue(os.path.isfile(result_root))
+        if os.path.isfile(result_root):
+            os.remove(result_root)
+
+        # 다중 선택 다운로드
+        req['object-list'] = [
+            {'object-name': 'test', 'type': 'dir'},
+            {'object-name': self.TEST_FILES[0], 'type': 'file'},
+            {'object-name': self.TEST_FILES[1], 'type': 'file'},
+        ]
+        result_root, _ = self.storage_manager.download_objects(self.admin_static_id, req)
+        if os.path.isfile(result_root):
+            os.remove(result_root)
+
+        # 실패 케이스
+        # 파일 못찾음
+        req['object-list'] = [{'object-name': 'shit', 'type': 'file'}]
+        self.assertRaises(
+            MicrocloudchipFileNotFoundError,
+            lambda: self.storage_manager.download_objects(self.admin_static_id, req)
+        )
+        # 디렉토리 못찾음
+        req['object-list'] = [{'object-name': 'shit', 'type': 'dir'}]
+        self.assertRaises(
+            MicrocloudchipDirectoryNotFoundError,
+            lambda: self.storage_manager.download_objects(self.admin_static_id, req)
+        )
+
+        # 두개 이상 객체 압축할 때 중간에 못찾는 부분 있어도 패싱해야 한다
+        # 다중 선택 다운로드
+        req['object-list'] = [
+            {'object-name': 'test', 'type': 'dir'},
+            {'object-name': "failed", 'type': 'file'},
+            {'object-name': self.TEST_FILES[1], 'type': 'file'},
+        ]
+        result_root, _ = self.storage_manager.download_objects(self.admin_static_id, req)
+        self.assertTrue(os.path.isfile(result_root))
+        if os.path.isfile(result_root):
+            os.remove(result_root)
+
     def test_update_datas(self):
 
         ex_filename: str = self.TEST_FILES[0]

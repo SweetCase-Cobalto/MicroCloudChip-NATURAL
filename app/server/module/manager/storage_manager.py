@@ -345,7 +345,7 @@ class StorageManager(WorkerManager):
         # return: (결과 파일 루트, zip파일 여부)
         # zip 같은 경우 사용자 루트의 tmp 디렉토리에 저장한다.
         try:
-            target_static_id: str = req['static_id']
+            target_static_id: str = req['static-id']
             parent_root: str = req['parent-root']
             object_list: list[tuple] = req['object-list']
             """
