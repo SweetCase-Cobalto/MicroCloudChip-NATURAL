@@ -1,5 +1,4 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import JsonResponse
 
 from app.views.downloaders import *
 from module.MicrocloudchipException.exceptions import *
@@ -7,6 +6,8 @@ from . import *
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
+
+from app.views.custom_decorators import check_token, check_is_admin
 
 
 @api_view(['POST'])
@@ -87,3 +88,21 @@ def view_add_user(request: Request, req_static_id: str) -> JsonResponse:
         err = e
     finally:
         return JsonResponse({"code": err.errorCode})
+
+
+@check_token
+@check_is_admin
+@api_view(['GET'])
+def view_get_user_list(request: Request, req_static_id: str) -> JsonResponse:
+
+    raw_user_data = USER_MANAGER.get_users()
+    user_list_by_dict = []
+
+    for _u in raw_user_data:
+        user_list_by_dict.append({
+            'username': _u.name,
+            'user_static_id': _u.static_id,
+            'userImgLink': None
+        })
+
+    return JsonResponse({'code': 0, 'data': user_list_by_dict})

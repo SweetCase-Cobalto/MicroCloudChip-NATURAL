@@ -140,6 +140,10 @@ class TestAPIUnittest(TestCase):
         # 테스트용 클라이언트 고정 아이디를 구해보자
         client_static_id: str = model.User.objects.get(is_admin=False).static_id
 
+        # 유저 리스트 갖고오기
+        response = self.client.get('/server/user/list', **token_header)
+        self.assertFalse(response.json()['code'])
+
         # 데이터 수정 -> 이름 바꾸기
         response = self.client.patch(
             f"/server/user/{client_static_id}",
@@ -407,8 +411,9 @@ class TestAPIUnittest(TestCase):
                              CONTENT_TYPE_ZIP, msg="This File Download Test is Failed")
 
         # 디렉토리 압축파일 다운로드
-        response = self.client.get(f"/server/storage/download/single/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
-                                   **token_header)
+        response = self.client.get(
+            f"/server/storage/download/single/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
+            **token_header)
         # Zip File 이어야 한다
         self.assertEqual(response.headers['Content-Type'],
                          CONTENT_TYPE_ZIP, msg="Directory Donwload result data must be zip file")
@@ -450,6 +455,3 @@ class TestAPIUnittest(TestCase):
         self.assertEqual(response.headers['Content-Type'],
                          CONTENT_TYPE_ZIP,
                          msg="Multiple Download response must be zip file if some of req file is not exist")
-
-
-

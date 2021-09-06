@@ -26,6 +26,7 @@ urlpatterns = [
 
     path(r'server/user/login', view_user_login),
     path(r'server/user/logout', view_user_logout),
+    path(r'server/user/list', view_get_user_list),
     path(r'server/user', view_add_user),
     path(r'server/user/<str:static_id>', UserControlView.as_view()),
 

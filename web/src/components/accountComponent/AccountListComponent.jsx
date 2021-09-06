@@ -11,12 +11,15 @@ const AccountListComponent = (props) => {
         계정 리스트
     */
 
-    if(props.userList === undefined) {
+    const userList = props.userList;
+    const token = props.myInfo.token;
+
+    if(userList.userList === undefined) {
         /*
             처음 접속을 할 경우 유저 데이터를 갖고와야 하므로
             updateUserList 함수를 사용해 서버로부터 데이터를 갖고 온다.
         */
-        props.updateUserList();
+        props.updateUserList(token);
         return (
             // TODO: 로딩 페이지 구현 필요
             <Layout>
@@ -25,7 +28,7 @@ const AccountListComponent = (props) => {
         )
     } else {
         
-        const UserItems = props.userList.map((user) => {
+        const UserItems = userList.userList.map((user) => {
             /*
                 서버로부터 받은 계정 데이터를 이용해
                 계정 컴포넌트 리스트 생성
@@ -59,7 +62,10 @@ const AccountListComponent = (props) => {
     }
 };
 const mapStateToProps = (state) => {
-    return state.UserListReducer;
+    return {
+        "myInfo": state.ConnectedUserReducer,
+        "userList": state.UserListReducer
+    }
 };
 export default connect(mapStateToProps, {updateUserList})(AccountListComponent);
 const Layout = styled.div`

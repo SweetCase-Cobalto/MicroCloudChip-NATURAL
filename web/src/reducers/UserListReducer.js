@@ -1,11 +1,15 @@
 /* 얘는 Admin만 접근해야 한다  */
 import usrIcon from '../asset/img/icons/user-icon.svg';
+import CONFIG from '../asset/config.json';
 
 export const UPDATE_USERLIST = "USER_LIST_REDUCER/UPDATE_USER_LIST";
 
-export const updateUserList = () => {
-    // TODO: Connect to Server
-    // admin을 제외한 나머지 데이터 불러오기
+export const updateUserList = (token) => {
+    
+    // 검색 url
+    let URL = `${CONFIG.URL}/server/user`;
+
+
     let userList = [
         {
             "username": "user1",
