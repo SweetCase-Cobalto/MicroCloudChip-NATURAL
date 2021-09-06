@@ -148,7 +148,6 @@ const FileStatusComponent = (props) => {
                 alert("서버로부터 문제가 발생했습니다.");
                 window.location.reload();
             })
-            
         }
 
         
@@ -648,6 +647,87 @@ const FileStatusComponent = (props) => {
             )
         }
 
+        const multipleObjectsDownloadEvent = () => {
+            // 다중 파일 다운로드 이벤트
+            let URL = 
+                `${CONFIG.URL}/server/storage/download/multiple/${props.userInfo.id}/${props.parentDir.curUrl.join('/')}`;
+
+            console.log(URL);
+            
+            // 요청을 전송하기 param 리슽 생성
+            const paramList = [];
+            let dirCounter = 0;
+            let fileCounter = 0;
+            for(let i = 0; i < fileNames.length; i++) {
+
+                // Key Name 세팅
+                let key = "";
+                if(fileTypes[i] == 'dir') {
+                    key = `dir-${dirCounter}`;
+                    dirCounter++;
+                } else {
+                    key = `file-${fileCounter}`;
+                    fileCounter++;
+                }
+                paramList.push([key, fileNames[i]]);
+            }
+            
+            
+            // 서버 요청
+            // GET URL 길이는 최대 2048자, 즉 2047자 이상 넘어가면 분할해서 돌려야 한다.
+            const MAXIMUM_URL_LENGTH = 2047 - URL.length + 1; // param 만의 url 최대 길이
+            
+            let param = {}
+            let curLength = 0;
+            let downloadCounter = 0;
+
+            while(paramList.length > 0) {
+                // 요구 데이터 뽑기
+                const element = paramList.shift();
+                const key = element[0];
+                const value = element[1];
+                
+                // 길이 값 추가
+                curLength += `${key}=${value}&`.length;
+
+                // 한계 치에 다다르지 않았을 경우 param에 추가
+                if(curLength <= MAXIMUM_URL_LENGTH) {
+                    param[key] = value;
+                } else {
+                    // 그 이상일 경우 서버 전송하고
+                    // param, curLength 초기화
+
+                    let buffedDownloadCounter = downloadCounter;
+                    
+                    // 서버 전송 요청
+                    axios.get(URL, {
+                        headers: {'Set-Cookie': props.userInfo.token}, crossDomain: true,
+                        withCredentials: true, responseType: 'blob', params: param
+                    }).then((response) => { fileDownload(response.data, `Microcloudchip-Downloaded-${buffedDownloadCounter}.zip`);
+                    }).catch((err) => {
+                        alert("서버로부터 문제가 발생했습니다.");
+                        window.location.reload();
+                    })
+
+                    // 초기화
+                    param = {key: value};
+                    curLength = `${key}=${value}&`.length;
+                    downloadCounter++;
+                }
+            }
+            // 남아있는 지 확인
+            if(Object.keys(param).length > 0) {
+                axios.get(URL, {
+                    headers: {'Set-Cookie': props.userInfo.token}, crossDomain: true,
+                    withCredentials: true, responseType: 'blob', params: param
+                }).then((response) => { fileDownload(response.data, `Microcloudchip-Downloaded-${downloadCounter}.zip`);
+                }).catch((err) => {
+                    alert("서버로부터 문제가 발생했습니다.");
+                    window.location.reload();
+                })
+            }
+        }
+
         return (
             <Layout>
                 <center style={{ marginBottom: "40px" }}>
@@ -659,7 +739,7 @@ const FileStatusComponent = (props) => {
                         <ValueLayer>{fileTypes.length}</ValueLayer>
                     </TextLayer>
                 </div>
-                <Button variant="success" style={{ width: "100%", marginBottom: "15px"}}>다운로드</Button>
+                <Button variant="success" style={{ width: "100%", marginBottom: "15px"}} onClick={multipleObjectsDownloadEvent}>다운로드</Button>
                 <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={() => {setIsDeleteMultipleModalOpen(true)}}>삭제</Button>
 
                 <MultipleDeleteObjectModal />

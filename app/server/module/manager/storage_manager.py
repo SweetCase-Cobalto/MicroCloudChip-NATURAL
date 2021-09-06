@@ -421,7 +421,7 @@ class StorageManager(WorkerManager):
             # 두개 이상
             req_full_root_list: list[str] = []
             save_full_root: str = os.path.join(
-                self.__get_user_root(target_static_id),
+                self.__get_user_tmp_root(target_static_id),
                 result_file_name
             )
 
