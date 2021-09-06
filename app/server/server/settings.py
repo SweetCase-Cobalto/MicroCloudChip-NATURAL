@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import random
+import string
 from pathlib import Path
 import json
 import os
@@ -30,7 +31,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pt4b5i*ho52%ibbi@(em9d*w5@+12f$l((@^xr!nnm(5n2)c7k'
+# 해당 어플리케이션은 사용작 직접 NAS에 설치하게 되므로 50자 랜덤으로 설정한다.
+chars = ''.join([string.ascii_letters, string.digits, string.punctuation]).\
+    replace('\'', '').replace('"', '').replace('\\', '')
+SECRET_KEY = ''.join([random.SystemRandom().choice(chars) for i in range(50)])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
