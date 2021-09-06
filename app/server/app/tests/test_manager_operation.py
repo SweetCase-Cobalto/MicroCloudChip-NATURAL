@@ -90,6 +90,18 @@ class ManagerOperationUnittest(TestCase):
             "img-extension": None
         }
 
+        # Admin으로 추가 불가능
+        failed_client_req = {
+            "name": "admin",
+            "password": "12346789",
+            "email": "tototo2@gmail.com",
+            "volume-type": "GUEST",
+            "img-raw-data": None,
+            "img-extension": None
+        }
+        self.assertRaises(MicrocloudchipAuthAccessError,
+                          lambda: self.user_manager.add_user(self.admin_static_id, failed_client_req))
+
         # 한 개 더 생성된 유저의 static_id 추출
         self.user_manager.add_user(self.admin_static_id, other_client_req)
         for user in self.user_manager.get_users():
@@ -125,6 +137,12 @@ class ManagerOperationUnittest(TestCase):
         self.assertRaises(MicrocloudchipAuthAccessError,
                           lambda: self.user_manager.update_user(self.other_static_id, update_req))
 
+        # Admin 이름을 사용할 수 없다
+        update_req['name'] = 'admin'
+        self.assertRaises(MicrocloudchipAuthAccessError,
+                          lambda: self.user_manager.update_user(self.admin_static_id, update_req))
+
+        update_req['name'] = "client2"
         # 클라이언트 이미지가 들어가 있는 루트
         client_img_root = os.path.join(self.config.get_system_root(), "storage", self.client_static_id, 'asset',
                                        'user.png')

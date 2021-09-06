@@ -121,6 +121,10 @@ class UserManager(WorkerManager):
             # Error 출력
             raise MicrocloudchipAuthAccessError("Email Already Exist")
 
+        # admin 이름 쓸 수 없음
+        if data_format['name'] == 'admin':
+            raise MicrocloudchipAuthAccessError("do not add user as name=admin")
+
         try:
             user_builder: UserBuilder = UserBuilder() \
                 .set_name(data_format['name']) \
@@ -182,7 +186,7 @@ class UserManager(WorkerManager):
         return r
 
     def get_user_by_static_id(self, req_static_id: str, static_id: str) -> dict:
-        
+
         # 유저 권한 체크
         if req_static_id != static_id and \
                 len(model.User.objects.filter(static_id=req_static_id).filter(is_admin=True)) == 0:
@@ -268,6 +272,11 @@ class UserManager(WorkerManager):
                 UserValidator.validate_name(data_format['name'])
             except MicrocloudchipException as e:
                 raise e
+
+            # admin로 이름 바꿀 수 없음
+            if data_format['name'] == 'admin' and target_user.name != 'admin':
+                self.process_locker.release()
+                raise MicrocloudchipAuthAccessError("do not update user name to admin")
             target_user.name = data_format['name']
 
         if 'password' in data_format:
@@ -341,7 +350,7 @@ class UserManager(WorkerManager):
             raise MicrocloudchipUserDoesNotExistError("User Not Exist")
 
         # Admin 계정 삭제 불가
-        if user_data.is_admin:
+        if user_data.is_admin and user_data.name == 'admin':
             raise MicrocloudchipAuthAccessError("Admin could not be deleted")
 
         # 유저 제거

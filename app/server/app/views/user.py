@@ -102,7 +102,8 @@ def view_get_user_list(request: Request, req_static_id: str) -> JsonResponse:
         user_list_by_dict.append({
             'username': _u.name,
             'user_static_id': _u.static_id,
-            'userImgLink': None
+            'userImgLink': None,
+            'isAdmin': _u.is_admin
         })
 
     return JsonResponse({'code': 0, 'data': user_list_by_dict})
