@@ -195,11 +195,17 @@ const AccountUpdaterForm = (props) => {
                 } else {
                     alert("변경에 실패했습니다.");
                 }
-                window.location.href = "/accounts";
-
             }).catch((err) => {
                 alert("전송 오류");
-                window.location.href = "/accounts";
+            }).finally(() => {
+                // 페이지 나가기
+                if(props.isAdmin) {
+                    // 관리자 계정
+                    window.location.href = "/accounts";
+                } else {
+                    // 일반 계정
+                    window.location.href = "/settings";
+                }
             })
             
         }

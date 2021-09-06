@@ -31,7 +31,7 @@ const Navbar = (props) => {
             <img src={NavIcon} width="30px" height="30px" style={{ margin: "10px" }} alt="navbar icon" />
             <TextItemLayer onClick={goToStoragePage}>Storage</TextItemLayer>
             <TextItemLayer onClick={goToAccountPage} style={{ display: displaySetting }}>Accounts</TextItemLayer>
-            <TextItemLayer><Link to="/settings" style={{ color: "white", display: displaySetting }}>Settings</Link></TextItemLayer>
+            <TextItemLayer><Link to="/settings" style={{ color: "white" }}>Settings</Link></TextItemLayer>
             <TextItemLayer style={{ float: "right", cursor: "pointer", color: "white" }} onClick={logoutEvent}>Logout</TextItemLayer>
         </Layout>
     );
