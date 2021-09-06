@@ -17,13 +17,20 @@ const Navbar = (props) => {
         props.userLogout(props.token);
     }
 
+    const goToAccountPage = () => {
+        window.location.href = "/accounts";
+    }
+    const goToStoragePage = () => {
+        window.location.href = "/storage/root";
+    }
+
     let displaySetting = props.isAdmin ? "block" : "none";
 
     return (
         <Layout>
             <img src={NavIcon} width="30px" height="30px" style={{ margin: "10px" }} alt="navbar icon" />
-            <TextItemLayer><Link to="/storage/root" style={{ color: "white"}}>Storage</Link></TextItemLayer>
-            <TextItemLayer><Link to="/accounts" style={{ color: "white", display: displaySetting }}>Accounts</Link></TextItemLayer>
+            <TextItemLayer onClick={goToStoragePage}>Storage</TextItemLayer>
+            <TextItemLayer onClick={goToAccountPage}>Accounts</TextItemLayer>
             <TextItemLayer><Link to="/settings" style={{ color: "white", display: displaySetting }}>Settings</Link></TextItemLayer>
             <TextItemLayer style={{ float: "right", cursor: "pointer", color: "white" }} onClick={logoutEvent}>Logout</TextItemLayer>
         </Layout>
@@ -47,4 +54,5 @@ const TextItemLayer = styled.div`
     font-size: 1.3em;
     font-family: "Gothic A1";
     font-weight: medium;
+    cursor: pointer;
 `

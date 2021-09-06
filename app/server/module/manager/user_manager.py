@@ -199,7 +199,8 @@ class UserManager(WorkerManager):
                 "pswd": d.pswd,
                 "email": d.email,
                 "is-admin": d.is_admin,
-                "volume-type": UserValidator.validate_volume_type_by_string(d.volume_type)
+                "volume-type": UserValidator.validate_volume_type_by_string(d.volume_type),
+                "static-id": static_id
             }
         except model.User.DoesNotExist:
             return None

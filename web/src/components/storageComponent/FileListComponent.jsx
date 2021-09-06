@@ -283,10 +283,13 @@ const FileListComponent = (props) => {
                             "uploadedFilesLength": i + 1,
                             "progressFileName": nextFileName,
                         });
+                    } else if(result.code == ErrorCodes.ERR_STORAGE_OVER_CAPACITY_ERR) {
+                        alert("저장 용량 초과로 인해 더 이상 파일을 업로드 할 수 업습니다.");
+                        window.location.reload();
                     } else {
                         // 서버상의 에러
                         alert("파일에 문제가 있습니다. 다시 업로드해 주세요");
-                        break;
+                        window.location.reload();
                     }
                     
                 }

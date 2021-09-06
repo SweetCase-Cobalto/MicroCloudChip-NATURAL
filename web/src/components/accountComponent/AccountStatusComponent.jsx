@@ -4,6 +4,11 @@ import { Image, Button } from "react-bootstrap";
 import ExampleImg from '../../asset/img/icons/user-icon.svg';
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+
+import axios from 'axios';
+
+import CONFIG from '../../asset/config.json';
 
 const AccountStatusComponent = (props) => {
     /*
@@ -12,8 +17,9 @@ const AccountStatusComponent = (props) => {
         Acocunt 상태를 표시하는 컴포넌트
         수정 및 삭제 버튼 기능도 포함
     */
+    const [userInfo, setUserInfo] = useState(undefined);
 
-    if(props.selectedUserStaticId === undefined) {
+    if(props.selected.selectedUserStaticId === undefined) {
         return (
             // 사용자 선택 안함
             <Layout>
@@ -24,11 +30,43 @@ const AccountStatusComponent = (props) => {
             </Layout>
         );
     } else {
-        // 사용자 선택
-        // TODO: 여기서 서버로부터 유저 정보를 불러와야 한다.
-        // TODO: 수정 및 삭제 버튼에 대한 이벤트 구현 필요
+        let modifyUrl = "/accounts/modify/"+props.selected.selectedUserStaticId;
 
-        let modifyUrl = "/accounts/modify/"+props.selectedUserStaticId;
+        if(userInfo == undefined || userInfo.staticId != props.selected.selectedUserStaticId) {
+            
+            // 사용자 데이터 불러오기
+            let REQ_URL = CONFIG.URL + '/server/user/' + props.selected.selectedUserStaticId;
+
+            axios.get(REQ_URL, {
+                headers: { 'Set-Cookie': props.userInfo.token },
+                withCredentials: true,
+                crossDomain: true
+            }).then((response) => {
+                let data = response.data;
+                if(data.code == 0) {
+                    // 데이터 받기 성공
+                    let req = {
+                        name: data['user-info']['name'],
+                        email: data['user-info']['email'],
+                        staticId: data['user-info']['static-id'],
+                        volumeType: `${data['user-info']['volume-type']['value']} 
+                            ${data['user-info']['volume-type']['type']}`
+                    }
+
+                    setUserInfo(req);
+                } else {
+                    alert("권한 없음");
+                    window.location.href = "/";
+                }
+            })
+
+            return <div>
+                Loading
+            </div>
+        }
+
+        
+
         return (
             <Layout>
                 <center style={{ marginBottom: "40px" }}>
@@ -38,17 +76,17 @@ const AccountStatusComponent = (props) => {
                 <div style={{ marginBottom: "40px" }}>
                     <TextLayer>
                         <KeyLayer>아이디</KeyLayer>
-                        <ValueLayer>{props.selectedUserStaticId}</ValueLayer>
+                        <ValueLayer>{userInfo.name}</ValueLayer>
                     </TextLayer>
     
                     <TextLayer>
                         <KeyLayer>이메일</KeyLayer>
-                        <ValueLayer>seokbong60@gmail.com</ValueLayer>
+                        <ValueLayer>{userInfo.email}</ValueLayer>
                     </TextLayer>
     
                     <TextLayer>
-                        <KeyLayer>용량 제한</KeyLayer>
-                        <ValueLayer>100G</ValueLayer>
+                        <KeyLayer>사용가능용량</KeyLayer>
+                        <ValueLayer>{userInfo.volumeType}</ValueLayer>
                     </TextLayer>
                 </div>
 
@@ -62,7 +100,10 @@ const AccountStatusComponent = (props) => {
     }
 }
 const mapStateProps = (state) => {
-    return state.SelectedAccountReducer;
+    return {
+        "selected": state.SelectedAccountReducer,
+        "userInfo": state.ConnectedUserReducer
+    }
 }
 export default connect(mapStateProps)(AccountStatusComponent);
 
