@@ -4,13 +4,20 @@ import { Image, ProgressBar } from "react-bootstrap";
 import { syncUserInfo, setUserInfoEmpty } from "../../reducers/ConnectedUserReducer";
 import { connect } from "react-redux";
 
+import { useState } from "react";
+
 
 const MyAccountStatusComponent = (props) => {
 
-    let isConnected = false;
-    if(!isConnected && props.id != "") {
-        isConnected = true;
+    let [isConnected, setIsConnected] = useState(false);
+
+    if(!isConnected) {
         props.syncUserInfo(props.id, props.token);
+        setIsConnected(true);
+
+        return <div>
+            Loading
+        </div>
     }
     if(props.maximumVolume === undefined || props.maximumVolume == -1 || props.id == "") {
         // 데이터받기에 실패할 경우(대부분 로그인 만료임)

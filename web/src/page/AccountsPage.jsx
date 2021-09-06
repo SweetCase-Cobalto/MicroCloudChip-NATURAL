@@ -2,13 +2,19 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
+import { connect } from "react-redux";
+import { useState } from 'react';
 
 import MyAccountStatusComponent from '../components/accountComponent/MyAccountStatusComponent';
 import AccountListComponent from '../components/accountComponent/AccountListComponent';
 import AccountStatusComponent from '../components/accountComponent/AccountStatusComponent';
+
+import { syncUserInfo } from '../reducers/ConnectedUserReducer';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const AccountsPage = () => {
+const AccountsPage = (props) => {
+
     return(
         <div>
             <Helmet>
@@ -24,7 +30,10 @@ const AccountsPage = () => {
         </div>
     );
 }
-export default AccountsPage;
+const mapStateToProps = (state) => {
+    return state.ConnectedUserReducer;
+}
+export default connect(mapStateToProps, {syncUserInfo})(AccountsPage);
 const Layout = styled.div`
     display: flex;
     margin-top: 150px;

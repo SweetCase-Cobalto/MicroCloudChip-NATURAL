@@ -5,8 +5,27 @@ import AccountUpdaterForm from "../components/formComponents/AccountUpdaterForm"
 import { Helmet } from "react-helmet";
 
 import '../asset/font/font.css'
+import { connect } from "react-redux";
+import { useState } from "react";
+import { syncUserInfo } from "../reducers/ConnectedUserReducer";
 
-const AccountAdderPage = () => {
+const AccountAdderPage = (props) => {
+
+    const [isConnected, setIsConnected] = useState(false);
+    // 유저 서버 연결 시도
+    if(!isConnected) {
+        props.syncUserInfo(props.id, props.token);
+        setIsConnected(true);
+        return (<div>
+            Loading
+        </div>)
+    }
+    if(isConnected && props.id == "") {
+        alert("세션이 만료되었습니다.");
+        window.location.href = "/";
+    }
+
+
     return (
         <div>
             <Helmet>
@@ -21,8 +40,10 @@ const AccountAdderPage = () => {
         </div>
     );
 }
-export default AccountAdderPage;
-
+const mapStateToProps = (state) => {
+    return state.ConnectedUserReducer;
+}
+export default connect(mapStateToProps, {syncUserInfo})(AccountAdderPage);
 const Layer = styled.div`
     margin: 100px 350px 0px 350px;
     border: 1px solid #128D12;

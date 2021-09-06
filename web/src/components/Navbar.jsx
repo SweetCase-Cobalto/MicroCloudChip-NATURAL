@@ -8,6 +8,11 @@ import NavIcon from "../asset/img/nav-icon.svg"
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navbar = (props) => {
+
+    if(props.id == "") {
+        window.location.href = "/";
+    }
+
     const logoutEvent = () => {
         props.userLogout(props.token);
     }

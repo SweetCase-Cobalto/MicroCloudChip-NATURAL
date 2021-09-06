@@ -27,8 +27,7 @@ const FileListComponent = (props) => {
     if(allRootArr[allRootArr.length - 1] == "") {
         allRootArr.pop();
     }
-
-
+    
     let allRootArrToString = ""; // allRootArr를 화면에 출력하기 위해 String 변환
     let datas = []; // 파일리스트와 디렉토리 리스트를 저정하는 배열
     let selectedDirList = props.SelectedDirReducer.dirList;
@@ -108,7 +107,7 @@ const FileListComponent = (props) => {
     }
 
     // Start
-    if(props.DirListReducer.errCode == undefined) {
+    if(props.DirListReducer.errCode === undefined) {
         // 해당 디렉토리로부터 데이터를 서버로부터 갖고와서 업데이트
         props.updateDirList(allRootArr, userInfo.token, userInfo.id);
 

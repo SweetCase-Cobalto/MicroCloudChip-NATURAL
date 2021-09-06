@@ -43,6 +43,9 @@ export const updateUserList = (token) => {
                     }
                 }
 
+                if(adminIdx != -1)
+                    userList.splice(adminIdx, 1);
+
                 
                 return dispatch({
                     type: UPDATE_USERLIST,

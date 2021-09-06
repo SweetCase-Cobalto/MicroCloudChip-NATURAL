@@ -5,6 +5,9 @@ import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
 
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
+import axios from "axios";
+
+import CONFIG from '../../asset/config.json';
 
 const AccountUpdaterForm = (props) => {
 
@@ -24,7 +27,7 @@ const AccountUpdaterForm = (props) => {
     let targetStaticId = props.targetStaticId;  // 해당 사용자의 정보변경할 때 사용되는 고정 아이디
 
     // Volume Type Data
-    let volumeSelectItems = ["5G", "20G", "100G", "500G"];
+    let volumeSelectItems = ["TEST 1KB[테스트용]", "GUEST 5GB", "USER 20GB", "HEAVIER 100GB"];
     let selectedVolumeItem = volumeSelectItems[0]
 
     // volume Type Changed Event
@@ -63,16 +66,79 @@ const AccountUpdaterForm = (props) => {
         isVolumeTypeDisabled = false;
     }
 
+    const applyClickEvent = (e) => {
+        e.preventDefault();
+        
+        // 데이터 갖고오기
+        let userName = e.target.id.value;
+        let pswd = e.target.pswd.value;
+        let pswdRepeat = e.target.pswdRepeat.value;
+        let email = e.target.email.value;
+        let volumeType = selectedVolumeItem.split(' ')[0]
+
+        let userNameRegex = /^[a-zA-Z0-9]{4,16}$/;
+        
+        // Null값 확인하기
+        if(userName == "" || pswd == "" || pswdRepeat == "" || email == "") {
+            alert("입력란을 채워주세요");
+            return;
+        }
+        if(!userNameRegex.test(userName)) {
+            alert("네임은 오직 알파벳 및 숫자로만 작성할 수 있습니다.");
+            return;
+        }
+        if(pswd.length < 8 || pswd.length > 128) {
+            alert("패스워드는 8자 이상 128자 이하 입니다.");
+            return;
+        }
+        if(pswd != pswdRepeat) {
+            alert("패스워드가 일치하지 않습니다.");
+            return;
+        }
+
+        
+        // 유저 추가 / 수정 에 따라 요청이 달라진다
+        if(actionType == 'add') {
+
+            // 유저 추가
+            const formData = new FormData();
+            formData.append('name', userName);
+            formData.append('email', email);
+            formData.append('password', pswd);
+            formData.append('volume-type', volumeType);
+
+            // 전송
+            let URL = `${CONFIG.URL}/server/user`;
+            axios.post(URL, formData , {
+                headers: {'Set-Cookie': props.token},
+                withCredentials: true,
+                crossDomain: true
+            }).then((response) => {
+                let data = response.data;
+                if(data.code == 0) {
+                    alert("계정 생성 성공");
+                } else {
+                    alert("계정 생성 실패");
+                }
+                history.push('/accounts');
+            }).catch((err) => {
+                console.log(err);
+                alert("전송 오류");
+            })
+
+        }
+    }
+
     return (
         <EditLayer>
             <Image src="holder.js/171x180" width="170px" height="170px" style={{ backgroundColor: "gray" }} roundedCircle />
 
-            <EditForm>
+            <EditForm onSubmit={applyClickEvent}>
                 <Form.Group style={{ marginBottom: "20px" }} >
                     <Form.Label>아이디</Form.Label>
                     <Form.Control type="text" 
                                     name="id" 
-                                    placeholder="6자 이상 12자 이하 영어만" 
+                                    placeholder="4자 이상 18자 이하 영어 및 숫자만" 
                                     disabled={isDisabled} 
                                     defaultValue={actionType == "add" ? "" : nameDefaultValue} />
                 </Form.Group>
@@ -81,7 +147,7 @@ const AccountUpdaterForm = (props) => {
                 
                     <Form.Group style={{ marginRight: "5%", width: "50%" }} >
                         <Form.Label>비밀번호</Form.Label>
-                        <Form.Control type="password" name="pswd" placeholder="8자 이상 24자 이하" />
+                        <Form.Control type="password" name="pswd" placeholder="8자 이상 128자 이하" />
                     </Form.Group>
 
                     <Form.Group style={{  width: "50%" }} >
@@ -108,7 +174,7 @@ const AccountUpdaterForm = (props) => {
                 </Form.Group>
             
                 <div style={{ display: "flex", float: "right" }} >
-                    <Button variant="success" 
+                    <Button variant="success" type="submit"
                             style={{ width: "100px", marginRight: "20px", backgroundColor: "#137813"}} 
                             >{btnTitle}</Button>
                     <Button variant="secondary" 
