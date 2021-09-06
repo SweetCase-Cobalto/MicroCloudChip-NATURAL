@@ -65,7 +65,36 @@ const AccountStatusComponent = (props) => {
             </div>
         }
 
-        
+        const removeUserEvent = (e) => {
+
+
+            let willRemove = confirm("정말로 삭제하시겠습니까?");
+            
+            if(willRemove) {
+                // 진짜 삭제
+                const URL = `${CONFIG.URL}/server/user/${props.selected.selectedUserStaticId}`;
+
+                // 전송
+                axios.delete(URL, {
+                    headers: {'Set-Cookie': props.userInfo.token},
+                    withCredentials: true,
+                    crossDomain: true
+                }).then((response) => {
+                    let data = response.data;
+
+                    if(data.code == 0) {
+                        alert("삭제 성공");
+                    } else {
+                        alert("삭제에 실패했습니다. 이미 삭제된 것일 수도 있습니다.");
+                    }
+
+                }).catch((err) => {
+                    alert("서버와의 통신에 문제가 생겼습니다.");
+                }).finally(() => {
+                    window.location.reload();
+                })
+            }
+        }
 
         return (
             <Layout>
@@ -93,8 +122,8 @@ const AccountStatusComponent = (props) => {
                 <Link to={modifyUrl}>
                     <Button variant="success" 
                             style={{ width: "100%", marginBottom: "15px"}}>수정</Button>
-                    <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}}>삭제</Button>
                 </Link>
+                <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={removeUserEvent}>삭제</Button>
             </Layout>
         );
     }
