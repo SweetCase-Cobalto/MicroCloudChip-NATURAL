@@ -64,7 +64,7 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["D:\\projects\\project-test\\microcloudchip\\web"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,6 +75,9 @@ TEMPLATES = [
             ],
         },
     },
+]
+STATICFILES_DIRS = [
+    "D:\\projects\\project-test\\microcloudchip\\web\\static"
 ]
 
 WSGI_APPLICATION = 'server.wsgi.application'

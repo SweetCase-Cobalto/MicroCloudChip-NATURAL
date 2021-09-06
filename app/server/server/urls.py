@@ -15,13 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import url
 
 from app.views.user import *
 from app.views.user_control_view import UserControlView
 from app.views.data_control_view import DataControlView
 from app.views.downloaders import *
 
+from django.views.generic import TemplateView
+
 urlpatterns = [
+    url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    url(r'^(storage)|(accounts)|(settings)/', TemplateView.as_view(template_name='index.html'), name='index'),
+
     path('admin/', admin.site.urls),
 
     path(r'server/user', view_add_user),
