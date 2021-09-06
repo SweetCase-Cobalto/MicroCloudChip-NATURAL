@@ -22,7 +22,10 @@ const AccountUpdaterForm = (props) => {
     */
     const history = useHistory();
 
-    let isDisabled = false;             // admin의 아이디와 이메일 계정은 수정할 수 없다.
+    let isNameChangeDisabled = false;             // admin의 아이디와 이메일 계정은 수정할 수 없다.
+    let isEmailChangeDisabled = false;            // 수정할 때 email은 수정할 수 없다.
+
+
     let actionType = props.actionType;  // 수정 or 생성
     let target = props.target;          // my: 자신, other: 다른 사람
     let btnTitle = "수정"               // 생성일 경우 제출 버튼 타이틀은 생성으로 바뀐다.
@@ -45,13 +48,15 @@ const AccountUpdaterForm = (props) => {
     // Select Type
     if(actionType == "modify") {
         // 계정 정보를 수정하는 경우
+        isEmailChangeDisabled = true;
         if(target == "my") {
             // 자기 자신을 수정하는 경우
             nameDefaultValue = props.userName;
             emailDefaultValue = props.email;
+            targetStaticId = props.id;
 
             if(props.isAdmin) {
-                isDisabled = true;
+                isNameChangeDisabled = true;
             }
         } else {
             /*
@@ -156,14 +161,47 @@ const AccountUpdaterForm = (props) => {
                 if(data.code == 0) {
                     alert("계정 생성 성공");
                 } else {
+                    console.log(data.code);
                     alert("계정 생성 실패");
                 }
                 window.location.href = "/accounts";
             }).catch((err) => {
-                console.log(err);
                 alert("전송 오류");
+                window.location.href = "/acocunts";
             })
+        } else if(actionType == 'modify') {
+            // 수정
+            
+            // 수정 요청을 위한 FormData 생성
+            const formData = new FormData();
+            formData.append('name', userName);
+            formData.append('password', pswd);
 
+            // TODO: 이미지 삽입 기능은 차후에 추가 예정
+            formData.append('img-changeable', 0);
+
+            // URL 세팅
+            const URL = `${CONFIG.URL}/server/user/${targetStaticId}`;
+            axios.patch(URL, formData, {
+                headers: {'Set-Cookie': props.token},
+                withCredentials: true,
+                crossDomain: true
+            }).then((response) => {
+                let data = response.data;
+
+                if(data.code == 0) {
+                    // 변경 성공
+                    alert("변경에 성공했습니다.");
+                } else {
+                    alert("변경에 실패했습니다.");
+                }
+                window.location.href = "/accounts";
+
+            }).catch((err) => {
+                alert("전송 오류");
+                window.location.href = "/accounts";
+            })
+            
         }
     }
     return (
@@ -176,7 +214,7 @@ const AccountUpdaterForm = (props) => {
                     <Form.Control type="text" 
                                     name="id" 
                                     placeholder="4자 이상 18자 이하 영어 및 숫자만" 
-                                    disabled={isDisabled} 
+                                    disabled={isNameChangeDisabled} 
                                     defaultValue={actionType == "add" ? "" : nameDefaultValue} />
                 </Form.Group>
 
@@ -198,7 +236,7 @@ const AccountUpdaterForm = (props) => {
                     <Form.Control type="email" 
                                     name="email" 
                                     placeholder="example@example.com"
-                                    disabled
+                                    disabled={isEmailChangeDisabled}
                                     defaultValue={actionType == "add" ? "" : emailDefaultValue} />
                 </Form.Group>
 
