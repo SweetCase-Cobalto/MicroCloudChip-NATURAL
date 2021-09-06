@@ -27,14 +27,14 @@ class UserManager(WorkerManager):
         # 절대 Class 외에 사용하지 말 것
         super_dir_root = [self.config.get_system_root(), 'storage', user_static_id]
 
-        admin_dirs: list[str] = ['root', 'asset', 'tmp']
+        user_dirs: list[str] = ['root', 'asset', 'tmp']
 
-        admin_main_root: str = os.path.join(*super_dir_root)
-        if not os.path.isdir(admin_main_root):
-            os.mkdir(admin_main_root)
+        user_main_root: str = os.path.join(*super_dir_root)
+        if not os.path.isdir(user_main_root):
+            os.mkdir(user_main_root)
 
-        for admin_dir in admin_dirs:
-            r: list[str] = super_dir_root + [admin_dir]
+        for user_dir in user_dirs:
+            r: list[str] = super_dir_root + [user_dir]
             r_str: str = os.path.join(*r)
             if not os.path.isdir(r_str):
                 os.mkdir(r_str)
