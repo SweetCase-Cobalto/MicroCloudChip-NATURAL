@@ -25,6 +25,12 @@ const AccountAdderPage = (props) => {
         window.location.href = "/";
     }
 
+    if(isConnected && props.id != "" && !props.isAdmin) {
+        return (<div>
+            <h4>접근 권한이 없습니다.</h4>
+        </div>)
+    }
+
 
     return (
         <div>

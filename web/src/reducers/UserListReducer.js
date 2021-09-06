@@ -53,8 +53,10 @@ export const updateUserList = (token) => {
                 })
             } else {
                 // 통신 오류
-                alert("접근 권한이 없습니다.");
-                window.location.relaoad();
+                return dispatch({
+                    type: UPDATE_USERLIST,
+                    userList: [],
+                })
             }
         })
     }

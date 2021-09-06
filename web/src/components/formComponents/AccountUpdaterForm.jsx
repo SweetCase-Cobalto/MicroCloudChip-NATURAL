@@ -3,6 +3,7 @@ import {Image, Form, Button} from "react-bootstrap";
 import { connect } from "react-redux";
 import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
+import { useState } from "react";
 
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
@@ -10,6 +11,8 @@ import axios from "axios";
 import CONFIG from '../../asset/config.json';
 
 const AccountUpdaterForm = (props) => {
+
+    const [targetUserInfo, setTargetUserInfo] = useState(undefined);
 
     /*
         계정을 수정하거나
@@ -44,7 +47,6 @@ const AccountUpdaterForm = (props) => {
         // 계정 정보를 수정하는 경우
         if(target == "my") {
             // 자기 자신을 수정하는 경우
-            // 일반 사용자는 자기 자신을 수정할 수 없다.
             nameDefaultValue = props.userName;
             emailDefaultValue = props.email;
 
@@ -54,12 +56,48 @@ const AccountUpdaterForm = (props) => {
         } else {
             /*
                 Admin이 해당 사용자의 정보 수정을 원하는 경우이다.
-                TODO: 사용자 staticId를 활용하여 서버로부터 전체적인
+                사용자 staticId를 활용하여 서버로부터 전체적인
                 유저 데이터를 갖고 온다.
             */
             // 아래는 예시 데이터
-            nameDefaultValue = "exampleName";
-            emailDefaultValue = "exampleEmail";
+            
+            const URL = `${CONFIG.URL}/server/user/${targetStaticId}`;
+            
+            if(targetUserInfo == undefined) {
+                // 아직 서버로부터 데이터를 받지 못한 경우
+                
+                axios.get(URL, {
+                    headers: {"Set-Cookie": props.token},
+                    withCredentials: true,
+                    crossDomain: true
+                }).then((response) => {
+                    let data = response.data;
+                    if(data.code == 0) {
+                        // 전송 성공
+                        let info = data['user-info'];
+
+                        let userInfo = {
+                            name: info['name'],
+                            email: info['email']
+                        }
+                        setTargetUserInfo(userInfo);
+                    } else {
+                        alert("권한이 없습니다.");
+                        window.location.href = "/";
+                    }
+                }).catch((err) => {
+                    alert("서버와의 통신에서 문제가 발생했습니다.");
+                    window.location.href = "/accounts";
+                })
+                
+
+                // Loading
+                return <div>Loading</div>
+            }
+
+            // 서버로부터 데이터를 받은 경우
+            nameDefaultValue = targetUserInfo.name;
+            emailDefaultValue = targetUserInfo.email;
         }
     } else {
         btnTitle = "추가"
@@ -120,7 +158,7 @@ const AccountUpdaterForm = (props) => {
                 } else {
                     alert("계정 생성 실패");
                 }
-                history.push('/accounts');
+                window.location.href = "/accounts";
             }).catch((err) => {
                 console.log(err);
                 alert("전송 오류");
@@ -128,7 +166,6 @@ const AccountUpdaterForm = (props) => {
 
         }
     }
-
     return (
         <EditLayer>
             <Image src="holder.js/171x180" width="170px" height="170px" style={{ backgroundColor: "gray" }} roundedCircle />
@@ -161,7 +198,7 @@ const AccountUpdaterForm = (props) => {
                     <Form.Control type="email" 
                                     name="email" 
                                     placeholder="example@example.com"
-                                    disabled={isDisabled} 
+                                    disabled
                                     defaultValue={actionType == "add" ? "" : emailDefaultValue} />
                 </Form.Group>
 

@@ -15,6 +15,26 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AccountsPage = (props) => {
 
+    const [isConnected, setIsConnected] = useState(false);
+
+    if(!isConnected) {
+        props.syncUserInfo(props.id, props.token);
+        setIsConnected(true);
+        return <div>
+            Loading
+        </div>
+    }
+    if(isConnected && props.id == "") {
+        alert("세션이 만료되었습니다.");
+        window.location.href = "/";
+    }
+
+    if(isConnected && props.id != "" && !props.isAdmin) {
+        return (<div>
+            <h4>접근 권한이 없습니다.</h4>
+        </div>)
+    }
+
     return(
         <div>
             <Helmet>
