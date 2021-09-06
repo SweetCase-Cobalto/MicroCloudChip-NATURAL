@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import json
+import os
 
 config = None
 # Load Config File
@@ -64,7 +65,7 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ["D:\\projects\\project-test\\microcloudchip\\web"],
+        'DIRS': [os.path.join(config['system']['root'], 'web')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,7 +78,7 @@ TEMPLATES = [
     },
 ]
 STATICFILES_DIRS = [
-    "D:\\projects\\project-test\\microcloudchip\\web\\static"
+    os.path.join(config['system']['root'], 'web', 'static')
 ]
 
 WSGI_APPLICATION = 'server.wsgi.application'
