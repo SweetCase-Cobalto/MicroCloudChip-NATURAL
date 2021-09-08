@@ -82,10 +82,11 @@ TEMPLATES = [
         },
     },
 ]
-
+"""
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'web', 'static')
 ]
+"""
 
 
 WSGI_APPLICATION = 'server.wsgi.application'
@@ -170,6 +171,11 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     '[::1]',
 ]
+"""
+ALLOWED_HOSTS = [
+    config['system']['host']
+]
+"""
 
 CORS_ALLOW_HEADERS = [
     'Set-Cookie'
