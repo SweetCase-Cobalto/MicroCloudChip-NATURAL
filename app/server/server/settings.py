@@ -84,9 +84,10 @@ TEMPLATES = [
 ]
 """
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'web', 'static')
+    os.path.join(BASE_DIR, 'templates', 'static')
 ]
 """
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 WSGI_APPLICATION = 'server.wsgi.application'
@@ -173,7 +174,9 @@ ALLOWED_HOSTS = [
 ]
 """
 ALLOWED_HOSTS = [
-    config['system']['host']
+    config['system']['host'],
+    "0.0.0.0",
+    "[::1]"
 ]
 """
 
