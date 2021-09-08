@@ -36,10 +36,10 @@ my $printFormatInBackend = "
     }
 }
 ";
-
+my $hostForFrontend = "http://" . $host . ":" . $appPort;
 my $printFormatInFrontend = "
 {
-    \"URL\": \"$host\"
+    \"URL\": \"$hostForFrontend\"
 }
 ";
 
