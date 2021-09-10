@@ -2,9 +2,7 @@
 
 ![](readme-asset/title.png)
 <center>
-<img alt="GitHub release (latest by date including pre-releases)" src="https://img.shields.io/github/v/release/SweetCase-Cobalto/MicroCloudChip-NATURAL?include_prereleases&style=for-the-badge">
-</center>
-<center>
+<img alt="GitHub release (latest by date including pre-releases)" src="https://img.shields.io/github/v/release/SweetCase-Cobalto/MicroCloudChip-NATURAL?include_prereleases&style=for-the-badge"><br>
 <a href="https://seokbong60.gitbook.io/microcloudchip-natural/">
 <img alt="gitbook site" src="https://img.shields.io/badge/GitBook-7B36ED?style=for-the-badge&logo=gitbook&logoColor=white">
 </a>
