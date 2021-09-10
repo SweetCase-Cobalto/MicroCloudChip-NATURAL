@@ -1,7 +1,7 @@
 # MicroCloudChip-NATURAL
 
 ![](readme-asset/title.png)
-<center>
+<p align="center">
 <img alt="GitHub release (latest by date including pre-releases)" src="https://img.shields.io/github/v/release/SweetCase-Cobalto/MicroCloudChip-NATURAL?include_prereleases&style=for-the-badge"><br>
 <a href="https://seokbong60.gitbook.io/microcloudchip-natural/">
 <img alt="gitbook site" src="https://img.shields.io/badge/GitBook-7B36ED?style=for-the-badge&logo=gitbook&logoColor=white">
@@ -9,7 +9,7 @@
 <a href="https://hub.docker.com/repository/docker/recomadock/microcloudchip-natural">
 <img alt="" src="https://img.shields.io/badge/Docker Hub-2CA5E0?style=for-the-badge&logo=docker&logoColor=white">
 </a>
-</center>
+</p>
 
 
 
