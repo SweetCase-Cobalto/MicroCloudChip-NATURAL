@@ -88,7 +88,7 @@ sudo docker run -it -d -p [port]:[port] \
         PS: X:\> cd project
         # setting frontend
         PS: X:\project> cd web
-        PS: X:\project/web> npm i3
+        PS: X:\project/web> npm i
         # back to project root
         PS: X:\project> cd ..
         # setting backend
