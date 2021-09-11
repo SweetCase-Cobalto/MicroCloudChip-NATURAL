@@ -8,6 +8,8 @@ import { useState } from "react";
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
 
+import { ErrorCodes } from '../../modules/err/errorVariables';
+
 import CONFIG from '../../asset/config.json';
 
 const AccountUpdaterForm = (props) => {
@@ -143,6 +145,12 @@ const AccountUpdaterForm = (props) => {
         // 유저 추가 / 수정 에 따라 요청이 달라진다
         if(actionType == 'add') {
 
+            // Admin 이름을 사용해선 안된다.
+            if(userName == 'admin') {
+                alert('admin이 이름인 계정을 생성할 수 없습니다.');
+                return;
+            }
+
             // 유저 추가
             const formData = new FormData();
             formData.append('name', userName);
@@ -161,8 +169,12 @@ const AccountUpdaterForm = (props) => {
                 if(data.code == 0) {
                     alert("계정 생성 성공");
                 } else {
-                    console.log(data.code);
-                    alert("계정 생성 실패");
+                    // Error Code 별로 다른 문구 출력
+                    if(data.code = ErrorCodes.ERR_AUTH_ACCESS_ERR) {
+                        alert("이메일은 중복될 수 없습니다.");
+                    } else {
+                        alert("계정 생성 실패");
+                    }
                 }
                 window.location.href = "/accounts";
             }).catch((err) => {

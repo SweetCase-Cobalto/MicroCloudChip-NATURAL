@@ -98,7 +98,14 @@ const FileListComponent = (props) => {
             }).then((r) => {
                 let data = r.data;
                 if(data.code != 0) {
-                    alert("디렉토리를 생성하는 데 문제가 발생했습니다.");
+                    if(data.code == ErrorCodes.ERR_FILE_AND_DIRECTORY_NAME_VALIDATE_ERR) {
+                        alert("디렉토리의 이름이 올바르지 않습니다.");
+                    } else if(data.code == ErrorCodes.ERR_DIR_ALEADY_EXISTS_ERR || data.code == ErrorCodes.ERR_FILE_ALEADY_EXISTS_ERR) {
+                        alert("같은 이름의 디렉토리나 파일이 이미 존재합니다.");
+                    }
+                    else {
+                        alert("디렉토리를 생성하는 데 문제가 발생했습니다.");
+                    }
                 }
             })
 
@@ -125,7 +132,7 @@ const FileListComponent = (props) => {
         
         alert("해당 디렉토리는 존재하지 않습니다.");
         props.history.goBack();
-    }else {
+    } else {
 
         // 파일 리스트와 디렉토리 리스트를 전부 data에 저장
         datas = props.DirListReducer.directoryList.concat(props.DirListReducer.fileList);
@@ -268,26 +275,40 @@ const FileListComponent = (props) => {
                         // Axios Error: 주로 서버와 연결이 끊어졌을 때 발생한다.
                         alert("서버로부터 연결이 끊어졌습니다.");
                         break;
-                    } else if(result.code == 0) {
+                    } else if(result.code == ErrorCodes.ERR_FILE_ALEADY_EXISTS_ERR 
+                        || result.code == ErrorCodes.ERR_DIR_ALEADY_EXISTS_ERR
+                        || result.code == 0) {
+                        
+                        // 업로드에 성공했거나
+                        // 실패해도 넘어가도 되는 경우
+                            // 증복 파일 및 디렉토리 발견
 
-                        // 전송 성공
-                        let nextFileName = undefined;
+                        if(result.code == ErrorCodes.ERR_FILE_ALEADY_EXISTS_ERR) {
+                            alert(`같은 파일 이름이 존재합니다. 무시하고 다음 파일을 업로드 합니다. 파일 명: ${file.name}`);
+                        } else if(result.code == ErrorCodes.ERR_DIR_ALEADY_EXISTS_ERR) {
+                            // 같은 이름의 디렉토리 발견
+                            alert(`같은 디렉토리 이름이 존재합니다. 무시하고 다음 파일을 업로드 합니다. 디렉토리 명: ${file.name}`)
+                        }
+
+                        // 계속 진행
+                        let nextFileName = "";
                         if(i == targetFilesLength - 1) {
                             nextFileName = "업로드 완료"
                         } else {
                             nextFileName = targetFiles[i + 1].name;
                         }
-
                         setUploadProcess({
                             "targetFilesLength": targetFilesLength,
                             "uploadedFilesLength": i + 1,
                             "progressFileName": nextFileName,
                         });
+                        
                     } else if(result.code == ErrorCodes.ERR_STORAGE_OVER_CAPACITY_ERR) {
                         alert("저장 용량 초과로 인해 더 이상 파일을 업로드 할 수 업습니다.");
                         window.location.reload();
                     } else {
                         // 서버상의 에러
+                        alert(result.code);
                         alert("파일에 문제가 있습니다. 다시 업로드해 주세요");
                         window.location.reload();
                     }

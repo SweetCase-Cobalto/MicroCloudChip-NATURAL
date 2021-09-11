@@ -47,7 +47,11 @@ class DataControlView(APIView):
     @check_token_in_class_view
     def post(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
         # 파일을 업로드 하거나, 디렉토리를 생성합니다.
-        root: str = DataControlView.get_real_root(root)
+
+        try:
+            root: str = DataControlView.get_real_root(root)
+        except MicrocloudchipException as e:
+            return JsonResponse({'code': e.errorCode})
 
         # 타입 축정
         if data_type == 'file':
