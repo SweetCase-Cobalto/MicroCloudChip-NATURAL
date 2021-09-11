@@ -127,7 +127,7 @@ const AccountUpdaterForm = (props) => {
             return;
         }
         if(!userNameRegex.test(userName)) {
-            alert("네임은 오직 알파벳 및 숫자로만 작성할 수 있습니다.");
+            alert("잘못된 유저 이름 입니다.");
             return;
         }
         if(pswd.length < 8 || pswd.length > 128) {
