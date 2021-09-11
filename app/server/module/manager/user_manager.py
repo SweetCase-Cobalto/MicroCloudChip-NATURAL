@@ -27,6 +27,10 @@ class UserManager(WorkerManager):
         # 절대 Class 외에 사용하지 말 것
         super_dir_root = [self.config.get_system_root(), 'storage', user_static_id]
 
+        # Storage Directory  생성
+        if not os.path.isdir(os.path.join(self.config.get_system_root(), 'storage')):
+            os.mkdir(os.path.join(self.config.get_system_root(), 'storage'))
+
         user_dirs: list[str] = ['root', 'asset', 'tmp']
 
         user_main_root: str = os.path.join(*super_dir_root)
