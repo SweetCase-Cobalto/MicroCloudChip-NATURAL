@@ -26,11 +26,11 @@
 |OS|Database|
 |---|---|
 |Debian|Sqlite(Internal Database)|
+||MySQL, MariaDB|
 ## Will be Available in next version ![](https://img.shields.io/badge/version-0.1.x-brightgreen?style=flat-square)
 |OS|Database|
 |---|---|
-|Windows|MySQL|
-||MariaDB||
+|Windows||
 
 **_NOTE:_** 윈도우 플랫폼에서는 서버를 테스트 할 수 있는 GUI Console만 지원하고 서비스 등록은 지원하지 않습니다.
 
@@ -39,7 +39,7 @@
 |---|---|
 |Frontend|![Javascript](https://img.shields.io/badge/JavaScript(Node)-14.x-323330?style=flat-square&logo=javascript&logoColor=F7DF1E&color=yellow) ![React](https://img.shields.io/badge/React-17.x-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![Redux](https://img.shields.io/badge/Redux-593D88?style=flat-square&logo=redux&logoColor=white) ![bootstrap](https://img.shields.io/badge/Bootstrap-5.x-563D7C?style=flat-square&logo=bootstrap&logoColor=white)|
 |Backend|![Python](https://img.shields.io/badge/Python-3.9.x-3776AB?style=flat-square&logo=python&logoColor=white) ![DJango](https://img.shields.io/badge/Django-3.2.x-092E20?style=flat-square&logo=django&logoColor=green) |
-|database(available)|![sqlite](https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white) |
+|database(available)|![sqlite](https://img.shields.io/badge/SQLite-07405E?style=flat-square&logo=sqlite&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-00000F?style=flat-square&logo=mysql&logoColor=white) ![MariaDB](	https://img.shields.io/badge/MariaDB-003545?style=flat-square&logo=mariadb&logoColor=white)|
 |Installer|![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=flat-square&logo=docker&logoColor=white) ![Perl](https://img.shields.io/badge/Perl-39457E?style=flat-square&logo=perl&logoColor=white)|
 
 # Installation
@@ -50,16 +50,28 @@ sudo docker run -it -d -p [port]:[port] \
                 -e SERVER_PORT=[port] \
                 -e ADMIN_EMAIL=[your email] \
                 -e HOST=[your host] \
-                --name [container name] microcloudchip-natural:0.0.1-internal
+                --name [container name] microcloudchip-natural:0.0.2-internal
 ```
+
+### Install With Internal Database (MySQL, MariaDB)
+```bash
+sudo docker run -it -d -p [port]:[port] \
+                -e SERVER_PORT=[port] \
+                -e ADMIN_EMAIL=[your email] \
+                -e HOST=[your host] \
+                -e DB_NAME=[database name] \
+                -e DB_USER=[database user name] \
+                -e DB_PSWD=[database password] \
+                -e DB_HOST=[database host] \
+                -e DB_PORT=[database port] \
+                --name [container name] microcloudchip-natural:0.0.2-mysql
+```
+### 외부 저장소 설정
 **_NOTE:_** 외부 저장소를 사용할 경우 아래의 환경변수를 추가합니다.
 ```bash
 -v [src]:[dst] \
 -e STORAGE_ROOT=[dst] \
 ```
-
-### Install With Internal Database (MySQL, MariaDB)
-차기 버전에 추가될 예정입니다.
 
 <br>
 
