@@ -56,8 +56,7 @@ my $printFormatInBackend = "
 ";
 
 my $hostForFrontend = "http://" . $host . ":" . $appPort;
-my $printFormatInFrontend = "
-{
+
 my $printFormatInFrontend = "
 {
     \"URL\": \"$hostForFrontend\"

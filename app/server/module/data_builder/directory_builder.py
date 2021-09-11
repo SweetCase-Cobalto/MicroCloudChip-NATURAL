@@ -1,7 +1,7 @@
 import os
 
 from module.MicrocloudchipException.exceptions import MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipDirectoryNotFoundError
+    MicrocloudchipDirectoryNotFoundError, MicrocloudchipFileAlreadyExistError
 from module.data_builder.storage_builder import StorageBuilder
 
 
@@ -25,8 +25,11 @@ class DirectoryBuilder(StorageBuilder):
         if os.path.isdir(full_root):
             # 이미 존재한 경우
             raise MicrocloudchipDirectoryAlreadyExistError(f"Directory {self.target_root} already exist")
+        elif os.path.isfile(full_root):
+            # 이미 파일이 존재하는 경우
+            raise MicrocloudchipFileAlreadyExistError(f"File {self.target_root} already exist")
         else:
-            # 이전 디렉토리가 이미 존재하는 지 체크해야 한다.
+            # 이전 디렉토리 및 파일이가 이미 존재하는 지 체크해야 한다.
             # 없으면 생성 불가
             slash_idx = -1
             for i in range(len(full_root) - 1, -1, -1):
