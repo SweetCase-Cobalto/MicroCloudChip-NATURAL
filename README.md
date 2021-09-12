@@ -19,7 +19,7 @@
 * 원격 서버 및  NAS Server의 파일 관리 서비스를 지원하기 위해 개발된 설치형 저용량 파일 호스팅 서비스
 * 타 서버로부터 금액을 지불하고 일정 용량을 할당 받는 것이 아닌, 개인 서버만 갖고 있으면 이 웹 어플리케이션을 이용해 파일 호스팅 서버를 운용할 수 있습니다.
 * Docker Image를 이용할 경우 외부 저장소를 지원합니다. 외부 저장소 환경변수를 추가하면  불가피하게 Container가 shutdown되도 저장된 파일들을 접근할 수 있습니다.
-* Database도 외부 MySQL같은 Database를 사용할 수 있습니다 _(v0.1.x 에 추가 구현 예정)_
+* Database도 외부 MySQL같은 Database를 사용할 수 있습니다
 
 # Available Platform
 ## Current Available ![](https://img.shields.io/badge/version-0.0.x-blue?style=flat-square)
