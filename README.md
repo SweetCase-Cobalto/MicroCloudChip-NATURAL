@@ -120,6 +120,6 @@ sudo docker run -it -d -p [port]:[port] \
     * 외부 데이터베이스(MySQL, MariaDB)를 사용하는 경우 *(0.1.x 부터 개발 가능합니다.)*
         ```powershell
         PS: X:\project> cd bin
-        PS: X:\project/bin> perl setConfigure-sqlite.pl [storage root] [port] [host] [email] `
+        PS: X:\project/bin> perl setConfigure-mysql.pl [storage root] [port] [host] [email] `
         >> [db-host] [db-port] [db-user-name] [db-user-pswd] [db-name]
         ```
