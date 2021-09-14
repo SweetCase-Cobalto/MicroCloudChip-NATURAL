@@ -53,7 +53,7 @@ sudo docker run -it -d -p [port]:[port] \
                 --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.2-internal
 ```
 
-### Install With Internal Database (MySQL, MariaDB)
+### Install With External Database (MySQL, MariaDB)
 ```bash
 sudo docker run -it -d -p [port]:[port] \
                 -e SERVER_PORT=[port] \
