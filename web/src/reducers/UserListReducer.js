@@ -35,11 +35,11 @@ export const updateUserList = (token) => {
                         adminIdx = i
                         continue;
                     }
-                    
-                    
                     // 유저 이미지가 없으면 기본 이미지로 대체한다.
-                    if(userList[i].userImgLink === null) {
-                        userList[i].userImgLink = usrIcon
+                    if(!('userImgLink' in userList[i])) {
+                        userList[i].userImgLink = usrIcon;
+                    } else {
+                        userList[i].userImgLink = `${CONFIG.URL}${userList[i].userImgLink}`;
                     }
                 }
 
