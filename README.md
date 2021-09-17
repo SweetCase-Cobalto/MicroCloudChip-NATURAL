@@ -7,8 +7,6 @@
 <img alt="gitbook site" src="https://img.shields.io/badge/GitBook-7B36ED?style=flat-square&logo=gitbook&logoColor=white">
 </a>
 <a href="https://hub.docker.com/repository/docker/recomadock/microcloudchip-natural">
-<img alt="" src="https://img.shields.io/badge/Docker Hub-2CA5E0?style=flat-square&logo=docker&logoColor=white">
-</a>
 <img alt="GitHub" src="https://img.shields.io/github/license/SweetCase-Cobalto/MicroCloudChip-NATURAL?style=flat-square">
 </p>
 
@@ -75,7 +73,7 @@ sudo docker run -it -d -p [port]:[port] \
 
 <br>
 
-자세한 설치 방법은 [Gitbook](https://seokbong60.gitbook.io/microcloudchip-natural/v/v0.0.x/wiki-for-users-and-guests/how-to-install/by-docker-container) 또는 [DockerHUB](https://hub.docker.com/repository/docker/recomadock/microcloudchip-natural) 참고
+자세한 설치 방법은 [Gitbook](https://seokbong60.gitbook.io/microcloudchip-natural/v/v0.0.x/wiki-for-users-and-guests/how-to-install/by-docker-container) 참고
 # Setting Project For Developers
 이 프로젝트를 개작 또는 분석 하려는 개발자를 위한 세팅 방법입니다. <br>
 자세한 방법은 [Gitbook](https://seokbong60.gitbook.io/microcloudchip-natural/v/v0.0.x/wiki-for-developers/project-setting) 을 참고해 주세요
