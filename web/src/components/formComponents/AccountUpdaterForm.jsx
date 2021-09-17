@@ -5,6 +5,9 @@ import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
+import defaultUserIcon from '../../asset/config.json';
+import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/api/cookieRequestedImgUrlToAvailableUrl';
+
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
 
@@ -15,6 +18,7 @@ import CONFIG from '../../asset/config.json';
 const AccountUpdaterForm = (props) => {
 
     const [targetUserInfo, setTargetUserInfo] = useState(undefined);
+    const [curImgLink, setCurImgLink] = useState(undefined);
 
     /*
         계정을 수정하거나
@@ -33,7 +37,6 @@ const AccountUpdaterForm = (props) => {
     let btnTitle = "수정"               // 생성일 경우 제출 버튼 타이틀은 생성으로 바뀐다.
     let isVolumeTypeDisabled = true;    // volume Type은 변경할 수 없으므로 변경 폼일 경우 disable 처리한다.
     let targetStaticId = props.targetStaticId;  // 해당 사용자의 정보변경할 때 사용되는 고정 아이디
-    let curImgLink = props.usrImgLink; // User Icon
     let changedIconImage = undefined; // 변경될 이미지 (변경하지 않을 경우 undefinedf로 처리한다.)
 
     // Volume Type Data
@@ -230,6 +233,18 @@ const AccountUpdaterForm = (props) => {
                 }
             })
             
+        }
+    }
+
+    // 아이콘 이미지 가져오기
+    if(curImgLink == undefined) {
+        if(props.usrImgLink == defaultUserIcon)
+            setCurImgLink(defaultUserIcon);
+        else {
+            cookieRequestedImgUrlToAvailableUrl(props.usrImgLink, props.token)
+            .then((resultUrl) => {
+                setCurImgLink(resultUrl);
+            })
         }
     }
     return (

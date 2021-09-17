@@ -30,13 +30,20 @@ urlpatterns = [
     #url(r'^(storage)|(accounts)|(settings)/', TemplateView.as_view(template_name='index.html'), name='index'),
 
 
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
 
+    # User 관리
     path(r'server/user', view_add_user),
     path(r'server/user/login', view_user_login),
     path(r'server/user/logout', view_user_logout),
     path(r'server/user/list', view_get_user_list),
+
+    # User Image Icon Download
+    path(r'server/user/download/icon/<str:static_id>', view_download_user_icon),
+
+    # user control
     path(r'server/user/<str:static_id>', UserControlView.as_view()),
+
 
     # Storage Data 관리
     path(r'server/storage/data/<str:data_type>/<str:static_id>/<path:root>', DataControlView.as_view()),
@@ -44,5 +51,6 @@ urlpatterns = [
     # Storage Data 다운로드
     path(r'server/storage/download/single/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object),
     path(r'server/storage/download/multiple/<str:static_id>/<path:parent_root>', view_download_multiple_object)
+
 
 ]
