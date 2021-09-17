@@ -198,7 +198,9 @@ class UserManager(WorkerManager):
 
         try:
             d = model.User.objects.get(static_id=static_id)
-            return {
+
+            # 리턴값
+            req = {
                 "name": d.name,
                 "pswd": d.pswd,
                 "email": d.email,
@@ -206,6 +208,15 @@ class UserManager(WorkerManager):
                 "volume-type": UserValidator.validate_volume_type_by_string(d.volume_type),
                 "static-id": static_id
             }
+
+            # 유저 이미지 링크 추가
+            # Check User Icon
+            img_raw_directory_root: str = os.path.join(self.config.get_system_root(), 'storage', static_id, 'asset')
+            l = os.listdir(img_raw_directory_root)
+            if 'user.jpg' in l or 'user.png' in l:
+                req['user-icon'] = f"/server/user/download/icon/{static_id}"
+
+            return req
         except model.User.DoesNotExist:
             return None
 

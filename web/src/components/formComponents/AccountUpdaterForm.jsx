@@ -5,6 +5,9 @@ import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
+import defaultUserIcon from '../../asset/config.json';
+import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/api/cookieRequestedImgUrlToAvailableUrl';
+
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
 
@@ -15,6 +18,7 @@ import CONFIG from '../../asset/config.json';
 const AccountUpdaterForm = (props) => {
 
     const [targetUserInfo, setTargetUserInfo] = useState(undefined);
+    const [curImgLink, setCurImgLink] = useState(undefined);
 
     /*
         계정을 수정하거나
@@ -33,6 +37,7 @@ const AccountUpdaterForm = (props) => {
     let btnTitle = "수정"               // 생성일 경우 제출 버튼 타이틀은 생성으로 바뀐다.
     let isVolumeTypeDisabled = true;    // volume Type은 변경할 수 없으므로 변경 폼일 경우 disable 처리한다.
     let targetStaticId = props.targetStaticId;  // 해당 사용자의 정보변경할 때 사용되는 고정 아이디
+    let changedIconImage = undefined; // 변경될 이미지 (변경하지 않을 경우 undefinedf로 처리한다.)
 
     // Volume Type Data
     let volumeSelectItems = ["TEST 1KB[테스트용]", "GUEST 5GB", "USER 20GB", "HEAVIER 100GB"];
@@ -189,8 +194,15 @@ const AccountUpdaterForm = (props) => {
             formData.append('name', userName);
             formData.append('password', pswd);
 
-            // TODO: 이미지 삽입 기능은 차후에 추가 예정
-            formData.append('img-changeable', 0);
+            
+            if(changedIconImage == undefined)
+                // 변경 할 파일을 정하지 않은 경우
+                formData.append('img-changeable', 0);
+            else {
+                // 정한 경우
+                formData.append('img-changeable', 1);
+                formData.append('img', changedIconImage);
+            }
 
             // URL 세팅
             const URL = `${CONFIG.URL}/server/user/${targetStaticId}`;
@@ -206,6 +218,7 @@ const AccountUpdaterForm = (props) => {
                     alert("변경에 성공했습니다.");
                 } else {
                     alert("변경에 실패했습니다.");
+                    alert(data.code);
                 }
             }).catch((err) => {
                 alert("전송 오류");
@@ -222,10 +235,45 @@ const AccountUpdaterForm = (props) => {
             
         }
     }
+
+    // 아이콘 이미지 가져오기
+    if(curImgLink == undefined) {
+        if(props.usrImgLink == defaultUserIcon)
+            setCurImgLink(defaultUserIcon);
+        else {
+            cookieRequestedImgUrlToAvailableUrl(props.usrImgLink, props.token)
+            .then((resultUrl) => {
+                setCurImgLink(resultUrl);
+            })
+        }
+    }
     return (
         <EditLayer>
-            <Image src="holder.js/171x180" width="170px" height="170px" style={{ backgroundColor: "gray" }} roundedCircle />
+            <form>
+                <Image src={curImgLink}
+                    width="170px" 
+                    height="170px" 
+                    style={{ backgroundColor: "gray", cursor: "pointer" }}
+                    id="renderedSelectedImg"
+                    onClick={ () => {document.getElementById("newImgUrl").click()}}
+                    roundedCircle />
+                <input type="file" name="newImgUrl" 
+                    id="newImgUrl" accept=".jpg, .png" 
+                    onChange={e => {
+                        // 이미지가 바뀔 경우 이미지 갱신
+                        let selectedFile = e.target.files[0]
+                        let imgReader = new FileReader();
+                        imgReader.onload = () => {
+                            // 이미지 변경
+                            document.getElementById("renderedSelectedImg").src = imgReader.result;
+                        }
+                        imgReader.readAsDataURL(selectedFile);
+                        // 파일에 업로드 하기 위한 파일 데이터 생성
+                        changedIconImage = selectedFile;
 
+                    }} hidden/>
+
+            </form>
             <EditForm onSubmit={applyClickEvent}>
                 <Form.Group style={{ marginBottom: "20px" }} >
                     <Form.Label>아이디</Form.Label>

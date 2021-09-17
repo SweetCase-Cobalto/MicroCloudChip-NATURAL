@@ -82,6 +82,11 @@ export const syncUserInfo = (staticId, token) => {
                         data['used-volume']['type'],
                         data['used-volume']['value']
                     )
+                    let userImgLink = usrIcon;
+                    if('user-icon' in data['user-info']) {
+                        userImgLink = `${CONFIG.URL}${data['user-info']['user-icon']}`;
+                    }
+
                     return dispatch({
                         type: SYNC_USER_INFO,
                         data: {
@@ -91,7 +96,7 @@ export const syncUserInfo = (staticId, token) => {
                             isAdmin: data['user-info']['is-admin'],
                             maximumVolume: capacityVolume,
                             usedVolume: usedVolume,
-                            usrImgLink: usrIcon,
+                            usrImgLink: userImgLink,
                             token: token
                         }
                     })

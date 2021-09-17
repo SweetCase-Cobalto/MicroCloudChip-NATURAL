@@ -5,15 +5,21 @@ import { syncUserInfo, setUserInfoEmpty } from "../../reducers/ConnectedUserRedu
 import { connect } from "react-redux";
 
 import { useState } from "react";
+import defaultUserIcon from '../../asset/img/icons/user-icon.svg';
+
+import { cookieRequestedImgUrlToAvailableUrl } from  '../../modules/api/cookieRequestedImgUrlToAvailableUrl';
+import { volume_label_to_raw } from "../../modules/tool/volume";
 
 
 const MyAccountStatusComponent = (props) => {
+    // 업로드한 유저 이미지
 
-    let [isConnected, setIsConnected] = useState(false);
+    const [isConnected, setIsConnected] = useState(0);
+    const [usrIcon, setUsrIcon] = useState(undefined);
 
     if(!isConnected) {
         props.syncUserInfo(props.id, props.token);
-        setIsConnected(true);
+        setIsConnected(isConnected+1);
 
         return <div>
             Loading
@@ -22,6 +28,19 @@ const MyAccountStatusComponent = (props) => {
     if(props.maximumVolume === undefined || props.maximumVolume == -1 || props.id == "") {
         // 데이터받기에 실패할 경우(대부분 로그인 만료임)
         window.location.href = "/";
+    }
+
+    // 이미지 다운로드
+    if(isConnected == 1 && usrIcon == undefined) {
+        if(props.usrImgLink == defaultUserIcon) {
+            setUsrIcon(defaultUserIcon);
+        } else {
+            // 외부에서 받아와야 한다
+            cookieRequestedImgUrlToAvailableUrl(props.usrImgLink, props.token)
+            .then((resultUrl) => {
+                setUsrIcon(resultUrl);
+            })
+        }
     }
     
     const convertRawVolumeToString = (value) => {
@@ -50,26 +69,36 @@ const MyAccountStatusComponent = (props) => {
     let type = props.isAdmin ? "admin" : "client";
     let capacityStorage = props.maximumVolume;
     let usedStorage = props.usedVolume;             // 사용하고 있는 용량
-    let usrIcon = props.usrImgLink;                 // 업로드한 유저 이미지
+    
 
-    let gage = (usedStorage / capacityStorage) * 100; // 사용용량 Percentage
-     return (
-        <Layout>
-            <center style={{ marginBottom: "80px" }} >
-                <Image src={usrIcon} width="150px" height="150px" roundedCircle />
-                <h3 style={{ marginTop: "20px", fontWeight: "bold", color: "#137813" }}>{name}</h3>
-                <p style={{ color: "#707070"}}>{email}</p>
-                <p>{type}</p>
-            </center>
-            <div style={{ fontWeight: "bold" }}>
-                <div style={{ marginBottom: "15px" }}>
-                    <span style={{color: "#137813" }}>{convertRawVolumeToString(usedStorage)}</span>
-                    <span>/{convertRawVolumeToString(capacityStorage)}</span>
-                </div>
-                <ProgressBar style={{ width: "100%", backgroundColor: "#7D7D7D"}} striped variant="success" now={gage} />
-            </div>
-        </Layout>
-    );
+    // 아이콘 URL이 내부 기본 이미지가 아닐 경우 서버에서 추가로 IMG 데이터를 받아오고
+    // URL로 변경해야 한다
+    
+    if(isConnected == 1 && usrIcon != undefined) {
+        let gage = (usedStorage / capacityStorage) * 100; // 사용용량 Percentage
+        return (
+           <Layout>
+               <center style={{ marginBottom: "80px" }} >
+                   <Image src={usrIcon} width="150px" height="150px" roundedCircle />
+                   <h3 style={{ marginTop: "20px", fontWeight: "bold", color: "#137813" }}>{name}</h3>
+                   <p style={{ color: "#707070"}}>{email}</p>
+                   <p>{type}</p>
+               </center>
+               <div style={{ fontWeight: "bold" }}>
+                   <div style={{ marginBottom: "15px" }}>
+                       <span style={{color: "#137813" }}>{convertRawVolumeToString(usedStorage)}</span>
+                       <span>/{convertRawVolumeToString(capacityStorage)}</span>
+                   </div>
+                   <ProgressBar style={{ width: "100%", backgroundColor: "#7D7D7D"}} striped variant="success" now={gage} />
+               </div>
+           </Layout>
+       );
+    } else {
+        return (
+            <div>Loading</div>
+        );
+    }
+
 }
 
 const mapStateToProps = (state) => {

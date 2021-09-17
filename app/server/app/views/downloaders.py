@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse, QueryDict, FileResponse
+from django.http import JsonResponse, HttpResponse, QueryDict
 
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -124,4 +124,44 @@ def view_download_multiple_object(
     if is_zip:
         os.remove(result_file_root)
 
+    return response
+
+
+@check_token
+@api_view(['GET'])
+def view_download_user_icon(
+        request: Request,
+        static_id: str,
+        req_static_id: str
+) -> HttpResponse:
+    # Get Raw Asset Directory
+    raw_root: str = os.path.join(SYSTEM_CONFIG.get_system_root(), 'storage', static_id, 'asset')
+
+    # File Check
+    if not os.path.isdir(raw_root):
+        # 해당 디렉토리가 존재하지 않는 경우
+        e = MicrocloudchipSystemAbnormalAccessError("This root is not exist")
+
+        return JsonResponse({"code": e.errorCode})
+
+    # is file Exist
+    target: str = None
+    for f in os.listdir(raw_root):
+        # user icon image 찾기
+        splited_f: list[str] = f.split('.')
+        if len(splited_f) == 2 and \
+                splited_f[0] == 'user' and splited_f[1] in ['jpg', 'png']:
+            target = f
+            break
+
+    # icon이 존재하지 않는 경우
+    if not target:
+        e = MicrocloudchipSystemAbnormalAccessError("Image Not Found")
+        return JsonResponse({"code": e.errorCode})
+
+    # Image Data 출력
+    raw_root = os.path.join(raw_root, target)
+    with open(raw_root, 'rb') as f:
+        content_type, _ = mimetypes.guess_type(raw_root)
+        response = HttpResponse(f, content_type=content_type)
     return response
