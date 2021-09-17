@@ -99,11 +99,13 @@ def view_get_user_list(request: Request, req_static_id: str) -> JsonResponse:
     user_list_by_dict = []
 
     for _u in raw_user_data:
-        user_list_by_dict.append({
-            'username': _u.name,
-            'user_static_id': _u.static_id,
-            'userImgLink': None,
-            'isAdmin': _u.is_admin
-        })
+        data: dict = {
+            'username': _u['name'],
+            'user_static_id': _u['static_id'],
+            'isAdmin': _u['is_admin']
+        }
+        if 'userImgLink' in _u:
+            data['userImgLink'] = _u['userImgLink']
+        user_list_by_dict.append(data)
 
     return JsonResponse({'code': 0, 'data': user_list_by_dict})

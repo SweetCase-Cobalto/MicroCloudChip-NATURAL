@@ -2,13 +2,14 @@ import styled from "styled-components";
 import { Image, Button } from "react-bootstrap";
 
 import ExampleImg from '../../asset/img/icons/user-icon.svg';
+import defaultUserIconImg from '../../asset/img/icons/user-icon.svg';
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
 import axios from 'axios';
-
 import CONFIG from '../../asset/config.json';
+import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
 
 const AccountStatusComponent = (props) => {
     /*
@@ -52,6 +53,10 @@ const AccountStatusComponent = (props) => {
                         volumeType: `${data['user-info']['volume-type']['value']} 
                             ${data['user-info']['volume-type']['type']}`
                     }
+                    
+                    // 아이콘 이미지 여부
+                    req['iconUrl'] = ('user-icon' in data['user-info'] ? 
+                        `${CONFIG.URL}${data['user-info']['user-icon']}` : defaultUserIconImg )
 
                     setUserInfo(req);
                 } else {
@@ -96,10 +101,27 @@ const AccountStatusComponent = (props) => {
             }
         }
 
+        const UserImgComponent = () => {
+            const [iconImgUrl, setIconImgUrl] = useState(undefined);
+
+            if(iconImgUrl == undefined) {
+                if(userInfo.iconUrl == defaultUserIconImg) {
+                    setIconImgUrl(defaultUserIconImg);
+                } else {
+                    console.log(userInfo.iconUrl);
+                    cookieRequestedImgUrlToAvailableUrl(userInfo.iconUrl, props.userInfo.token)
+                        .then((resultUrl) => { setIconImgUrl(resultUrl); });
+                }
+                return <Image style={{backgroundColor: "gray"}} width="140px" height="140px" roundedCircle />
+            } else {
+                return <Image src={iconImgUrl} width="140px" height="140px" roundedCircle />
+            }
+        }
+
         return (
             <Layout>
                 <center style={{ marginBottom: "40px" }}>
-                    <Image src={ExampleImg} width="140px" height="140px" roundedCircle />
+                    <UserImgComponent />
                 </center>
                 
                 <div style={{ marginBottom: "40px" }}>

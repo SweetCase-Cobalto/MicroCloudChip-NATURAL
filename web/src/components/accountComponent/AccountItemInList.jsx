@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Image } from "react-bootstrap";
 import { connect } from "react-redux";
 import { selectUser } from "../../reducers/SelectedAccountReducer";
+import defaultIconImg from '../../asset/img/icons/user-icon.svg';
+import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
 
 const AccountItemInList = (props) => {
     /*
@@ -10,6 +12,25 @@ const AccountItemInList = (props) => {
     */
 
     const [isHovered, setIsHovered] = useState(false);
+    const [realImgUrl, setRealImgUrl] = useState(undefined);
+    
+
+    const ImgComponent = () => {
+
+        if(realImgUrl == undefined) {
+            
+            // Get Data
+            if(props.imgLink == defaultIconImg) {
+                setRealImgUrl(defaultIconImg);
+            } else {
+                cookieRequestedImgUrlToAvailableUrl(props.imgLink, props.connected.token)
+                .then((url) => { setRealImgUrl(url); })
+            }
+            return <Image style={{backgroundColor: "gray"}} alt="userimg" width="110px" height="110px" roundedCircle />
+        } else {
+            return <Image src={realImgUrl} alt="userimg" width="110px" height="110px" roundedCircle />
+        }
+    }
 
     return (
         <div style={{
@@ -31,7 +52,7 @@ const AccountItemInList = (props) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}>
             <center style={{ paddingTop: "20px" }}>
-                <Image src={props.imgLink} alt="userimg" width="110px" height="110px" roundedCircle />
+                <ImgComponent />
                 <h5 style={{ marginTop: "40px" }}>{props.username}</h5>
             </center>
         </div>
@@ -39,6 +60,9 @@ const AccountItemInList = (props) => {
 }
 
 const mapStateToProps = (state) => {
-    return state.SelectedAccountReducer;
+    return {
+        "selected": state.SelectedAccountReducer,
+        "connected": state.ConnectedUserReducer
+    }
 };
 export default connect(mapStateToProps, {selectUser})(AccountItemInList);

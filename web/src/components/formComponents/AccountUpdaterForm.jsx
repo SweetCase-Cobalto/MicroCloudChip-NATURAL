@@ -5,8 +5,7 @@ import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
-import defaultUserIcon from '../../asset/config.json';
-import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/api/cookieRequestedImgUrlToAvailableUrl';
+import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
 
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
@@ -14,18 +13,13 @@ import axios from "axios";
 import { ErrorCodes } from '../../modules/err/errorVariables';
 
 import CONFIG from '../../asset/config.json';
+import defaultUserIcon from '../../asset/img/icons/user-icon.svg';
 
 const AccountUpdaterForm = (props) => {
 
     const [targetUserInfo, setTargetUserInfo] = useState(undefined);
     const [curImgLink, setCurImgLink] = useState(undefined);
 
-    /*
-        계정을 수정하거나
-        생성 할 때 사용하는 폼
-
-        TODO: 버튼 이벤트 함수 구현 필요
-    */
     const history = useHistory();
 
     let isNameChangeDisabled = false;             // admin의 아이디와 이메일 계정은 수정할 수 없다.
@@ -88,11 +82,17 @@ const AccountUpdaterForm = (props) => {
                         // 전송 성공
                         let info = data['user-info'];
 
+                        // redering을 위한 userinfo 가공하기
                         let userInfo = {
                             name: info['name'],
-                            email: info['email']
+                            email: info['email'],
                         }
+
+                        // user icon 여부 확인하기
+                        userInfo['iconUrl'] = ('user-icon' in info ? 
+                                `${CONFIG.URL}${info['user-icon']}` : defaultUserIcon);
                         setTargetUserInfo(userInfo);
+
                     } else {
                         alert("권한이 없습니다.");
                         window.location.href = "/";
@@ -162,6 +162,15 @@ const AccountUpdaterForm = (props) => {
             formData.append('email', email);
             formData.append('password', pswd);
             formData.append('volume-type', volumeType);
+
+            if(changedIconImage == undefined)
+                // 변경 할 파일을 정하지 않은 경우
+                formData.append('img-changeable', 0);
+            else {
+                // 정한 경우
+                formData.append('img-changeable', 1);
+                formData.append('img', changedIconImage);
+            }
 
             // 전송
             let URL = `${CONFIG.URL}/server/user`;
@@ -237,15 +246,36 @@ const AccountUpdaterForm = (props) => {
     }
 
     // 아이콘 이미지 가져오기
-    if(curImgLink == undefined) {
-        if(props.usrImgLink == defaultUserIcon)
-            setCurImgLink(defaultUserIcon);
-        else {
-            cookieRequestedImgUrlToAvailableUrl(props.usrImgLink, props.token)
-            .then((resultUrl) => {
-                setCurImgLink(resultUrl);
-            })
+    if(curImgLink == undefined && actionType == "modify") {
+        if(target == "my") {
+            // 자기 자신의 정보를 수정하는 경우
+
+            if(props.usrImgLink == defaultUserIcon) {
+                // 아이콘 없음
+                setCurImgLink(defaultUserIcon);
+            } else {
+                // 기존의 아이콘 갖고오기
+                cookieRequestedImgUrlToAvailableUrl(props.usrImgLink, props.token)
+                .then((resultUrl) => {
+                    setCurImgLink(resultUrl);
+                });
+            }
+        } else {
+            // 다른 사람의 정보를 수정하는 경우
+            if(targetUserInfo.iconUrl == defaultUserIcon) {
+                setCurImgLink(defaultUserIcon);
+            } else {
+                // 기존의 아이콘 갖고오기
+                cookieRequestedImgUrlToAvailableUrl(targetUserInfo.iconUrl, props.token)
+                .then((resultUrl) => {
+                    setCurImgLink(resultUrl);
+                });
+            }
         }
+    } else if(curImgLink == undefined && actionType == 'add') {
+        // 계정은 추가하는 경우 비어있는 상태에서 시작하므로
+        // 표준 계정 이미지를 넣는다.
+        setCurImgLink(defaultUserIcon);
     }
     return (
         <EditLayer>

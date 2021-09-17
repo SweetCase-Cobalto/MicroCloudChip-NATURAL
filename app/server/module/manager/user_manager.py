@@ -149,6 +149,8 @@ class UserManager(WorkerManager):
                 # 생성될 유저 데이터가 들어간 경우
                 if data_format['img-extension'] is None:
                     raise MicrocloudchipAuthAccessError("img extension does not exist")
+                # 확장자 소문자화
+                data_format['img-extension'] = data_format['img-extension'].lower()
                 if data_format['img-extension'] not in self.AVAILABLE_IMG_EXTENSIONS:
                     raise MicrocloudchipAuthAccessError("img extension is not available")
 
@@ -186,7 +188,12 @@ class UserManager(WorkerManager):
     def get_users(self) -> list:
         r = []
         for u in model.User.objects.all():
-            r.append(u)
+            _u = u.to_dict()
+            # get image data
+            img_root: str = os.path.join(self.config.get_system_root(), 'storage', _u['static_id'], "asset", 'user')
+            if os.path.isfile(img_root + ".jpg") or os.path.isfile(img_root + ".png"):
+                _u['userImgLink'] = "/server/user/download/icon/" + _u["static_id"]
+            r.append(_u)
         return r
 
     def get_user_by_static_id(self, req_static_id: str, static_id: str) -> dict:
@@ -331,6 +338,14 @@ class UserManager(WorkerManager):
             if not all(data_format[k] for k in ['img-raw-data', 'img-extension']) and len(ex) == 0:
                 self.process_locker.release()
                 raise MicrocloudchipUserInformationValidateError("Img Raw Data does not found")
+
+            # 확장자를 소문자로 내리고 이미지 파일이 맞는 지 측정
+            if 'img-extension' in data_format and data_format['img-extension']:
+                data_format['img-extension'] = data_format['img-extension'].lower()
+
+                if not data_format['img-extension'] in self.AVAILABLE_IMG_EXTENSIONS:
+                    self.process_locker.release()
+                    raise MicrocloudchipUserInformationValidateError("This is not image file")
 
             # 이미지 파일이 없는 경우 이미지 파일 생성
             if len(ex) == 0 and all(data_format[k] for k in ['img-raw-data', 'img-extension']):
