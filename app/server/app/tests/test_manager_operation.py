@@ -53,7 +53,7 @@ class ManagerOperationUnittest(TestCase):
         self.storage_manager = StorageManager(self.config)
 
         # admin_static_id 갖고오기
-        self.admin_static_id = self.user_manager.get_users()[0].static_id
+        self.admin_static_id = self.user_manager.get_users()[0]['static_id']
 
         # User Add Test 는 여기서 진행한다.
 
@@ -70,8 +70,8 @@ class ManagerOperationUnittest(TestCase):
 
         # client static_id를 찾기 위해 검색
         for user in self.user_manager.get_users():
-            if user.name == 'client':
-                self.client_static_id = user.static_id
+            if user["name"] == 'client':
+                self.client_static_id = user["static_id"]
                 break
         self.assertIsNotNone(self.client_static_id)
 
@@ -105,8 +105,8 @@ class ManagerOperationUnittest(TestCase):
         # 한 개 더 생성된 유저의 static_id 추출
         self.user_manager.add_user(self.admin_static_id, other_client_req)
         for user in self.user_manager.get_users():
-            if user.name == other_client_req['name']:
-                self.other_static_id = user.static_id
+            if user["name"] == other_client_req['name']:
+                self.other_static_id = user["static_id"]
                 break
 
     def test_user_update(self):

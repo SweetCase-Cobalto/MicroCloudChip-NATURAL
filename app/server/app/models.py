@@ -10,3 +10,13 @@ class User(models.Model):
     email = models.EmailField(max_length=256, validators=[UserValidator.validate_email])
     volume_type = models.CharField(max_length=32)
     is_admin = models.BooleanField(validators=[UserValidator.validate_is_admin])
+
+    def to_dict(self):
+        return {
+            'static_id': self.static_id,
+            'name': self.name,
+            'pswd': self.pswd,
+            'email': self.email,
+            'volume_type': self.volume_type,
+            'is_admin': self.is_admin
+        }

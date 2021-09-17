@@ -163,6 +163,15 @@ const AccountUpdaterForm = (props) => {
             formData.append('password', pswd);
             formData.append('volume-type', volumeType);
 
+            if(changedIconImage == undefined)
+                // 변경 할 파일을 정하지 않은 경우
+                formData.append('img-changeable', 0);
+            else {
+                // 정한 경우
+                formData.append('img-changeable', 1);
+                formData.append('img', changedIconImage);
+            }
+
             // 전송
             let URL = `${CONFIG.URL}/server/user`;
             axios.post(URL, formData , {

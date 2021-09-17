@@ -186,7 +186,12 @@ class UserManager(WorkerManager):
     def get_users(self) -> list:
         r = []
         for u in model.User.objects.all():
-            r.append(u)
+            _u = u.to_dict()
+            # get image data
+            img_root: str = os.path.join(self.config.get_system_root(), 'storage', _u['static_id'], "asset", 'user')
+            if os.path.isfile(img_root+".jpg") or os.path.isfile(img_root+".png"):
+                _u['userImgLink'] = "/server/user/download/icon/" + _u["static_id"]
+            r.append(_u)
         return r
 
     def get_user_by_static_id(self, req_static_id: str, static_id: str) -> dict:
