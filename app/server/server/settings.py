@@ -37,7 +37,7 @@ chars = ''.join([string.ascii_letters, string.digits, string.punctuation]).\
 SECRET_KEY = ''.join([random.SystemRandom().choice(chars) for i in range(50)])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Application definition
 
