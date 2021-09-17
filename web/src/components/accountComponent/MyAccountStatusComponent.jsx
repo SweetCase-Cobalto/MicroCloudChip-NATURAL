@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { useState } from "react";
 import defaultUserIcon from '../../asset/img/icons/user-icon.svg';
 
-import { cookieRequestedImgUrlToAvailableUrl } from  '../../modules/api/cookieRequestedImgUrlToAvailableUrl';
+import { cookieRequestedImgUrlToAvailableUrl } from  '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
 import { volume_label_to_raw } from "../../modules/tool/volume";
 
 

@@ -5,7 +5,7 @@ import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
 
-import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/api/cookieRequestedImgUrlToAvailableUrl';
+import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
 
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
