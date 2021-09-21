@@ -12,7 +12,6 @@ from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFound
 from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
 
-
 class StorageData(metaclass=ABCMeta):
     # 파일 및 디렉토리를 검색할 때 결과를 출력하기 위한 객체
     # call 함수를 사용해서 데이터를 불러온다.
