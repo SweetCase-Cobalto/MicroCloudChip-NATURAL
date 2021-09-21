@@ -34,6 +34,8 @@ const AccountStatusComponent = (props) => {
         let modifyUrl = "/accounts/modify/"+props.selected.selectedUserStaticId;
 
         if(userInfo == undefined || userInfo.staticId != props.selected.selectedUserStaticId) {
+            // 직전에 유저를 선택 안했거나 다른 유저를 선택한 경우
+            // 사로운 선택된 유저 정보로 갱신한다.
             
             // 사용자 데이터 불러오기
             let REQ_URL = CONFIG.URL + '/server/user/' + props.selected.selectedUserStaticId;
@@ -102,9 +104,11 @@ const AccountStatusComponent = (props) => {
         }
 
         const UserImgComponent = () => {
+            // 유저 이미지 컴포넌트
             const [iconImgUrl, setIconImgUrl] = useState(undefined);
 
             if(iconImgUrl == undefined) {
+                // 이미지 파일이 업는 경우 기존 이미지로 대체
                 if(userInfo.iconUrl == defaultUserIconImg) {
                     setIconImgUrl(defaultUserIconImg);
                 } else {

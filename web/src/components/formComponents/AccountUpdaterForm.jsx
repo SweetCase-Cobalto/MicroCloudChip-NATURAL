@@ -4,21 +4,17 @@ import { connect } from "react-redux";
 import { updateMyInfo } from "../../reducers/ConnectedUserReducer";
 import { useHistory } from "react-router-dom";
 import { useState } from "react";
-
 import { cookieRequestedImgUrlToAvailableUrl } from '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
-
 import BootstrapDropdownSelector from "../atomComponents/BootstrapDropdownSelector";
 import axios from "axios";
-
 import { ErrorCodes } from '../../modules/err/errorVariables';
-
 import CONFIG from '../../asset/config.json';
 import defaultUserIcon from '../../asset/img/icons/user-icon.svg';
 
 const AccountUpdaterForm = (props) => {
 
-    const [targetUserInfo, setTargetUserInfo] = useState(undefined);
-    const [curImgLink, setCurImgLink] = useState(undefined);
+    const [targetUserInfo, setTargetUserInfo] = useState(undefined); // 수정 대상 유저 정보
+    const [curImgLink, setCurImgLink] = useState(undefined); // 유저 이미지
 
     const history = useHistory();
 
@@ -49,6 +45,7 @@ const AccountUpdaterForm = (props) => {
     // Select Type
     if(actionType == "modify") {
         // 계정 정보를 수정하는 경우
+        // email 수정 Locl
         isEmailChangeDisabled = true;
         if(target == "my") {
             // 자기 자신을 수정하는 경우
@@ -57,6 +54,7 @@ const AccountUpdaterForm = (props) => {
             targetStaticId = props.id;
 
             if(props.isAdmin) {
+                // Admin은 자기 자신의 이름을 수정할 수 없다.
                 isNameChangeDisabled = true;
             }
         } else {
@@ -65,8 +63,8 @@ const AccountUpdaterForm = (props) => {
                 사용자 staticId를 활용하여 서버로부터 전체적인
                 유저 데이터를 갖고 온다.
             */
-            // 아래는 예시 데이터
-            
+
+            // 요청 URL 생성
             const URL = `${CONFIG.URL}/server/user/${targetStaticId}`;
             
             if(targetUserInfo == undefined) {
@@ -94,10 +92,12 @@ const AccountUpdaterForm = (props) => {
                         setTargetUserInfo(userInfo);
 
                     } else {
+                        //  code가 0이 아님 -> 데이터 요청 실패
                         alert("권한이 없습니다.");
                         window.location.href = "/";
                     }
                 }).catch((err) => {
+                    // 요청 자체 실패
                     alert("서버와의 통신에서 문제가 발생했습니다.");
                     window.location.href = "/accounts";
                 })
@@ -112,6 +112,7 @@ const AccountUpdaterForm = (props) => {
             emailDefaultValue = targetUserInfo.email;
         }
     } else {
+        // 유저 추가
         btnTitle = "추가"
         isVolumeTypeDisabled = false;
     }

@@ -16,13 +16,15 @@ const AccountItemInList = (props) => {
     
 
     const ImgComponent = () => {
-
+        // 리스트에 출력될 이미지 컴포넌트
         if(realImgUrl == undefined) {
             
             // Get Data
             if(props.imgLink == defaultIconImg) {
+                // 기존 이미지(해당 유저의 프로필 이미지가 없는 경우)
                 setRealImgUrl(defaultIconImg);
             } else {
+                // 있는 경우
                 cookieRequestedImgUrlToAvailableUrl(props.imgLink, props.connected.token)
                 .then((url) => { setRealImgUrl(url); })
             }

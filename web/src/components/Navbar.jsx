@@ -10,20 +10,26 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Navbar = (props) => {
 
     if(props.id == "") {
+        // 로그인 만료 및 불법 엑세스
         window.location.href = "/";
     }
 
     const logoutEvent = () => {
+        // 로그아웃
         props.userLogout(props.token);
     }
 
+    /* 페이지 이동용 함수 */
     const goToAccountPage = () => {
+        // 계정 페이지 이동
         window.location.href = "/accounts";
     }
     const goToStoragePage = () => {
+        // 스토리지 페이지 이동
         window.location.href = "/storage/root";
     }
 
+    // Admin 전용 컨텐츠 관리용
     let displaySetting = props.isAdmin ? "block" : "none";
 
     return (

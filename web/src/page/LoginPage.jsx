@@ -25,14 +25,13 @@ const LoginPage = (props) => {
         let password = e.target.password.value;
 
         // 빈 문자열 확인
-        if(email === "") {
+        if(email === "")
             alert("Please Write your email");
-        } else if(password === "") {
+        else if(password === "")
             alert("Please Write your password");
-        } else {
+        else
             // 로그인 시도
             props.userLogin(email, password);
-        }
     }
 
     return (
