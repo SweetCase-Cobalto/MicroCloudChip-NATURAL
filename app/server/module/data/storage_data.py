@@ -12,6 +12,7 @@ from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFound
 from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
 
+
 class StorageData(metaclass=ABCMeta):
     # 파일 및 디렉토리를 검색할 때 결과를 출력하기 위한 객체
     # call 함수를 사용해서 데이터를 불러온다.
@@ -57,7 +58,6 @@ class StorageData(metaclass=ABCMeta):
 
 
 class FileData(StorageData):
-
     file_type: FileType
     volume: int
     volume_unit: FileVolumeType
@@ -139,7 +139,7 @@ class FileData(StorageData):
         if new_name == self.name:
             # 이름이 같은건 생성 불가
             raise MicrocloudchipSystemAbnormalAccessError("same directory name invalid")
-        
+
         # Validator 측정
         try:
             StorageValidator.validate_storage_with_no_django_validator_exception(new_name)
