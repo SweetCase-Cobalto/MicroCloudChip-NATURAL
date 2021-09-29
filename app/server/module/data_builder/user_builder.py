@@ -18,11 +18,11 @@ class UserBuilder:
         variable: name: 사용자 이름
         variable: static_id: 사용자 고유 아이디(자동생성)
         variable: password
-        variable: volume_type
-        variable: is_admin
+        variable: volume_type: 사용자가 사용할 수 있는 최대 용량타입
+        variable: is_admin: Admin 여부
 
-        == private functions ==
-        function: generate_static_id
+        == static functions ==
+        function: generate_static_id: user생성 시 랜덤 고유 번호 생성
         
         == set_functions ==
         function: set_email -> this
@@ -52,20 +52,24 @@ class UserBuilder:
         numbers = '0123456789'
 
         static_id = ""
-
+        
+        # 랜덤 생성
         for _ in range(40):
             select = random.randint(0, 1)
-            if select:
-                # alphabet
-                static_id += alphabet[random.randint(0, len(alphabet) - 1)]
-            else:
-                # number
-                static_id += numbers[random.randint(0, len(numbers) - 1)]
-
+            static_id += alphabet[random.randint(0, len(alphabet) - 1)] if select else \
+                numbers[random.randint(0, len(numbers) - 1)]
+            
         return static_id
 
-    """ set functions """
-
+    """ set functions 
+        계정을 생성하기 위해 데이터들을 세팅하는 set function이다
+        builder pattern 이기 때문에 이 밑의 모든 함수들은 자기 자신을 리턴한다.
+        
+        set functions의 프로세스는 다음과 같다
+        1. validate 측정
+        2. variable 저장
+        3. 자기 자신 리턴
+    """
     def set_name(self, new_name: str):
         try:
             UserValidator.validate_name(new_name)
@@ -111,6 +115,9 @@ class UserBuilder:
 
     # Build To model.User
     def build(self) -> custom_model.User:
+        """최종적으로 User Model를 생성한다
+            하지만 바로 Database에 저장하지 않는다.
+        """
         if not self.name or not self.email or not self.password or \
                 self.is_admin is None or not self.static_id or not self.volume_type:
             raise MicrocloudchipUserInformationValidateError("Model User build Error: some data is empty")
