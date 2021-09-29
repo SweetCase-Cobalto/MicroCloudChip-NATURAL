@@ -1,7 +1,9 @@
-from enum import Enum
+from enum import Enum, unique
 
 
+@unique
 class FileType(Enum):
+    # 아래 확장자에[ 따라 설정되는 파일 타입이 달라진다
     TEXT = ['txt']
     EXECUTE = ['exe', 'msi']
     PDF = ['pdf']
@@ -12,24 +14,18 @@ class FileType(Enum):
 
     @staticmethod
     def get_file_type(ex: str):
+        # File Type 갖고오기
 
-        if ex in FileType.TEXT.value:
-            return FileType.TEXT
-        elif ex in FileType.EXECUTE.value:
-            return FileType.EXECUTE
-        elif ex in FileType.PDF.value:
-            return FileType.PDF
-        elif ex in FileType.AUDIO.value:
-            return FileType.AUDIO
-        elif ex in FileType.VIDEO.value:
-            return FileType.VIDEO
-        elif ex in FileType.IMAGE.value:
-            return FileType.IMAGE
-        else:
-            return FileType.OTHER
+        for f_type in FileType:
+            if ex in f_type.value:
+                return f_type
+        return FileType.OTHER
 
 
+@unique
 class FileVolumeType(Enum):
+    # Volume 단위임
+
     BYTE = 10 ** 0
     KB = 10 ** 3
     MB = 10 ** 6
@@ -38,30 +34,27 @@ class FileVolumeType(Enum):
 
     @staticmethod
     def get_file_volume_type(vol: int, zfill_counter: int = 0) -> tuple:
-
-        _vol = -1
-
-        if vol < FileVolumeType.KB.value:
-            vol_type, _vol = FileVolumeType.BYTE, vol
-        elif vol < FileVolumeType.MB.value:
-            vol_type, _vol = FileVolumeType.KB, vol / FileVolumeType.KB.value
-        elif vol < FileVolumeType.GB.value:
-            vol_type, _vol = FileVolumeType.MB, vol / FileVolumeType.MB.value
-        elif vol < FileVolumeType.TB.value:
-            vol_type, _vol = FileVolumeType.GB, vol / FileVolumeType.GB.value
-        else:
-            vol_type, _vol = FileVolumeType.TB, vol / FileVolumeType.TB.value
-
+        # raw data size에서 맞는 단위 구하기
+        
+        # Enum 요소들을 list로 표현
+        e_list = list(FileVolumeType.__dict__['_member_map_'].values())
+        vol_type, _vol = e_list[-1], vol / e_list[-1].value
+        for i in range(1, len(e_list)):
+            if vol < e_list[i].value:
+                vol_type, _vol = e_list[i-1], vol / e_list[i-1].value
+                break
         return vol_type, (_vol if zfill_counter < 1 else round(_vol, zfill_counter))
 
     @staticmethod
     def type_to_num(vol_type, vol: int) -> int:
         # 바이트 전환
+        # 1KB는 1000 이 리턴된다.
         r = vol * vol_type.value
         return r
 
     @staticmethod
     def add(num1: tuple, num2: tuple, zfill_counter: int = 0) -> tuple:
+        # (int, volumetype) 간의 덧셈 연산
         """
             param:
                 tuple:
@@ -75,6 +68,7 @@ class FileVolumeType(Enum):
 
     @staticmethod
     def sub(num1: tuple, num2: tuple, zfill_counter: int = 0) -> tuple:
+        # (int, volumetype) 간의 뺄셈 연산
         n1 = FileVolumeType.type_to_num(num1[0], num1[1])
         n2 = FileVolumeType.type_to_num(num2[0], num2[1])
         n = n1 - n2
