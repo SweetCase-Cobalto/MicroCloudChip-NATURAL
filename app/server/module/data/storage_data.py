@@ -3,11 +3,7 @@ import sys
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
-from module.MicrocloudchipException.exceptions import MicrocloudchipFileNotFoundError, \
-    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryNotFoundError, \
-    MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData, \
-    MicrocloudchipSystemAbnormalAccessError
+from module.MicrocloudchipException.exceptions import *
 
 from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
@@ -58,7 +54,9 @@ class StorageData(metaclass=ABCMeta):
 
 
 class FileData(StorageData):
-
+    """
+        파일 관련 데이터
+    """
     file_type: FileType
     volume: int
     volume_unit: FileVolumeType
@@ -86,7 +84,8 @@ class FileData(StorageData):
         _volume = file_stat.st_size
         self.raw_volume = _volume
         self.volume_unit, self.volume = FileVolumeType.get_file_volume_type(_volume)
-
+    
+        # 데이터를 불러왔음을 확인
         self.is_called = True
 
         return self
@@ -94,24 +93,24 @@ class FileData(StorageData):
     def __getitem__(self, item: str):
         super().__getitem__(item)
 
-        if item == 'create-date':
-            return self.create_date
-        elif item == 'modify-date':
-            return self.modify_date
-        elif item == 'file-name':
-            return self.name
-        elif item == 'file-type':
-            return self.file_type
-        elif item == 'size':
-            return self.volume_unit, self.volume
-        elif item == 'size-raw':
-            return self.raw_volume
-        elif item == 'full-root':
-            return self.full_root
-        else:
+        def __get_item(this, key):
+            return {
+                'create-date': this.create_date,
+                'modify-date': this.modify_date,
+                'file-name': this.name,
+                'file-type': this.file_type,
+                'size': (this.volume_unit, this.volume),
+                'size-raw': this.raw_volume,
+                'full-root': this.full_root
+            }[key]
+
+        try:
+            return __get_item(self, item)
+        except KeyError:
             raise KeyError(f"file data key error: {item}")
 
     def __str__(self):
+        # 로그 출력용
         r = ""
         if not self.is_called:
             r = f"This Class is not called yet, root: {self.full_root}"
@@ -125,9 +124,11 @@ class FileData(StorageData):
         return r
 
     def remove(self):
+        """ 파일 제거 """
         super().remove()
         self.__call__()
         if os.path.isfile(self.full_root):
+            # 파일이 존재할 경우 삭제
             os.remove(self.full_root)
         self.is_called = False
 
@@ -140,7 +141,7 @@ class FileData(StorageData):
         if new_name == self.name:
             # 이름이 같은건 생성 불가
             raise MicrocloudchipSystemAbnormalAccessError("same directory name invalid")
-        
+
         # Validator 측정
         try:
             StorageValidator.validate_storage_with_no_django_validator_exception(new_name)
@@ -155,13 +156,15 @@ class FileData(StorageData):
         except FileExistsError:
             raise MicrocloudchipFileAlreadyExistError("File that new named is already exist")
 
-        # 이름 바구기에 성공했을 경우 속성 변경
+        # 이름 바꾸기에 성공했을 경우 속성 변경
         self.full_root = new_full_root
+        # 이름아 바뀌면 전체 루트도 바뀌기 때문에 갱신
         self.name = new_name
         self.__call__()
 
 
 class DirectoryData(StorageData):
+    """Directory Data"""
     file_list: list[dict]
 
     def __init__(self, full_root: str):
@@ -196,19 +199,19 @@ class DirectoryData(StorageData):
     def __getitem__(self, item: str):
         super().__getitem__(item)
 
-        if item == 'create-date':
-            return self.create_date
-        elif item == 'modify-date':
-            return self.modify_date
-        elif item == 'dir-name':
-            return self.name
-        elif item == 'file-list':
-            return self.file_list
-        elif item == 'file-size':
-            return len(self.file_list)
-        elif item == 'full-root':
-            return self.full_root
-        else:
+        def __get_item(this, key):
+            return {
+                'create-date': this.create_date,
+                'modify-date': this.modify_date,
+                'dir-name': this.name,
+                'file-list': this.file_list,
+                'file-size': len(this.file_list),
+                'full-root': this.full_root
+            }[key]
+
+        try:
+            return __get_item(self, item)
+        except KeyError:
             raise KeyError(f"file data key error: {item}")
 
     def __str__(self):
@@ -231,19 +234,21 @@ class DirectoryData(StorageData):
         # 실패 시 Directory Not Found
 
         if new_name == self.name:
+            # 동일 이름의 디렉토리는 변경할 수 업다.
             raise MicrocloudchipSystemAbnormalAccessError("same directory name invalid")
 
-        # 파일명 Validator 측정
+        # 디렉토리명 Validator 측정
         try:
             StorageValidator.validate_storage_with_no_django_validator_exception(new_name)
         except MicrocloudchipFileAndDirectoryValidateError as e:
             raise e
 
-        # 파일 이름 변경
+        # 디렉토리 이름 변경
         new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
         try:
             os.rename(self.full_root, new_full_root)
         except FileExistsError:
+            # 실패하는 경우는 변경하고자 하는 이름의 파일이나 디렉토리가 존재하기 때문이다.
             raise MicrocloudchipDirectoryAlreadyExistError("Directory that new named is already exist")
 
         # 이름 바꾸기에 성공했을 경우 속성 변경
@@ -252,11 +257,16 @@ class DirectoryData(StorageData):
         self.__call__()  # 다시 업데이트
 
     def remove(self):
+        # 디렉토리 삭제
+        # 단 data 단에서의 삭제는 디렉토리 안에 아무것도 없어야 한다.
         super().remove()
         self.__call__()
         if os.path.isdir(self.full_root):
+            # 디렉토리가 존재하는 지 확인
             if len(os.listdir(self.full_root)) == 0:
+                # 디렉토리가 비어있는 경우 삭제
                 os.rmdir(self.full_root)
+                # 디렉토리가 없기 때문에 is_called를 False 처리한다.
                 self.is_called = False
             else:
                 self.is_called = True

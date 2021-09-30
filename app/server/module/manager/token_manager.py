@@ -10,6 +10,7 @@ import jwt
 
 
 class TokenManager(WorkerManager):
+    # TODO: 0.1.0 때 토큰 저장 및 업데이트 방식 변경 필요
     time_limit: int
     user_table: dict
     token_checker_thread: threading.Thread

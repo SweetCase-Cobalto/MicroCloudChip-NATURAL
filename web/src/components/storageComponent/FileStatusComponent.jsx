@@ -7,22 +7,16 @@ import pdfFileImg from '../../asset/img/icons/pdf-file.svg';
 import txtFileImg from '../../asset/img/icons/txt-file.svg';
 import otherFileImg from '../../asset/img/icons/unknown-file.svg';
 import videoFileImg from '../../asset/img/icons/video-file.svg';
-
 import multiFileImg from '../../asset/img/icons/multiple-file-icon.svg';
 import multiDirImg from '../../asset/img/icons/multiple-dirs-icon.svg';
 import multiAllImg from '../../asset/img/icons/multiple-all-icon.svg';
 
 import CONFIG from '../../asset/config.json';
 import { ErrorCodes } from '../../modules/err/errorVariables';
-
 import styled from "styled-components";
 import { Image, Button, Form, Modal, ProgressBar } from "react-bootstrap";
-
 import { floorVolume } from '../../modules/tool/volume';
-
 import fileDownload from 'js-file-download';
-
-
 import { connect } from "react-redux";
 import { useState } from 'react';
 import axios from 'axios';
@@ -57,6 +51,8 @@ const FileStatusComponent = (props) => {
         // 없앤다.
         if(dataInfo != undefined)
             setDataInfo(undefined);
+
+        // 선택된 파일이 없다는 렌더링
         return (
             <Layout>
                 <h5>선택된 파일 없음</h5>
@@ -64,8 +60,10 @@ const FileStatusComponent = (props) => {
         );
     }
 
-    // 선택된 파일이 한 개 일 경우
-    else if(selectedDirList.length == 1) {
+    else if(selectedDirList.length == 1) {    
+        // 선택된 파일이 한 개 일 경우
+        // 이 컴포넌트는 파일 및 디렉토리 하나를 선택했다는 이미지와
+        // 파일 및 디렉토리의 상세정보를 보여줘야 한다.
 
         // Reducer에 저장된 선택된 객체의 정보를 갖고온다
         // RAW: 파일이름/파일타입
@@ -77,13 +75,16 @@ const FileStatusComponent = (props) => {
         if(dataInfo === undefined) {
             // 아직 받아오지 못했거나 다른 파일 및 디렉토리를 선택한 경우
             
-
             // 서버와 통신하기 위한 URL 생성
             let TARGET_URL = CONFIG.URL + "/server/storage/data/";
+
+            // 타입(directory, file) 에 따라 중간 URL이 다르다
             if(fileType == 'dir')
                 TARGET_URL += "dir/"
             else
                 TARGET_URL += "file/"
+
+            // 최종 URL 생성
             TARGET_URL += props.userInfo.id + "/" + props.parentDir.curUrl.join('/') + "/" + filename;
 
             // 전송
@@ -93,7 +94,9 @@ const FileStatusComponent = (props) => {
                 crossDomain: true
             })
             .then((response) => {
+                // 데이터 갖고오기
                 let data = response.data;
+
                 if(data.code != 0) {
                     // TODO: 오류에 따른 처리 필요
                     alert("오류 발생");
@@ -109,7 +112,7 @@ const FileStatusComponent = (props) => {
                 }
             })
             
-            // TODO: 로딩 페이지 구현 필요
+            // 로딩 렌더링
             return (<div>
                 Loading
             </div>)
@@ -118,8 +121,8 @@ const FileStatusComponent = (props) => {
         // 위 서버 통신은 패싱하고 컴포넌트를 리턴한다.
 
         
-        // Events
         const downloadSingleObjectEvent = async () => {
+            // 단일 파일/디렉토리 다이렉트 다운로드
 
             // 파일 한개 다운로드
             let URL = `${CONFIG.URL}/server/storage/download/single`;
@@ -129,6 +132,7 @@ const FileStatusComponent = (props) => {
             } else {
                 URL += `/file/`;
             }
+            // 최종 URL 생성
             URL += `${props.userInfo.id}/${props.parentDir.curUrl.join("/")}/${filename}`;
             
             // 요청
@@ -140,11 +144,14 @@ const FileStatusComponent = (props) => {
             }).then((response) => {
                 let data = response.data;
                 if(fileType == 'dir') {
+                    // 디렉토리 일 경우, 압축 파일을 다운로드 한다.
                     fileDownload(data, `${filename}.zip`)
                 } else {
+                    // 그냥 원래 파일 대로 다운로드 한다.
                     fileDownload(data, filename);
                 }
             }).catch((err) => {
+                // 다운로드 실패
                 alert("서버로부터 문제가 발생했습니다.");
                 window.location.reload();
             })
@@ -153,7 +160,7 @@ const FileStatusComponent = (props) => {
         
         // Modal Components
         const ModifyObjectModal = () => {
-            // 객체 이름 수정 컴포넌트
+            // 객체 이름 수정 모달
 
             const closeEvent = () => setIsModifyObjectModalOpen(false);
             const modifyHandler = (e) => {
@@ -175,7 +182,6 @@ const FileStatusComponent = (props) => {
                 URL += props.userInfo.id + "/" + props.parentDir.curUrl.join("/") + "/" +filename;
 
                 // 송신
-                
                 axios.patch(URL, formData, {
                     headers: {"Set-Cookie": props.userInfo.token },
                     crossDomain: true,
@@ -191,7 +197,7 @@ const FileStatusComponent = (props) => {
                             // 새로 변경할 이름의 디렉토리가 이미 존재하는 경우
                             alert("해당 이름의 디렉토리가 이미 존재합니다.");
                         } else if(data.code == ErrorCodes.ERR_FILE_ALEADY_EXISTS_ERR) {
-                            // 새로 변경 할 이름의 파일ㄹ이 이미 존재하는 경우
+                            // 새로 변경 할 이름의 파일이 이미 존재하는 경우
                             alert("해당 이름의 파일이 이미 존재합니다.");
                         } else if(data.code == ErrorCodes.ERR_SYSTEM_ABNORMAL_ACCESS_ERR) {
                             // 동일한 이름으로 변경하려는 경우
@@ -202,9 +208,9 @@ const FileStatusComponent = (props) => {
                 
             }
             
-            let modalTitle = "";
-            let keyword = "";
-            let placeholder = "";
+            let modalTitle = ""; // 모달에 출력될 문구
+            let keyword = ""; // 파일/디렉토리
+            let placeholder = ""; // 힌트
 
             // 파일/디렉토리에 따른 문구 세팅
             if(fileType == 'dir') {
@@ -221,9 +227,9 @@ const FileStatusComponent = (props) => {
 
                 /* 파일 이름 수정 컴포넌트
                     따로 분리한 이유는 다음과 같다.
-                        - 확장자가 달린 파일일 경우 
-                            확장자는 변경되지 않으므로 확장자를 에디터 오른쪼겡
-                            보기 쉽게 출력되어야 한다.
+                    - 확장자가 달린 파일일 경우 
+                        확장자는 변경되지 않으므로 확장자를 에디터 오른쪽에
+                        기 쉽게 출력되어야 한다.
                 */
 
                 if(fileType == 'dir') {
@@ -231,14 +237,16 @@ const FileStatusComponent = (props) => {
                         <Form.Control type="text" placeholder={placeholder} name="newName"/>
                     )
                 } else {
-                    let __extension = "";
+                    let __extension = ""; // 확장자
                     
+                    // 확장자 갖고오기
                     let __splitedFilename = filename.split('.');
                     if(__splitedFilename.length > 1) {
                         // 확장자가 존재하는 경우
                         __extension = __splitedFilename[__splitedFilename.length - 1];
                     }
 
+                    // 렌더링
                     return (
                         <div style={{ display: "flex" }}>
                             <Form.Control type="text" placeholder={placeholder} style={{ marginRight: "10px" }} name="newName" />
@@ -248,6 +256,7 @@ const FileStatusComponent = (props) => {
                 }
             }
 
+            // 모달 렌더링
             return (
                 <Modal
                     show={isModifyObjectModalOpen}
@@ -274,7 +283,9 @@ const FileStatusComponent = (props) => {
         }
 
         const DeleteObjectModal = () => {
-            
+            // 오브젝트 삭제 모달
+
+
             const closeEvent = () => { setIsDeleteObjectModalOpen(false); }
             const deleteEvent = () => {
                 
@@ -303,6 +314,7 @@ const FileStatusComponent = (props) => {
                 })
             }
 
+            // Delete Model 렌더링
             return (
                 <Modal
                     show={isDeleteObjectModalOpen}
@@ -325,8 +337,10 @@ const FileStatusComponent = (props) => {
             )
         }
 
+        // 전체 컴포넌트(1개 선택할 경우)
+        // 디렉토리를 선택한 경우와 파일을 선택한 경우 두 가지로 나뉜다.
         if(fileType == "dir") {
-            // 디렉토리
+            // 디렉토리를 선택할 경우
             return (
                 <Layout>
                     <center style={{ marginBottom: "40px" }}>
@@ -361,8 +375,9 @@ const FileStatusComponent = (props) => {
                 </Layout>
             )
         } else {
-            // 파일
-            let imgUrl = "";
+            // 파일을 선택한 경우
+
+            let imgUrl = ""; // 출력할 파일 이미지
             fileType = fileType.toLowerCase();
             switch(fileType) {
                 // 파일 타입에 따른 파일 이미지 세팅
@@ -418,12 +433,13 @@ const FileStatusComponent = (props) => {
             )
         }
     } else {
-        // 여러개
+        // 여러개를 선택한 경우
         
         // 여러개기 때문에 전에 선택된 단일 파일 및 디렉토리 정보는 갖다버려 ㅋ
         if(dataInfo != undefined)
             setDataInfo(undefined);
 
+        // 렌더에 출력될 이미지
         let imgUrl = ""
 
         // 파일 리스트 (파일 타입 / 파일 이름)
@@ -437,6 +453,7 @@ const FileStatusComponent = (props) => {
             fileNames.push(splited[0]);
             fileTypes.push(splited[1]);
         })
+        // 디렉토리 갯수
         let dirCount = fileTypes.filter(t => 'dir' == t).length;
 
         
@@ -474,8 +491,8 @@ const FileStatusComponent = (props) => {
             for(let i = 0; i < fileNames.length; i++) {
                 // 파일 순회 돌면서 파일 리스트 컴포넌트 만들기
 
-                let __fileTypeForPrint = "";
-                let __fontColor = "";
+                let __fileTypeForPrint = ""; // 출력될 파일 타입 컴포넌트
+                let __fontColor = ""; // 디렉토리는 파란색, 파일은 검정색으로 포현한다.
 
                 // File 타입: Dir -> 디렉토리, Other -> 파일
                 if(fileTypes[i] == 'dir') {
@@ -551,7 +568,6 @@ const FileStatusComponent = (props) => {
                         } else {
                             nextFileName = fileNames[i + 1];
                         }
-                        console.log(nextFileName);
                         setDeleteProcess({
                             "targetFileName": nextFileName,
                             "deletedFileNum": i + 1,
@@ -632,6 +648,8 @@ const FileStatusComponent = (props) => {
                     )
                 }
             }
+
+            // 모달 전체 컴포넌트
             return (
                 <Modal
                     show={isDeleteMultipleModalOpen}
@@ -651,13 +669,11 @@ const FileStatusComponent = (props) => {
             // 다중 파일 다운로드 이벤트
             let URL = 
                 `${CONFIG.URL}/server/storage/download/multiple/${props.userInfo.id}/${props.parentDir.curUrl.join('/')}`;
-
-            console.log(URL);
             
-            // 요청을 전송하기 param 리슽 생성
+            // 요청을 전송하기 param 리스트 생성
             const paramList = [];
-            let dirCounter = 0;
-            let fileCounter = 0;
+            let dirCounter = 0; // 디렉토리 진행 카운터
+            let fileCounter = 0; // 파일 진행 카운터
             for(let i = 0; i < fileNames.length; i++) {
 
                 // Key Name 세팅
@@ -669,9 +685,9 @@ const FileStatusComponent = (props) => {
                     key = `file-${fileCounter}`;
                     fileCounter++;
                 }
+                // 파라미터 리스트에 추가
                 paramList.push([key, fileNames[i]]);
             }
-            
             
             // 서버 요청
             // GET URL 길이는 최대 2048자, 즉 2047자 이상 넘어가면 분할해서 돌려야 한다.

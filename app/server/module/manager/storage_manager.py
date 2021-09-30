@@ -16,14 +16,17 @@ import module.tools.zip as custom_zip
 class StorageManager(WorkerManager):
 
     def __new__(cls, config: SystemConfig):
+        # Singletone 방식
         if not hasattr(cls, 'user_manager_instance'):
             cls.instance = super(WorkerManager, cls).__new__(cls)
         return cls.instance
 
     def __get_user_root(self, static_id: str) -> str:
+        # user root 구하기
         return os.path.join(self.config.get_system_root(), 'storage', static_id, 'root')
 
     def __get_user_tmp_root(self, static_id: str) -> str:
+        # 파일을 추출하기 위한 임시 디렉토리 루트 구하기
         return os.path.join(self.config.get_system_root(), 'storage', static_id, 'tmp')
 
     def upload_file(
@@ -46,29 +49,32 @@ class StorageManager(WorkerManager):
 
         # 용량 체크
         user_info = user_manager.get_user_by_static_id(req_static_id, target_static_id)
-
+        
+        # 사용가능한 남아있는 용량
         available_storage: tuple = FileVolumeType.sub(user_info['volume-type'].to_tuple(),
                                                       user_manager.get_used_size(target_static_id))
+        # 사용가능한 남아있는 욜양 - 업로드 될 파일 용량
+        # 음수면 업로드가 불가하다.
         available_storage = \
             FileVolumeType.sub(available_storage, FileVolumeType.get_file_volume_type(len(raw_data)))
         if available_storage[1] < 0:
+            # 용량 초과로 인한 업로드 불가
             raise MicrocloudchipStorageOverCapacityError("Storage Capacity overflow")
 
         # 업로드
         # 이 단계에서 발생한 예외들은 바로 송출
         try:
-
+            # File Upload를 위한 Builder 생성 및 저장
             file_builder = FileBuilder()
             file_builder.set_system_root(self.config.get_system_root()) \
                 .set_author_static_id(target_static_id) \
                 .set_target_root(target_root) \
                 .set_raw_data(raw_data).save()
-
         except Exception as e:
             raise e
 
     def get_file_info(self, req_static_id: str, req: dict) -> FileData:
-
+        # File Information 갖고오기
         try:
             # req 데이터 추출
             target_static_id: str = req['static-id']
@@ -79,15 +85,18 @@ class StorageManager(WorkerManager):
         # 권한 체크
         if req_static_id != target_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access update file")
-
+        
+        # 실제 파일 루트
         src_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
         try:
+            # 파일 데이터 갖고오기
             f = FileData(src_root)()
         except MicrocloudchipException as e:
             raise e
         except Exception as e:
             raise e
         else:
+            # 파일 정보 리턴
             return f
 
     def update_file(
@@ -95,7 +104,7 @@ class StorageManager(WorkerManager):
             req_static_id: str,
             req: dict,
     ):
-
+        # 파일 정보 수정(이름 수정)
         try:
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
@@ -107,10 +116,11 @@ class StorageManager(WorkerManager):
         if req_static_id != target_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access update file")
 
-        # Target Root는 URL 상의 루트이므로 토큰을 바꾼다
+        # Target Root는 URL 상의 루트이므로 토큰(루트 토큰)을 바꾼다
         # 예를 들어 Windows Platform 일 경우 해당 루트가 aaa/bbb 이면 aaa\bbb로 변경한다
         __target_root = self.TOKEN.join(target_root.split('/'))
 
+        # Raw Root
         src_root: str = os.path.join(self.__get_user_root(target_static_id), __target_root)
 
         try:
@@ -130,6 +140,7 @@ class StorageManager(WorkerManager):
             req_static_id: str,
             req: dict
     ):
+        # 디렉토리 만들기
         try:
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
@@ -154,7 +165,7 @@ class StorageManager(WorkerManager):
             req_static_id: str,
             req: dict
     ):
-
+        # 디렉토리 정보 수정(이름 수정)
         try:
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
@@ -187,6 +198,7 @@ class StorageManager(WorkerManager):
             raise e
 
     def get_dir_info(self, req_static_id: str, req: dict):
+        # 디렉토리 정보 얻기
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
@@ -196,10 +208,12 @@ class StorageManager(WorkerManager):
         # 권한 체크
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
-
+        
+        # 디렉토리 루트
         full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
 
         try:
+            # 정보 갖고오기
             r: DirectoryData = DirectoryData(full_root)()
         except MicrocloudchipDirectoryNotFoundError as e:
             raise e
@@ -207,6 +221,7 @@ class StorageManager(WorkerManager):
             return r
 
     def get_dirlist(self, req_static_id: str, req: dict):
+        # 디렉토리 리스트 갖고오기
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
@@ -221,6 +236,7 @@ class StorageManager(WorkerManager):
         f_list: list[FileData] = []
         d_list: list[DirectoryData] = []
 
+        # 실제 루트
         full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
 
         # 디렉토리 확인
@@ -248,6 +264,7 @@ class StorageManager(WorkerManager):
         return f_list, d_list
 
     def delete_file(self, req_static_id: str, req: dict):
+        # 파일 삭제
 
         try:
             target_static_id = req['static-id']
@@ -258,7 +275,8 @@ class StorageManager(WorkerManager):
         # 권한 체크
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
-
+        
+        # 삭제 대상 실제 루트
         full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
 
         # 파일 정보 확인하기

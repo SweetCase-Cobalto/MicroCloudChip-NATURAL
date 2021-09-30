@@ -15,9 +15,11 @@ from module.label.file_type import FileVolumeType
 
 
 class UserManager(WorkerManager):
+    # 저장할 수 있는 이미지 확장자들
     AVAILABLE_IMG_EXTENSIONS: list[str] = ['jpg', 'png']
 
     def __new__(cls, config: SystemConfig):
+        # Singletone 기법으로 작동한다.
         if not hasattr(cls, 'user_manager_instance'):
             cls.instance = super(WorkerManager, cls).__new__(cls)
         return cls.instance
@@ -25,34 +27,45 @@ class UserManager(WorkerManager):
     def __make_user_directory(self, user_static_id: str) -> list[str]:
         # User Directory 생성
         # 절대 Class 외에 사용하지 말 것
+
+        # 최상위 디렉토리 루트 정의
         super_dir_root = [self.config.get_system_root(), 'storage', user_static_id]
 
-        # Storage Directory  생성
+        # 최상위 디렉토리 없으면 생성
         if not os.path.isdir(os.path.join(self.config.get_system_root(), 'storage')):
             os.mkdir(os.path.join(self.config.get_system_root(), 'storage'))
 
+        # 계정 필수 디렉토리들
         user_dirs: list[str] = ['root', 'asset', 'tmp']
 
+        # 계정 최상위 디렉토리 없으면 생성
         user_main_root: str = os.path.join(*super_dir_root)
         if not os.path.isdir(user_main_root):
             os.mkdir(user_main_root)
 
+        # user_dirs에 있는 디렉토리 순차적으로 생성
         for user_dir in user_dirs:
             r: list[str] = super_dir_root + [user_dir]
             r_str: str = os.path.join(*r)
             if not os.path.isdir(r_str):
                 os.mkdir(r_str)
 
+        # 최상위 디렉토리 루트 반환
         return super_dir_root
 
     def __init__(self, system_config: SystemConfig):
         super().__init__(system_config)
 
+        # Admin 계정이 DB에 존재하는 지 확인
         admin_num: int = len(model.User.objects.filter(is_admin=True))
 
         if admin_num == 0:
             # 없다면 system_config 에 존재하는 데이터를 바탕으로  어드민을 생성한다.
-
+            """기즌 데이터는 다음과 같다
+                email: config에서 설정된 email 생성
+                pswd: 12345678
+                volume type: GUEST(5G)
+            """
             admin_email = self.config.get_admin_eamil()
             new_admin_builder: UserBuilder = UserBuilder().set_name('admin') \
                 .set_password('12345678') \
@@ -62,33 +75,41 @@ class UserManager(WorkerManager):
                 .set_static_id()
 
             while True:
+                # static_id는 반복되면 안된다.
                 try:
                     model.User.objects.get(static_id=new_admin_builder.static_id)
                 except model.User.DoesNotExist:
+                    # static_id 중복이 되지 않으므로 while 문 넘기기
                     break
                 new_admin_builder.set_static_id()
 
-            # Directory 생성
+            # admin Directory 생성
             admin_static_id = new_admin_builder.static_id
             self.__make_user_directory(admin_static_id)
 
             # DB 저장
             new_admin_builder.build().save()
         else:
+            # 미리 존재하는 경우
             admin_static_id: str = model.User.objects.get(is_admin=True).static_id
-            # 어드민 디렉토리가 사라진 경우 복구
+            # 어드민 디렉토리가 사라진 경우 복구 (있으면 생성하지 않는다)
             self.__make_user_directory(admin_static_id)
 
     def login(self, user_email: str, user_password: str) -> dict:
+        # 로그인
 
+        # 이메일/패스워드 일치 여부 확인
         r = model.User.objects.filter(email=user_email).filter(pswd=user_password)
         if len(r) == 0:
+            # 일치 X
             raise MicrocloudchipLoginFailedError("Login Failed")
 
+        # 유저 데이터 갖고오기
         user: model.User = r[0]
         user_volume_type: UserVolumeType = UserValidator.validate_volume_type_by_string(user.volume_type)
 
         return {
+            # 결과 값
             "static-id": user.static_id,
             "name": user.name,
             "email": user.email,
@@ -130,6 +151,7 @@ class UserManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("do not add user as name=admin")
 
         try:
+            # User 생성을 위한 UserBuilder 생성 및 데이터 추가
             user_builder: UserBuilder = UserBuilder() \
                 .set_name(data_format['name']) \
                 .set_password(data_format['password']) \
@@ -138,23 +160,27 @@ class UserManager(WorkerManager):
                 .set_volume_type(data_format['volume-type'])
 
         except Exception as e:
+            # Validator 관련 에러 송출
             raise e
 
-        # 유저 이미지 Validation 확인
         try:
+            # 유저 이미지 Validation 확인
             if 'img-raw-data' not in data_format or 'img-extension' not in data_format:
+                # 이미지 업로드 관련 키워드 없으면 에러
                 raise KeyError("key not found")
             # 확장자 확인
             if data_format['img-raw-data'] is not None:
                 # 생성될 유저 데이터가 들어간 경우
                 if data_format['img-extension'] is None:
+                    # 그런데 확장자가 존재하지 않는 경우 [에러]
                     raise MicrocloudchipAuthAccessError("img extension does not exist")
                 # 확장자 소문자화
                 data_format['img-extension'] = data_format['img-extension'].lower()
                 if data_format['img-extension'] not in self.AVAILABLE_IMG_EXTENSIONS:
+                    # 가능 확장자 매칭, 맞지 않은 경우 Access Error
                     raise MicrocloudchipAuthAccessError("img extension is not available")
-
         except KeyError:
+            # KeyError
             raise MicrocloudchipAuthAccessError("user img data key is not found")
 
         # 반복되는 static id 가 존재하지 않을 때 까지 반복
@@ -168,7 +194,9 @@ class UserManager(WorkerManager):
 
         # 생성 프로세스
         self.process_locker.acquire()
-
+        # 한번에 하나 씩 생성 (데이터 중복을 막기 위해)
+        # TODO: Error Exception 발생 시 예외처리 필요
+        
         # Directory 생성
         new_user_static_id: str = user_builder.static_id
         self.__make_user_directory(new_user_static_id)
@@ -186,6 +214,7 @@ class UserManager(WorkerManager):
         self.process_locker.release()
 
     def get_users(self) -> list:
+        # user list 갖고오기
         r = []
         for u in model.User.objects.all():
             _u = u.to_dict()
@@ -197,6 +226,7 @@ class UserManager(WorkerManager):
         return r
 
     def get_user_by_static_id(self, req_static_id: str, static_id: str) -> dict:
+        # 유저 데이터 갖고오기
 
         # 유저 권한 체크
         if req_static_id != static_id and \
@@ -204,6 +234,7 @@ class UserManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Auth Err in get user information")
 
         try:
+            # DB에서 데이터 갖고오기
             d = model.User.objects.get(static_id=static_id)
 
             # 리턴값
@@ -228,6 +259,7 @@ class UserManager(WorkerManager):
             return None
 
     def get_used_size(self, static_id: str, zfill_counter: int = 0) -> tuple:
+        # 사용 용량 구하기
 
         # 시스템 루트 갖고오기
         sys_root: str = self.config.get_system_root()
@@ -256,6 +288,7 @@ class UserManager(WorkerManager):
         return r
 
     def update_user(self, req_static_id: str, data_format: dict):
+        # 유저 데이터 수정
 
         # 권한 체크
         try:
@@ -263,20 +296,19 @@ class UserManager(WorkerManager):
                             data_format['static-id'] == req_static_id
 
             if not is_accessible:
+                # 권한 없음
                 raise MicrocloudchipAuthAccessError("Access for update user Failed")
         except KeyError:
-            # data format 에 요구되는 key 없는 경으
+            # data format 에 요구되는 key 없는 경우
             raise MicrocloudchipAuthAccessError("Omit key for update user failed")
 
-        # 데이터 갖고오기
         try:
+            # 데이터 갖고오기
             target_user = model.User.objects.get(static_id=data_format['static-id'])
         except model.User.DoesNotExist:
             # 그새 사라진 경우
             raise MicrocloudchipAuthAccessError("User is not exist")
-
-        # Img Validation
-
+        
         try:
             # 이미지 요청 데이터 확인
             if 'img-changeable' not in data_format:
@@ -317,7 +349,8 @@ class UserManager(WorkerManager):
             except MicrocloudchipException as e:
                 raise e
             target_user.volume_type = data_format['volume-type']
-
+        
+        # DB 데이터 변경
         target_user.save()
         # 이미지 변경 여부
         if data_format['img-changeable']:
@@ -364,6 +397,7 @@ class UserManager(WorkerManager):
         self.process_locker.release()
 
     def delete_user(self, req_static_id: str, target_static_id: str, storage_manager: StorageManager):
+        # 유저 삭제 (Admin 만 가능)
 
         is_accessible = len(model.User.objects.filter(is_admin=True).filter(static_id=req_static_id))
         if not is_accessible:

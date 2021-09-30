@@ -25,10 +25,9 @@ from app.views.downloaders import *
 from django.views.generic import TemplateView
 
 urlpatterns = [
-
+    # Production Version에서만 사용
     #url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
     #url(r'^(storage)|(accounts)|(settings)/', TemplateView.as_view(template_name='index.html'), name='index'),
-
 
     #path('admin/', admin.site.urls),
 
@@ -43,7 +42,6 @@ urlpatterns = [
 
     # user control
     path(r'server/user/<str:static_id>', UserControlView.as_view()),
-
 
     # Storage Data 관리
     path(r'server/storage/data/<str:data_type>/<str:static_id>/<path:root>', DataControlView.as_view()),

@@ -17,6 +17,7 @@ class UserVolumeType(Enum):
     HEAVIER = {UserVolumeTypeKeys.KEY_TYPE: FileVolumeType.GB, UserVolumeTypeKeys.KEY_VOLUME: 100}
 
     def __int__(self):
+        # 실제 가용 용랑 단위 계싼
         return FileVolumeType.type_to_num(
             self.value[UserVolumeTypeKeys.KEY_TYPE],
             self.value[UserVolumeTypeKeys.KEY_VOLUME]

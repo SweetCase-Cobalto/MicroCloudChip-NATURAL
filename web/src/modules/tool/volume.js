@@ -9,6 +9,7 @@ const VOLUME_TYPES = {
 }
 
 export function volume_label_to_raw(_type, _vol) {
+    // Label -> 실제 데이터 용량(KB 기준)
     return _vol * VOLUME_TYPES[_type]
 }
 

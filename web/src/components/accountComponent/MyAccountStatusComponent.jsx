@@ -18,6 +18,8 @@ const MyAccountStatusComponent = (props) => {
     const [usrIcon, setUsrIcon] = useState(undefined);
 
     if(!isConnected) {
+        // 아직 서버와 동기화를 하지 못했다면
+        // 동기화 한다.
         props.syncUserInfo(props.id, props.token);
         setIsConnected(isConnected+1);
 
@@ -33,6 +35,7 @@ const MyAccountStatusComponent = (props) => {
     // 이미지 다운로드
     if(isConnected == 1 && usrIcon == undefined) {
         if(props.usrImgLink == defaultUserIcon) {
+            // 이미지 없으면 기존 이미지 대체
             setUsrIcon(defaultUserIcon);
         } else {
             // 외부에서 받아와야 한다
@@ -44,7 +47,7 @@ const MyAccountStatusComponent = (props) => {
     }
     
     const convertRawVolumeToString = (value) => {
-        
+        // Byte 단위의 Raw 크기값을 string을 변환
         let unit = 'BYTE';
 
         if(value < Math.pow(10, 3))         { unit = 'KB'; }
