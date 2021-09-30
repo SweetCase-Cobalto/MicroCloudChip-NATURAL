@@ -39,6 +39,7 @@ class UserUnittest(TestCase):
             그러나 중복 검사를 통해 일부는 false 처리가 된다
         """
 
+        
         # 정상적인 request 만 골라서 DB에 저장할 수 있는지 테스트한다.
         # True 로 판정될 경우 실제로 DB에 저장한다
         # 이미지 업로드 기능은 API 단계에서 테스트한다 여기서는 그냥 샘플페이지를 사용
