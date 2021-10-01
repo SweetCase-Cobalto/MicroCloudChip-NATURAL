@@ -2,6 +2,7 @@
   "test-case": [
     { "filename": "aavvccs/vkdsfdsd", "output": false, "exception": "MicrocloudchipDirectoryNotFoundError" },
     { "filename": "fs:fds:fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "filename": "", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
     { "filename": "fs*fds*fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
     { "filename": "fs?fs?fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
     { "filename": "fs>fs>fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },

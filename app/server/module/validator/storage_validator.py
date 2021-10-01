@@ -8,6 +8,7 @@ class StorageValidator:
 
     @staticmethod
     def validate_storage(storage_root: str) -> bool:
+
         # 해당 루트에 금지 문자가 있는 지 확인
         naming_failed_char_set = StorageValidator.NAMING_FAILED_CHAR_SET
         if any(char in storage_root for char in naming_failed_char_set):
