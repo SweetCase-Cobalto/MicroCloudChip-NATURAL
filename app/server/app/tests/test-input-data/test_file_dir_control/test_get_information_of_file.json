@@ -1,0 +1,14 @@
+{
+  "test-flow": [
+    { "type": "upload", "file": "angel-in-the-galaxy.mid"},
+    { "type": "upload", "file": "example-jpg.jpg"},
+    { "type": "upload", "file": "example-text.txt"},
+    { "type": "upload", "file": "텍스트파일.txt"},
+
+    {"type":  "get", "file": "angel-in-the-galaxy.mid", "is_succeed": true, "file-type": "AUDIO", "exception": null },
+    {"type":  "get", "file": "example-jpg.jpg", "is_succeed": true, "file-type": "IMAGE", "exception": null },
+    {"type":  "get", "file": "example-text.txt", "is_succeed": true, "file-type": "TEXT", "exception": null },
+    {"type":  "get", "file": "텍스트파일.txt", "is_succeed": true, "file-type": "TEXT", "exception": null },
+    {"type":  "get", "file": "man.txt", "is_succeed": false, "file-type": "TEXT", "exception": "MicrocloudchipFileNotFoundError" }
+  ]
+}

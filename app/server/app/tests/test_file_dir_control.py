@@ -1,11 +1,12 @@
+import json
+from app.tests.test_modules.loader import test_flow, TestCaseFlow
+
 from django.test import TestCase
 
+import app.models as model
+from app.tests.test_modules.testing_file_dir_control_module import *
 from module.data_builder.user_builder import UserBuilder
 from module.specification.System_config import SystemConfig
-from app.tests.test_modules.testing_file_dir_control_module import *
-import app.models as model
-import os
-import sys
 
 
 class FileDirControlTestUnittest(TestCase):
@@ -55,6 +56,7 @@ class FileDirControlTestUnittest(TestCase):
     test_file_root: str = "app/tests/test-input-data/example_files"
 
     def setUp(self) -> None:
+        # 파일 테스트를 위한 가상 Admin 생성
         user_builder = UserBuilder()
         user_builder.set_name("admin") \
             .set_email("seokbong60@gmail.com") \
@@ -78,43 +80,53 @@ class FileDirControlTestUnittest(TestCase):
     def test_make_new_directory(self):
 
         # 디렉토리 생성 테스트
-
-        # 디랙토리 생성
-        test_case = [
-            ("aavvccs/vkdsfdsd", False, MicrocloudchipDirectoryNotFoundError),
-            ("fs:fds:fd", False, MicrocloudchipFileAndDirectoryValidateError),
-            ("fs*fds*fd", False, MicrocloudchipFileAndDirectoryValidateError),
-            ("fs?fs?fs", False, MicrocloudchipFileAndDirectoryValidateError),
-            ("fs>fs>fs", False, MicrocloudchipFileAndDirectoryValidateError),
-            ("fs<fs<Fs", False, MicrocloudchipFileAndDirectoryValidateError),
-            ('''fs"fs"fs''', False, MicrocloudchipFileAndDirectoryValidateError),
-            ("fs|fs|fs", False, MicrocloudchipFileAndDirectoryValidateError),
-            ("mydirectory", True, None),
-            ("mydirectory", False, MicrocloudchipDirectoryAlreadyExistError),
-            ("mydirectory/semidirectory", True, None)
-        ]
+        input_test_file: str = \
+            "app/tests/test-input-data/test_file_dir_control/test_make_new_directory.json"
+        test_case = []
+        # Test case가 들어있는 파일 부럴오기
+        with open(input_test_file, "r") as _f:
+            raw = json.load(_f)["test-case"]
+            for e in raw:
+                test_case.append([
+                    e['filename'],
+                    e['output'],
+                    e['exception']
+                ])
 
         for i in range(len(test_case)):
-
-            req, pre_result, exception = test_case[i]
-
+            # 테스트 시작
+            req, pre_result, exception_str = test_case[i]
             test_req_data = {
                 "static-id": model.User.objects.get(name="admin").static_id,
                 "system-root": self.system_config.get_system_root(),
                 "target-root": req,
             }
             if not pre_result:
-                # 실패
-                self.assertRaises(exception, lambda: test_make_directory(test_req_data))
-                # 디렉토리가 존재해서는 안된다.
-                if exception != MicrocloudchipDirectoryAlreadyExistError:
-                    # 중복 추가 에러가 아니면 실수로 생성되었는 지 측정한다.
-                    self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{req}"), False)
+                # 실패 케이슨
+
+                is_success = True
+                # is_success 는 실패/성공 여부
+                # Exception 발생 시 False로 전환
+                # 따라서 True가 나오면 안됨
+
+                try:
+                    # 디렉토리 생성 테스트
+                    test_make_directory(test_req_data)
+                except MicrocloudchipException as e:
+                    # 에러 발생
+                    is_success = False
+                    # Error Type 맞는 지 검사
+                    self.assertEqual(type(e).__name__, exception_str)
+                self.assertFalse(is_success)
+
+                if exception_str != MicrocloudchipDirectoryAlreadyExistError.__name__:
+                    # 중복 생성 에러가 아니면 디렉토리가 존재하지 않아야 한다.
+                    self.assertFalse(os.path.isdir(f"{self.cur_root}{self.token}{req}"))
             else:
                 # 성공
                 test_make_directory(test_req_data)
                 # 디렉토리가 존재해야 한다.
-                self.assertEqual(os.path.isdir(f"{self.cur_root}{self.token}{req}"), True)
+                self.assertTrue(os.path.isdir(f"{self.cur_root}{self.token}{req}"))
 
     @staticmethod
     def get_raw_data_from_file(file_root: str) -> bytes:
@@ -127,132 +139,143 @@ class FileDirControlTestUnittest(TestCase):
                 raw += r
         return raw
 
-    def test_upload_file(self):
+    @test_flow("app/tests/test-input-data/test_file_dir_control/test_upload_file.json")
+    def test_upload_file(self, test_flow: TestCaseFlow):
         # Validate Check 는 Directory 와 동일하기 때문에
         # 업로드 여부, 종복 여부만 체크한다.
-        test_files = os.listdir(self.test_file_root)
+
+        # 테스트를 수행 할 static_id 구하기
         author_static_id = model.User.objects.get(name="admin").static_id
 
-        # 테스트 대상
-        """
-            success: 성공
-            success-after-make-directory: 디렉토리 생성 후에 성공
-            failed: 실패
-        """
-        test_case = {
-            "success": test_files,
-            "success-after-make-directory": f"directory/{test_files[0]}",
-            "failed": f"no/{test_files[1]}",
-        }
+        while not test_flow.is_empty():
+            # start test
 
-        # In Success
-        for test_file in test_case['success']:
-            binary_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_file)
-            # 테스트 돌리기
-            req = {
-                "static-id": author_static_id,
-                "target-root": test_file,
-                "system-root": self.system_config.get_system_root(),
-                "raw-data": binary_data
-            }
-            # 업로드와 동시에 정상적으로 추가되었는 지 확인
-            self.assertEqual(test_upload_file_routine(req), True)
+            # Test Case 갖고오기
+            case = test_flow()
+            command, case = case[0], case[1:]
 
-        # 디렉토리 생성
-        dir_req = {
-            "static-id": author_static_id,
-            "system-root": self.system_config.get_system_root(),
-            "target-root": "directory",
-        }
-        test_make_directory(dir_req)
+            # 파일 추가일 경우
+            if command == 'file':
+                filename, root, is_success, exception_str = case
+                __file_root = f'{self.test_file_root}/{filename}'
+                if os.path.isfile(__file_root):
+                    # 실제 존재하는 이미지면 파일 바이너리 데이터 갖고오기
+                    binary_data = self.get_raw_data_from_file(f'{self.test_file_root}/{filename}')
+                else:
+                    # 없는 경우 임의데이터 생성
+                    binary_data = bytes("abcdefd", 'utf-8')
+                req = {
+                    'static-id': author_static_id,
+                    'target-root': root + filename,
+                    'system-root': self.system_config.get_system_root(),
+                    "raw-data": binary_data
+                }
+                if is_success:
+                    # 성공 케이스
+                    self.assertTrue(test_upload_file_routine(req))
+                else:
+                    # 실패 케이스
+                    try:
+                        test_upload_file_routine(req)
+                    except MicrocloudchipException as e:
+                        self.assertEqual(exception_str, type(e).__name__)
 
-        # 디랙토리 생성 후 성공
-        __test_file = test_case['success-after-make-directory']
-        __raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[0])
-        file_req = {
-            "static-id": author_static_id,
-            "target-root": __test_file,
-            "system-root": self.system_config.get_system_root(),
-            "raw-data": __raw_data
-        }
-        self.assertEqual(test_upload_file_routine(file_req), True)
-        # 중복 추가 불가능
-        self.assertRaises(MicrocloudchipFileAlreadyExistError, lambda: test_upload_file_routine(file_req))
+            elif command == "dir":
+                # 디렉토리 생성은 위에 이미 했기 때문에 성공 케이스만 만든다
+                new_dir_root = case[0]
+                req = {
+                    "static-id": author_static_id,
+                    "system-root": self.system_config.get_system_root(),
+                    "target-root": new_dir_root
+                }
+                test_make_directory(req)
 
-        # 실패
-        __test_file = test_case['failed']
-        __raw_data = self.get_raw_data_from_file(self.test_file_root + self.token + test_files[1])
-        file_req['target-root'] = __test_file
-        file_req['raw-data'] = __raw_data
-        self.assertRaises(MicrocloudchipDirectoryNotFoundError, lambda: test_upload_file_routine(file_req))
+    @test_flow("app/tests/test-input-data/test_file_dir_control/test_get_information_of_file.json")
+    def test_get_information_of_file(self, test_flow: TestCaseFlow):
 
-    def test_get_information_of_file(self):
-
-        # 데이터 정보 갖고오기
-
-        # 이전 파일 저장
-        example_files = os.listdir(self.test_file_root)
         author_static_id = model.User.objects.get(name="admin").static_id
-        sys_root = self.system_config.get_system_root()
 
-        # 파일 저장
-        for ex in example_files:
-            binary_data = self.get_raw_data_from_file(self.test_file_root + self.token + ex)
-            req = {
-                "static-id": author_static_id,
-                "target-root": ex,
-                "system-root": sys_root,
-                "raw-data": binary_data
-            }
-            self.assertEqual(test_upload_file_routine(req), True)
+        while not test_flow.is_empty():
+            case = test_flow()
+            command, case = case[0], case[1:]
 
-        for ex in example_files:
-            # 파일 정보 갖고오기
-            req = {
-                "static-id": author_static_id,
-                "target-root": ex,
-                "system-root": sys_root,
-                "root-token": self.token
-            }
-            # Get File Information
-            test_get_file_information(req)
+            if command == "upload":
+                # 파일 정보 체크 테스트를 위한 우선 저장
+                filename = case[0]
+                binary_data = self.get_raw_data_from_file(f'{self.test_file_root}/{filename}')
+                req = {
+                    'static-id': author_static_id,
+                    'target-root': filename,
+                    'system-root': self.system_config.get_system_root(),
+                    'raw-data': binary_data
+                }
+                self.assertTrue(test_upload_file_routine(req))
+            elif command == "get":
+                filename, is_succeed, expected_file_type, exception = case
+                req = {
+                    'static-id': author_static_id,
+                    'target-root': filename,
+                    'system-root': self.system_config.get_system_root(),
+                    'root-token': self.token
+                }
+                # 성공할 경우
+                if is_succeed:
+                    f = test_get_file_information(req)
+                    self.assertEqual(f['file-type'].name, expected_file_type)
+                else:
+                    try:
+                        test_get_file_information(req)
+                    except MicrocloudchipException as e:
+                        self.assertEqual(type(e).__name__, exception)
 
-        # 실패 케이스 추가
-        req = {
-            'static-id': author_static_id,
-            "target-root": "man.txt",
-            "system-root": self.system_config.get_system_root(),
-            "root-token": self.token
-        }
-        # 파일 못찾음
-        self.assertRaises(MicrocloudchipFileNotFoundError, lambda: test_get_file_information(req))
-
-    def test_remove_file(self):
+    @test_flow("app/tests/test-input-data/test_file_dir_control/test_remove_file.json")
+    def test_remove_file(self, test_flow: TestCaseFlow):
         # 파일 삭제
-
-        example_files = os.listdir(self.test_file_root)
-        file_name = example_files[0]
         author_static_id = model.User.objects.get(name="admin").static_id
-        sys_root = self.system_config.get_system_root()
 
-        binary_data = self.get_raw_data_from_file(self.test_file_root + self.token + file_name)
-        req = {
-            "static-id": author_static_id,
-            "target-root": file_name,
-            "system-root": sys_root,
-            "raw-data": binary_data
-        }
-        self.assertEqual(test_upload_file_routine(req), True)
+        while not test_flow.is_empty():
+            case = test_flow()
+            command, case = case[0], case[1:]
 
-        del req['raw-data']
-        req['root-token'] = self.token
-
-        # 파일 데이터를 불러오고
-        f_information = test_get_file_information(req)
-
-        # 파일 삭제
-        self.assertEqual(test_remove_file_routine(f_information), True)
-        # 정상적으로 삭제되면 True 를 출력한다
+            if command == "file":
+                # 파일 정보 체크 테스트를 위한 우선 저장
+                filename, root = case
+                binary_data = self.get_raw_data_from_file(f'{self.test_file_root}/{filename}')
+                req = {
+                    'static-id': author_static_id,
+                    'target-root': f'{root}{filename}',
+                    'system-root': self.system_config.get_system_root(),
+                    'raw-data': binary_data
+                }
+                self.assertTrue(test_upload_file_routine(req))
+            elif command == "dir":
+                dirname, root = case
+                req = {
+                    'static-id': author_static_id,
+                    'system-root': self.system_config.get_system_root(),
+                    'target-root': f'{root}{dirname}'
+                }
+                test_make_directory(req)
+            elif command == "remove":
+                file_root, is_succeed, exception = case
+                req = {
+                    'static-id': author_static_id,
+                    'target-root': file_root,
+                    'system-root': self.system_config.get_system_root(),
+                    'root-token': self.token
+                }
+                if is_succeed:
+                    # 성공
+                    # 파일 데이터 불러오기
+                    f = test_get_file_information(req)
+                    # 파일 삭제 시도
+                    self.assertTrue(test_remove_file_routine(f))
+                else:
+                    try:
+                        f = test_get_file_information(req)
+                        test_remove_file_routine(f)
+                    except MicrocloudchipException as e:
+                        self.assertEqual(type(e).__name__, exception)
 
     def test_modify_file(self):
         # 파일 수정

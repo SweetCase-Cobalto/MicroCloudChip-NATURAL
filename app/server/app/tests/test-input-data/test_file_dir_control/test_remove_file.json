@@ -1,0 +1,15 @@
+{
+  "test-flow": [
+    { "type": "file", "file": "angel-in-the-galaxy.mid", "root":  ""},
+    { "type": "file", "file": "example-jpg.jpg", "root":  ""},
+    { "type": "file", "file": "example-text.txt", "root":  ""},
+    { "type": "file", "file": "텍스트파일.txt", "root":  ""},
+    { "type":  "dir", "dir-name":  "directory", "root":  ""},
+    { "type":  "file", "file": "example-jpg.jpg", "root":  "directory/"},
+
+    {"type":  "remove", "file-root": "angel-in-the-galaxy.mid", "is_succeed": true, "exception": null },
+    {"type":  "remove", "file-root": "no/텍스트파일.txt", "is_succeed": false, "exception": "MicrocloudchipFileNotFoundError" },
+    {"type":  "remove", "file-root": "angel-in-the-galaxy.mid", "is_succeed": false, "exception": "MicrocloudchipFileNotFoundError" },
+    {"type":  "remove", "file-root":  "directory/example-jpg.jpg", "is_succeed":  true, "exception": null}
+  ]
+}
