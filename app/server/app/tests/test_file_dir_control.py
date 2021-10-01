@@ -106,57 +106,6 @@ class FileDirControlTestUnittest(TestCase):
         runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
         runner.set_process('dir', __cmd_generate_dir).run()
 
-        """
-        # 디렉토리 생성 테스트
-        input_test_file: str = \
-            "app/tests/test-input-data/test_file_dir_control/test_make_new_directory.json"
-        test_case = []
-        # Test case가 들어있는 파일 부럴오기
-        with open(input_test_file, "r") as _f:
-            raw = json.load(_f)["test-case"]
-            for e in raw:
-                test_case.append([
-                    e['filename'],
-                    e['output'],
-                    e['exception']
-                ])
-
-        for i in range(len(test_case)):
-            # 테스트 시작
-            req, pre_result, exception_str = test_case[i]
-            test_req_data = {
-                "static-id": model.User.objects.get(name="admin").static_id,
-                "system-root": self.system_config.get_system_root(),
-                "target-root": req,
-            }
-            if not pre_result:
-                # 실패 케이스
-
-                is_success = True
-                # is_success 는 실패/성공 여부
-                # Exception 발생 시 False로 전환
-                # 따라서 True가 나오면 안됨
-
-                try:
-                    # 디렉토리 생성 테스트
-                    test_make_directory(test_req_data)
-                except MicrocloudchipException as e:
-                    # 에러 발생
-                    is_success = False
-                    # Error Type 맞는 지 검사
-                    self.assertEqual(type(e).__name__, exception_str)
-                self.assertFalse(is_success)
-
-                if exception_str != MicrocloudchipDirectoryAlreadyExistError.__name__:
-                    # 중복 생성 에러가 아니면 디렉토리가 존재하지 않아야 한다.
-                    self.assertFalse(os.path.isdir(f"{self.cur_root}{self.token}{req}"))
-            else:
-                # 성공
-                test_make_directory(test_req_data)
-                # 디렉토리가 존재해야 한다.
-                self.assertTrue(os.path.isdir(f"{self.cur_root}{self.token}{req}"))
-        """
-
     @staticmethod
     def get_raw_data_from_file(file_root: str) -> bytes:
         raw = b''
