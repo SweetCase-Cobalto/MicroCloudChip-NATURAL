@@ -1,15 +1,15 @@
 {
-  "test-case": [
-    { "filename": "aavvccs/vkdsfdsd", "output": false, "exception": "MicrocloudchipDirectoryNotFoundError" },
-    { "filename": "fs:fds:fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "fs*fds*fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "fs?fs?fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "fs>fs>fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "fs<fs<Fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "''fs\"fs\"fs''", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
-    { "filename": "mydirectory", "output": true, "exception": null },
-    { "filename": "mydirectory", "output": false, "exception": "MicrocloudchipDirectoryAlreadyExistError" },
-    { "filename": "mydirectory/semidirectory", "output": true, "exception": null }
+  "test-flow": [
+    { "type": "dir", "filename": "aavvccs/vkdsfdsd", "output": false, "exception": "MicrocloudchipDirectoryNotFoundError" },
+    { "type": "dir", "filename": "fs:fds:fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "", "output": false, "exception": "MicrocloudchipFileAndDirectoryNameEmpty" },
+    { "type": "dir", "filename": "fs*fds*fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "fs?fs?fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "fs>fs>fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "fs<fs<Fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "''fs\"fs\"fs''", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "mydirectory", "output": true, "exception": null },
+    { "type": "dir", "filename": "mydirectory", "output": false, "exception": "MicrocloudchipDirectoryAlreadyExistError" },
+    { "type": "dir", "filename": "mydirectory/semidirectory", "output": true, "exception": null }
   ]
 }

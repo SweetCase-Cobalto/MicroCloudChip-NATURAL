@@ -2,7 +2,8 @@ import os
 from abc import abstractmethod
 
 from module.data_builder.data_builder import DataBuilder
-from module.MicrocloudchipException.exceptions import MicrocloudchipUserDoesNotExistError
+from module.MicrocloudchipException.exceptions import MicrocloudchipUserDoesNotExistError, \
+    MicrocloudchipFileAndDirectoryValidateError
 from module.validator.storage_validator import StorageValidator
 
 
@@ -53,7 +54,7 @@ class StorageBuilder(DataBuilder):
             return f"{self.system_root}{self.TOKEN}storage" \
                    f"{self.TOKEN}{self.author_static_id}{self.TOKEN}root{self.TOKEN}" \
                    f"{self.target_root}"
-        raise ValueError("All data is not filled")
+        raise MicrocloudchipFileAndDirectoryValidateError("All data is not filled")
 
     @abstractmethod
     def save(self):

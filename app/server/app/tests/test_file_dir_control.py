@@ -77,8 +77,36 @@ class FileDirControlTestUnittest(TestCase):
         # Check is Directory Exist
         self.assertEqual(os.path.isdir(self.cur_root), True)
 
-    def test_make_new_directory(self):
+    @test_flow("app/tests/test-input-data/test_file_dir_control/test_make_new_directory.json")
+    def test_make_new_directory(self, test_flow: TestCaseFlow):
 
+        static_id: str = model.User.objects.get(name="admin").static_id
+
+        def __cmd_generate_dir(filename: str, is_succeed: bool, exception_str: str):
+            req = {
+                'static-id': static_id,
+                'system-root': self.system_config.get_system_root(),
+                'target-root': filename
+            }
+            if is_succeed:
+                test_make_directory(req)
+                self.assertTrue(os.path.isdir(f"{self.cur_root}{self.token}{filename}"))
+            else:
+                try:
+                    test_make_directory(req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                    if exception_str != MicrocloudchipDirectoryAlreadyExistError.__name__ and \
+                            exception_str != MicrocloudchipFileAndDirectoryNameEmpty.__name__:
+                        # 중복 에러나 디렉토리 이름이 비어있는 경우가 아니라면 파일이 존재해선 안된다.
+                        self.assertFalse(os.path.isdir(f"{self.cur_root}{self.token}{filename}"))
+                else:
+                    raise AssertionError(f"It is succeed or other exceptions: {req}")
+
+        runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
+        runner.set_process('dir', __cmd_generate_dir).run()
+
+        """
         # 디렉토리 생성 테스트
         input_test_file: str = \
             "app/tests/test-input-data/test_file_dir_control/test_make_new_directory.json"
@@ -127,6 +155,7 @@ class FileDirControlTestUnittest(TestCase):
                 test_make_directory(test_req_data)
                 # 디렉토리가 존재해야 한다.
                 self.assertTrue(os.path.isdir(f"{self.cur_root}{self.token}{req}"))
+        """
 
     @staticmethod
     def get_raw_data_from_file(file_root: str) -> bytes:
