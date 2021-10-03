@@ -12,7 +12,7 @@ jobs:
     docker:
       - image: cimg/python:3.9
     environment:
-      TEST_ROOT: /home/circleci/project/test-dir
+      TEST_ROOT: /home/circleci/project/test-dir/microcloudchip
       TEST_EMAIL: napalosense@gmail.com # Real email for test
     steps:
       - checkout
