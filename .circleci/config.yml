@@ -39,6 +39,13 @@ jobs:
             cd app/server
             python manage.py makemigrations
             python manage.py migrate
+      - run
+          name: test
+          command: |
+            cd app/server
+            coverage run manage.py test
+            coverage report
+            
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
