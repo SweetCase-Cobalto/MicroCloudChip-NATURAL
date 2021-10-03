@@ -33,6 +33,7 @@ jobs:
       - run:
           name: migration inner database
           command: |
+            ls
             cd app/server
             pwd
             cat server/config.json
