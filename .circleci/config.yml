@@ -14,19 +14,20 @@ jobs:
     steps:
       - checkout
       - run:
-          name: make venv
-          command: |
-            cd app/server
-            python -m venv venv venv
-            source venv/bin/activate
-            pip install --upgrade pip
-
+          name: set test directory
+          command: mkdir test-dir
       - run:
-          name: install python packages
+          name: install package
+          command: |
+            pip install --upgrade pip
+            cd app
+            pip install -r requirements.txt
+      - run:
+          name: test coverage
           command: |
             cd app/server
-            source venv/bin/activate
-            pip list
+            pwd
+
 
 
 
