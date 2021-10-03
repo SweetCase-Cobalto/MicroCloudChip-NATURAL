@@ -136,19 +136,41 @@ const AccountUpdaterForm = (props) => {
                 alert("입력란을 채워주세요");
                 return;
             }
+            if(!userNameRegex.test(userName)) {
+                alert("잘못된 유저 이름 입니다.");
+                return;
+            }
+            if(pswd.length < 8 || pswd.length > 128) {
+                alert("패스워드는 8자 이상 128자 이하 입니다.");
+                return;
+            }
+            if(pswd != pswdRepeat) {
+                alert("패스워드가 일치하지 않습니다.");
+                return;
+            }
+        } else {
+            // 수정하는 경우
+            if(userName == "" && pswd == "" && changedIconImage == undefined) {
+                // 이중에 하나만 입력해도 됨
+                alert("입력란을 채워주세요");
+                return;
+            }
+            if(userName != "" && !userNameRegex.test(userName)) {
+                alert("잘못된 유저 이름 입니다.");
+                return;
+            }
+            if(pswd != "") {
+                if(pswd.length < 8 || pswd.length > 128) {
+                    alert("패스워드는 8자 이상 128자 이하 입니다.");
+                    return;
+                }
+                if(pswd != pswdRepeat) {
+                    alert("패스워드가 일치하지 않습니다.");
+                    return;
+                }
+            }
         }
-        if(!userNameRegex.test(userName)) {
-            alert("잘못된 유저 이름 입니다.");
-            return;
-        }
-        if(pswd.length < 8 || pswd.length > 128) {
-            alert("패스워드는 8자 이상 128자 이하 입니다.");
-            return;
-        }
-        if(pswd != pswdRepeat) {
-            alert("패스워드가 일치하지 않습니다.");
-            return;
-        }
+
 
         
         // 유저 추가 / 수정 에 따라 요청이 달라진다
@@ -204,8 +226,10 @@ const AccountUpdaterForm = (props) => {
             
             // 수정 요청을 위한 FormData 생성
             const formData = new FormData();
-            formData.append('name', userName);
-            formData.append('password', pswd);
+            if(userName != "")
+                formData.append('name', userName);
+            if(pswd != "")
+                formData.append('password', pswd);
 
             
             if(changedIconImage == undefined)
