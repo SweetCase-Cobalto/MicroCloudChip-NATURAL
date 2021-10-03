@@ -8,15 +8,27 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build-and-test:
+  test-for-coverage:
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.9
     steps:
       - checkout
       - run:
-          name: Run tests
-          # This assumes pytest is installed via the install-package step above
-          command: ls
+          name: make venv
+          command: |
+            cd app/server
+            python -m venv venv venv
+            source venv/bin/activate
+            pip install --upgrade pip
+
+      - run:
+          name: install python packages
+          comnand: |
+            cd ..
+            pip install -r requirements.txt
+            
+
+
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -24,4 +36,4 @@ workflows:
   sample: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
     jobs:
-      - build-and-test
+      - test-for-coverage
