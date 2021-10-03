@@ -1,0 +1,75 @@
+{
+  "test-flow": [
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir/test-dir"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/example-text.txt"
+    },
+
+    {
+      "type": "update-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt",
+      "new-name": "example.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "update-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example.txt",
+      "new-name": "test-dir",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryAlreadyExistError"
+    },
+    {
+      "type": "update-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/example-text.txt",
+      "new-name": "example.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "update-file",
+      "target": "admin", "request": "client",
+      "file-root": "test-dir/example.txt",
+      "new-name": "example2.txt",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+
+    {
+      "type": "update-dir",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir",
+      "new-name": "test-dir2",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "update-dir",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir2",
+      "new-name": "example.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileAlreadyExistError"
+    },
+    {
+      "type": "update-dir",
+      "target": "admin", "request": "client",
+      "file-root": "test-dir2",
+      "new-name": "dir",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    }
+  ]
+}

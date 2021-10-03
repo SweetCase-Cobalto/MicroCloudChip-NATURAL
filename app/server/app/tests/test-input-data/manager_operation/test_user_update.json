@@ -1,0 +1,88 @@
+{
+  "test-flow": [
+    {
+      "type": "update-user",
+
+      "target": "client", "request": "client",
+
+      "name": "subclient",
+      "password": "0987654321",
+      "volume-type": "GUEST",
+      "img-changeable": false,
+      "img-file": null,
+
+      "is-succeed": true,
+      "exception": null
+    },
+    {
+      "type": "update-user",
+
+      "target": "client", "request": "admin",
+
+      "name": "client",
+      "password": "0987654321",
+      "volume-type": "GUEST",
+      "img-changeable": false,
+      "img-file": null,
+
+      "is-succeed": true,
+      "exception": null
+    },
+    {
+      "type": "update-user",
+
+      "target": "client", "request": "other",
+
+      "name": "client2",
+      "password": "0987654321",
+      "volume-type": "GUEST",
+      "img-changeable": false,
+      "img-file": null,
+
+      "is-succeed": false,
+      "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "update-user",
+
+      "target": "client", "request": "admin",
+
+      "name": "admin",
+      "password": "0987654321",
+      "volume-type": "GUEST",
+      "img-changeable": false,
+      "img-file": null,
+
+      "is-succeed": false,
+      "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "update-user",
+
+      "target": "client", "request": "client",
+
+      "name": "client2",
+      "password": "0987654321",
+      "volume-type": "GUEST",
+      "img-changeable": true,
+      "img-file": null,
+
+      "is-succeed": true,
+      "exception": null
+    },
+    {
+      "type": "update-user",
+
+      "target": "client", "request": "client",
+
+      "name": "client2",
+      "password": "0987654321",
+      "volume-type": "GUEST",
+      "img-changeable": true,
+      "img-file": "example-jpg.jpg",
+
+      "is-succeed": true,
+      "exception": null
+    }
+  ]
+}

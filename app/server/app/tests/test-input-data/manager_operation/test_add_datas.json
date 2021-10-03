@@ -1,0 +1,58 @@
+{
+  "test-flow": [
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir/test-dir",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/example-text.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "upload-file",
+      "target": "client", "request": "admin",
+      "file-root": "angel-in-the-galaxy.mid",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "generate-dir",
+      "target": "client", "request": "admin",
+      "dir-root": "tests",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/example-text.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileAlreadyExistError"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryAlreadyExistError"
+    },
+    {
+      "type": "upload-file",
+      "target": "client", "request": "client",
+      "file-root": "angel-in-the-galaxy.mid",
+      "is-succeed": false, "exception": "MicrocloudchipStorageOverCapacityError"
+    }
+  ]
+}

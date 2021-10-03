@@ -1,0 +1,67 @@
+{
+  "test-flow": [
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "텍스트파일.txt"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir/test-dir"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/example-text.txt"
+    },
+
+    {
+      "type": "remove", "mode": "file",
+      "target": "admin", "request": "client",
+      "file-root": "example-text.txt",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "remove", "mode": "file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text2.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError"
+    },
+    {
+      "type": "remove", "mode": "dir",
+      "target": "admin", "request": "client",
+      "file-root": "test-dir",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "remove", "mode": "dir",
+      "target": "admin", "request": "admin",
+      "file-root": "aaa",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError"
+    },
+    {
+      "type": "remove", "mode": "dir",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "get-dir-info",
+      "target": "admin", "request": "admin",
+      "root": "",
+      "expected-file-list": ["example-text.txt", "텍스트파일.txt"],
+      "expected-dir-list": []
+    }
+  ]
+}

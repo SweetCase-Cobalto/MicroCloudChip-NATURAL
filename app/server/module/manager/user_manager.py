@@ -2,9 +2,7 @@ import os
 import shutil
 
 import app.models as model
-from module.MicrocloudchipException.base_exception import MicrocloudchipException
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, MicrocloudchipLoginFailedError, \
-    MicrocloudchipUserInformationValidateError, MicrocloudchipUserDoesNotExistError
+from module.MicrocloudchipException.exceptions import *
 from module.data_builder.user_builder import UserBuilder
 from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
 from module.manager.storage_manager import StorageManager

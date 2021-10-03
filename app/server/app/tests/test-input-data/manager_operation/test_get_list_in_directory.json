@@ -1,0 +1,62 @@
+{
+  "test-flow": [
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "텍스트파일.txt"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir/test-dir"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/example-text.txt"
+    },
+
+    {
+      "type": "get-dir-info",
+      "target": "admin", "request": "admin",
+      "root": "test-dir",
+      "is-succeed": true, "exception": null,
+      "expected-file-list": ["example-text.txt"],
+      "expected-dir-list": ["test-dir"]
+    },
+    {
+      "type": "get-dir-info",
+      "target": "admin", "request": "admin",
+      "root": "",
+      "is-succeed": true, "exception": null,
+      "expected-file-list": ["example-text.txt", "텍스트파일.txt"],
+      "expected-dir-list": ["test-dir"]
+    },
+    {
+      "type": "get-dir-info",
+      "target": "admin", "request": "admin",
+      "root": "other",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError",
+      "expected-file-list": null,
+      "expected-dir-list": null
+    },
+    {
+      "type": "get-dir-info",
+      "target": "admin", "request": "client",
+      "root": "",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError",
+      "expected-file-list": null,
+      "expected-dir-list": null
+    }
+  ]
+}
