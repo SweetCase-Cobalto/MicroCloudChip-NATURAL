@@ -130,9 +130,12 @@ const AccountUpdaterForm = (props) => {
         let userNameRegex = /^[a-zA-Z0-9]{4,16}$/;
         
         // Null값 확인하기
-        if(userName == "" || pswd == "" || pswdRepeat == "" || email == "") {
-            alert("입력란을 채워주세요");
-            return;
+        if(actionType == "add") {
+            // ADD일 경우 모든 데이터가 입력되어야 한다
+            if(userName == "" || pswd == "" || pswdRepeat == "" || email == "") {
+                alert("입력란을 채워주세요");
+                return;
+            }
         }
         if(!userNameRegex.test(userName)) {
             alert("잘못된 유저 이름 입니다.");
@@ -226,19 +229,27 @@ const AccountUpdaterForm = (props) => {
                 if(data.code == 0) {
                     // 변경 성공
                     alert("변경에 성공했습니다.");
+
+                    
                 } else {
                     alert("변경에 실패했습니다.");
-                    alert(data.code);
                 }
             }).catch((err) => {
                 alert("전송 오류");
             }).finally(() => {
-                // 페이지 나가기
+                // 페이지 리로딩
                 if(props.isAdmin) {
-                    // 관리자 계정
-                    window.location.href = "/accounts";
+                    if(target == "other") {
+                        // 자신이 관리자이고 다른 사람의 정보를 수정할 때
+                        // Accounts로 빠져나온다
+                        window.location.href = "/accounts";
+                    } else {
+                        // 내 정보를 수정하는 경우 settings를 리로딩 한다
+                        window.location.href = "/settings";
+                    }
                 } else {
-                    // 일반 계정
+                    // 일반 사용자일 경우
+                    // 역시 settings로 돌아간다
                     window.location.href = "/settings";
                 }
             })
