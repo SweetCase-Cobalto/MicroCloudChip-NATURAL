@@ -18,7 +18,10 @@ jobs:
       - checkout
       - run:
           name: set test directory
-          command: mkdir test-dir
+          command: |
+            mkdir test-dir
+            mkdir test-dir/microcloudchip
+            mkdir test-dir/microcloudchip/storage
       - run:
           name: install package
           command: |
@@ -33,10 +36,9 @@ jobs:
       - run:
           name: migration inner database
           command: |
-            ls
             cd app/server
-            pwd
-            cat server/config.json
+            python manage.py makemigrations
+            python manage.py migrate
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
