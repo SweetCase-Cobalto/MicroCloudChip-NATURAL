@@ -47,7 +47,6 @@ class SystemConfig:
 
             # 끝부분이 microcloudchip 인 지 검토
             # 디렉토리가 맞는 지 검토
-            print(splited_system_root)
             if splited_system_root[-1] != 'microcloudchip' or \
                     not os.path.isdir(system_root):
                 raise MicrocloudchipSystemConfigFileParsingError("invalid root")

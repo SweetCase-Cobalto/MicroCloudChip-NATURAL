@@ -297,7 +297,7 @@ class TestAPIUnittest(TestCase):
     @test_flow("app/tests/test-input-data/test_api/test_storage_data_download.json")
     def test_storge_data_download(self, test_flow: TestCaseFlow):
         # 데이터 다운로드 관련 테스트
-        CONTENT_TYPE_ZIP = "application/x-zip-compressed"
+        CONTENT_TYPE_ZIP = ["application/x-zip-compressed", "application/zip"]
 
         token_header: dict = {}
 
@@ -353,7 +353,7 @@ class TestAPIUnittest(TestCase):
                 # 다운로드 실패
                 self.check_exception_code(is_succeed, res.json()['code'], exception_str)
             if is_succeed:
-                self.assertEqual(CONTENT_TYPE_ZIP, res.headers['Content-Type'])
+                self.assertIn(res.headers['Content-Type'], CONTENT_TYPE_ZIP)
 
         TestCaseFlowRunner(test_flow) \
             .set_process('login', __cmd_login) \

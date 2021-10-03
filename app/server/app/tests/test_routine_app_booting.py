@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 import os
+import sys
 from module.specification.System_config import SystemConfig
 
 
@@ -61,6 +62,13 @@ class AppBootingUnittest(TestCase):
             if expected_result:
                 # 파싱 성공이 정답인 경우
                 system_config = SystemConfig(input_root)
+
+                if problem_num == 10 and sys.platform != "win32":
+                    # Only win32 passed
+                    continue
+                elif problem_num == 11 and sys.platform == "win32":
+                    # Only non win32 passed
+                    continue
 
                 # System Root 가 정상적으로 파싱이 되었는지 확인한다.
                 with open(input_root) as f:

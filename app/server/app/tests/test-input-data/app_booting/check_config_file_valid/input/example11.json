@@ -1,0 +1,15 @@
+
+{
+    "system": {
+        "root": "/home/circleci/project/test-dir/microcloudchip",
+        "port": 8000
+    },
+    "database": {
+        "rdbms": {
+            "type": "sqlite"
+        }
+    },
+    "admin": {
+        "email": "seokbong60@gmail.com"
+    }
+}
