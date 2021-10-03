@@ -34,7 +34,7 @@ jobs:
           name: migration inner database
           command: |
             cd app/server
-            cd pwd
+            pwd
             cat server/config.json
 
 # Invoke jobs via workflows
