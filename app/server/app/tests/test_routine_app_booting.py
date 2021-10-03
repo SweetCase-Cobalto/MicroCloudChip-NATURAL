@@ -60,8 +60,8 @@ class AppBootingUnittest(TestCase):
 
             # 테스트 시작
             if expected_result:
+
                 # 파싱 성공이 정답인 경우
-                system_config = SystemConfig(input_root)
 
                 if problem_num == 10 and sys.platform != "win32":
                     # Only win32 passed
@@ -70,6 +70,7 @@ class AppBootingUnittest(TestCase):
                     # Only non win32 passed
                     continue
 
+                system_config = SystemConfig(input_root)
                 # System Root 가 정상적으로 파싱이 되었는지 확인한다.
                 with open(input_root) as f:
                     expected_system_config = json.load(f)['system']
