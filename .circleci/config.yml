@@ -34,15 +34,7 @@ jobs:
           name: migration inner database
           command: |
             cd app/server
-            python manage.py makemigrations
-            python manage.py migrate
-
-
-
-            
-
-
-
+            cat server/config.json
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
