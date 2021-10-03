@@ -23,7 +23,7 @@ jobs:
 
       - run:
           name: install python packages
-          comnand: |
+          command: |
             cd ..
             pip install -r requirements.txt
             
