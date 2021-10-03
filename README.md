@@ -13,7 +13,8 @@
 
 
 # 개요
-* 전 작 [MicroCloudChip](https://github.com/SweetCase-Cobalto/MicroCloudChip) 의 후속작
+
+* [MicroCloudChip](https://github.com/SweetCase-Cobalto/MicroCloudChip) 의 후속작
 * 원격 서버 및  NAS Server의 파일 관리 서비스를 지원하기 위해 개발된 설치형 저용량 파일 호스팅 서비스
 * 타 서버로부터 금액을 지불하고 일정 용량을 할당 받는 것이 아닌, 개인 서버만 갖고 있으면 이 웹 어플리케이션을 이용해 파일 호스팅 서버를 운용할 수 있습니다.
 * Docker Image를 이용할 경우 외부 저장소를 지원합니다. 외부 저장소 환경변수를 추가하면  불가피하게 Container가 shutdown되도 저장된 파일들을 접근할 수 있습니다.
@@ -49,7 +50,7 @@ sudo docker run -it -d -p [port]:[port] \
                 -e SERVER_PORT=[port] \
                 -e ADMIN_EMAIL=[your email] \
                 -e HOST=[your host] \
-                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.3-internal
+                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.4-internal
 ```
 
 ### Install With External Database (MySQL, MariaDB)
@@ -63,7 +64,7 @@ sudo docker run -it -d -p [port]:[port] \
                 -e DB_PSWD=[database password] \
                 -e DB_HOST=[database host] \
                 -e DB_PORT=[database port] \
-                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.3-mysql
+                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.4-mysql
 ```
 ### 외부 저장소 설정
 **_NOTE:_** 외부 저장소를 사용할 경우 아래의 환경변수를 추가합니다.
