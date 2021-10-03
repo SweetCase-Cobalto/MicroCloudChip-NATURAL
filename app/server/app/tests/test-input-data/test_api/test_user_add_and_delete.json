@@ -1,0 +1,113 @@
+{
+  "test-flow": [
+    {
+      "type": "add-user",
+
+      "name": "the-client",
+      "email": "napalosense@gmail.com",
+      "password": "0987654321",
+      "volume-type": "TEST",
+      "img": "example-jpg.jpg",
+
+      "is-succeed": false, "exception": "MicrocloudchipLoginConnectionExpireError"
+    },
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678"
+    },
+
+
+    {
+      "type": "add-user",
+
+      "name": "theclient",
+      "email": "napalosense@gmail.com",
+      "password": "098765432",
+      "volume-type": "TEST",
+      "img": null,
+
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "add-user",
+
+      "name": "theclient2",
+      "email": "napalosense@gmail.com",
+      "password": "098765432",
+      "volume-type": "TEST",
+      "img": null,
+
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+
+
+    {
+      "type": "modify-user",
+
+      "target": "theclient",
+      "new-name": "sclient2",
+      "new-password": null,
+      "img-changeable": false,
+      "img": null,
+
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "modify-user",
+
+      "target": "sclient2",
+      "new-name": null,
+      "new-password": null,
+      "img-changeable": true,
+      "img": null,
+
+      "is-succeed": false, "exception": "MicrocloudchipUserInformationValidateError"
+    },
+    {
+      "type": "modify-user",
+
+      "target": "sclient2",
+      "new-name": null,
+      "new-password": null,
+      "img-changeable": true,
+      "img": "ex2.jpg",
+
+      "is-succeed": true, "exception": null
+    },
+
+    {
+      "type": "get-user-list",
+      "expected-users": ["admin", "sclient2"]
+    },
+
+
+    {
+      "type": "get-user-info",
+      "target": "sclient2",
+      "is_raw_id": false,
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "get-user-info",
+      "target": "aaaaaaaaaaaaaaaaaaaaaaaaa",
+      "is_raw_id": true,
+      "is-succeed": false, "exception": "MicrocloudchipUserDoesNotExistError"
+    },
+
+    {
+      "type": "remove-user",
+      "target": "sclient2", "is_raw_id": false,
+      "is-succeed": true, "exception":null
+    },
+    {
+      "type": "remove-user",
+      "target": "admin", "is_raw_id": false,
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
+      "type": "remove-user",
+      "target": "askdjfhskdhuisdfasd", "is_raw_id": true,
+      "is-succeed": false, "exception": "MicrocloudchipUserDoesNotExistError"
+    }
+  ]
+}

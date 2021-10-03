@@ -1,0 +1,10 @@
+{
+  "test-flow": [
+    {"type": "generate-dir", "dir-name": "directory", "root": ""},
+    {"type": "generate-dir", "dir-name": "directory", "root": "directory/"},
+
+    {"type": "update-dir", "new-name": "directory2", "dir-name": "directory", "root": "", "is-succeed": true, "exception": null},
+    {"type": "update-dir", "new-name": "direc?>tory", "dir-name": "directory2", "root": "", "is-succeed": false, "exception": "MicrocloudchipFileAndDirectoryValidateError"},
+    {"type": "update-dir", "new-name": "directory", "dir-name": "directory2", "root": "ddir/", "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError"}
+  ]
+}

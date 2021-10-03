@@ -1,0 +1,78 @@
+{
+  "test-flow": [
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "텍스트파일.txt"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir/test"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/test/텍스트파일.txt"
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "",
+      "objects": [{"object-name": "텍스트파일.txt", "type": "file"}],
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "",
+      "objects": [{"object-name": "텍스트파일.txt", "type": "file"}, {"object-name": "example-text.txt", "type": "file" }],
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "",
+      "objects": [{"object-name": "텍스트파일.txt", "type": "file"}, {"object-name": "test-dir", "type": "dir" }],
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "test-dir/",
+      "objects": [{"object-name": "test", "type": "dir"}],
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "test-dir/",
+      "objects": [{"object-name": "tests", "type": "dir"}],
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError"
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "test-dir/",
+      "objects": [{"object-name": "tests", "type": "file"}],
+      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError"
+    },
+    {
+      "type": "download-object",
+      "target": "admin", "request": "admin",
+      "parent-root": "",
+      "objects": [],
+      "is-succeed": false, "exception": "MicrocloudchipSystemAbnormalAccessError"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "test-flow": [
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678"
+    },
+
+
+    {
+      "type": "upload-file",
+      "fileroot": "example-text.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "upload-file",
+      "fileroot": "example-text.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileAlreadyExistError"
+    },
+    {
+      "type": "generate-dir",
+      "dir-root": "안녕하세요",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "generate-dir",
+      "dir-root": "안녕하세요",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryAlreadyExistError"
+    },
+    {
+      "type": "generate-dir",
+      "dir-root": "esx:dfsj",
+      "is-succeed": false, "exception": "MicrocloudchipFileAndDirectoryValidateError"
+    },
+    {
+      "type": "upload-file",
+      "dir-root": "안녕하세요/텍스트파일.txt",
+      "is-succeed": true, "exception": null
+    },
+
+
+    {
+      "type": "get-info", "mode": "file",
+      "root": "안녕하세요/텍스트파일.txt",
+      "is-succeed": true, "exception": null,
+      "expected-files": null, "expected-dir": null
+    },
+    {
+      "type": "get-info", "mode": "file",
+      "root": "안녕하세요/텍스트파일2.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError",
+      "expected-files": null, "expected-dir": null
+    },
+    {
+      "type": "get-info", "mode": "dir",
+      "root": "안녕하세요",
+      "is-succeed": true, "exception": null,
+      "expected-files": ["텍스트파일.txt"], "expected-dir": []
+    },
+    {
+      "type": "get-info", "mode": "dir",
+      "root": "안녕하세요/야야야야야야야",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError",
+      "expected-files": null, "expected-dir": null
+    },
+    {
+      "type": "get-info", "mode": "dir",
+      "root": "",
+      "is-succeed": true, "exception": null,
+      "expected-files": ["example-text.txt"], "expected-dir": ["안녕하세요"]
+    },
+
+
+    {
+      "type": "modify-file-info",
+      "file-root": "example-text.txt",
+      "mew-filename": "fs::fd::f",
+      "is-succeed": false, "exception": "MicrocloudchipFileAndDirectoryValidateError"
+    },
+    {
+      "type": "modify-file-info",
+      "file-root": "example-text.txt",
+      "mew-filename": "example-text2",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "modify-dir-info",
+      "file-root": "안녕하세요",
+      "new-dirname": "안냥하세요",
+      "is-succeed": true, "exception": null
+    },
+
+
+
+    {
+      "type": "remove", "mode": "dir",
+      "root": "안냥하세요",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "remove", "mode": "dir",
+      "root": "안녕하세요",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError"
+    },
+    {
+      "type": "remove", "mode": "file",
+      "root": "example-text.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError"
+    },
+    {
+      "type": "remove", "mode": "file",
+      "root": "example-text2.txt",
+      "is-succeed": true, "exception": null
+    }
+  ]
+}

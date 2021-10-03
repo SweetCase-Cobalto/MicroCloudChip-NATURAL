@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 
-from module.MicrocloudchipException.exceptions import MicrocloudchipFileAndDirectoryValidateError
+from module.MicrocloudchipException.exceptions \
+    import MicrocloudchipFileAndDirectoryValidateError, MicrocloudchipFileAndDirectoryNameEmpty
 
 
 class StorageValidator:
@@ -8,6 +9,11 @@ class StorageValidator:
 
     @staticmethod
     def validate_storage(storage_root: str) -> bool:
+
+        if not storage_root:
+            # 별개의 에러로 침
+            raise MicrocloudchipFileAndDirectoryNameEmpty("storage root empty")
+
         # 해당 루트에 금지 문자가 있는 지 확인
         naming_failed_char_set = StorageValidator.NAMING_FAILED_CHAR_SET
         if any(char in storage_root for char in naming_failed_char_set):

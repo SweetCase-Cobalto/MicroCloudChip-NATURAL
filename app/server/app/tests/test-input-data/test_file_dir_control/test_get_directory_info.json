@@ -1,0 +1,17 @@
+{
+  "test-flow": [
+    {"type": "upload-file", "file": "angel-in-the-galaxy.mid", "root":  ""},
+    {"type": "upload-file", "file": "example-jpg.jpg", "root":  ""},
+    {"type": "upload-file", "file": "example-text.txt", "root":  ""},
+
+    {"type": "generate-dir", "dir-name": "directory", "root": ""},
+    {"type": "upload-file", "file": "angel-in-the-galaxy.mid", "root":  "directory/"},
+    {"type": "upload-file", "file": "example-jpg.jpg", "root":  "directory/"},
+    {"type": "upload-file", "file": "example-text.txt", "root":  "directory/"},
+
+    {"type": "get-directory-info", "dir-name": "", "root": "", "is-succeed": true, "expected-data-size": 4, "exception": null },
+    {"type": "get-directory-info", "dir-name": "directory", "root": "", "is-succeed": true, "expected-data-size": 3, "exception": null },
+
+    {"type": "get-directory-info", "dir-name": "dir", "root": "", "is-succeed": false, "expected-data-size": -1, "exception": "MicrocloudchipDirectoryNotFoundError"}
+  ]
+}

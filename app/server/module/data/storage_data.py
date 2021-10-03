@@ -148,13 +148,15 @@ class FileData(StorageData):
         except MicrocloudchipFileAndDirectoryValidateError as e:
             raise e
 
-        # 파일 이름 변경
+        # 파일 이름 변경 루트 생성
         new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
 
-        try:
-            os.rename(self.full_root, new_full_root)
-        except FileExistsError:
-            raise MicrocloudchipFileAlreadyExistError("File that new named is already exist")
+        # 같은 이름의 파일 및 디렉토리가 존재하는 지 살펴본 후 이름 변경
+        if os.path.isfile(new_full_root):
+            raise MicrocloudchipFileAlreadyExistError("This new root is aleady exists as file")
+        elif os.path.isdir(new_full_root):
+            raise MicrocloudchipDirectoryAlreadyExistError("This new root is aleady exists as directory")
+        os.rename(self.full_root, new_full_root)
 
         # 이름 바꾸기에 성공했을 경우 속성 변경
         self.full_root = new_full_root
@@ -243,13 +245,15 @@ class DirectoryData(StorageData):
         except MicrocloudchipFileAndDirectoryValidateError as e:
             raise e
 
-        # 디렉토리 이름 변경
+        # 파일 이름 변경 루트 생성
         new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
-        try:
-            os.rename(self.full_root, new_full_root)
-        except FileExistsError:
-            # 실패하는 경우는 변경하고자 하는 이름의 파일이나 디렉토리가 존재하기 때문이다.
-            raise MicrocloudchipDirectoryAlreadyExistError("Directory that new named is already exist")
+        
+        # 같은 이름의 파일 및 디렉토리가 존재하는 지 살펴본 후 이름 변경
+        if os.path.isfile(new_full_root):
+            raise MicrocloudchipFileAlreadyExistError("This new root is aleady exists as file")
+        elif os.path.isdir(new_full_root):
+            raise MicrocloudchipDirectoryAlreadyExistError("This new root is aleady exists as directory")
+        os.rename(self.full_root, new_full_root)
 
         # 이름 바꾸기에 성공했을 경우 속성 변경
         self.full_root = new_full_root

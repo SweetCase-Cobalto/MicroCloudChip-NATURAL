@@ -1,12 +1,11 @@
 import sys
 from django.test import TestCase
 import os
+import glob
 import app.models as model
+from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
 
-from module.MicrocloudchipException.exceptions import MicrocloudchipAuthAccessError, \
-    MicrocloudchipFileAlreadyExistError, MicrocloudchipDirectoryAlreadyExistError, \
-    MicrocloudchipStorageOverCapacityError, MicrocloudchipFileNotFoundError, MicrocloudchipDirectoryNotFoundError
-
+from module.MicrocloudchipException.exceptions import *
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
 from module.specification.System_config import SystemConfig
@@ -30,6 +29,7 @@ class ManagerOperationUnittest(TestCase):
     config: SystemConfig = SystemConfig(os.path.join(*["server", "config.json"]))
     SYSTEM_ROOT: str = config.get_system_root()
     IMG_EXAMPLE_ROOT: str = os.path.join(*["app", "tests", "test-input-data", "user", "example.png"])
+    EXAMPLE_FILES_ROOT: str = "app/tests/test-input-data/example_files/"
     token: str = '\\' if sys.platform == 'win32' else '/'
 
     user_manager: UserManager = None
@@ -109,425 +109,565 @@ class ManagerOperationUnittest(TestCase):
                 self.other_static_id = user["static_id"]
                 break
 
-    def test_user_update(self):
+    def change_str_to_static_id(self, key):
+        # Json Test Case에 적혀있는 계정명을 static_id로 치환
+        """
+            매 테스트 마다 static_id는 랜덤하게 바뀌기 때문에
+            Json Test Case에서는 고유 static-id를 저장하는 대신에
+            식별자를 저장한다.
+            해당 함수는 식별자 명에 따라서 static_id로 치환한다.
+            예를 들어 식별자가 admin일 경우 admin의 static_id로 변환해 준다
+        """
+
+        def __change(key):
+            return {
+                "admin": self.admin_static_id,
+                "client": self.client_static_id,
+                "other": self.other_static_id
+            }[key]
+
+        return __change(key)
+
+    @test_flow("app/tests/test-input-data/manager_operation/test_user_update.json")
+    def test_user_update(self, test_flow: TestCaseFlow):
         # User 업데이트 시 반드시 변경되지 말아야 할 부분
         """
             1. email
             2. static_id
         """
 
-        update_req = {
-            "static-id": self.client_static_id,
-            "name": "subclient",
-            "password": "0987654321",
-            "volume-type": "GUEST",
-            "img-changeable": False,
-            "img-raw-data": None,
-            "img-extension": None
-        }
-        # admin 및 Client 자신이 직접 수정 가능하다.
-        self.user_manager.update_user(self.client_static_id, update_req)
+        def __cmd_update_user(
+                target_user: str, request_user: str,
+                name: str, password: str,
+                volume_type: str,
+                img_changeable: bool, img_file: str,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: update user
 
-        # 어드민도 변경이 가능한 지 확인
-        update_req['name'] = "client"
-        self.user_manager.update_user(self.admin_static_id, update_req)
+            # user 정보를 변경하기 위해 request를 생성한다
+            req = {
+                "static-id": self.change_str_to_static_id(target_user),
+                "name": name,
+                "password": password,
+                "volume-type": volume_type,
+                "img-changeable": img_changeable
+            }
 
-        # 다른 Client 가 데이터 수정을 해선 안된다
-        update_req['name'] = "client2"
-        self.assertRaises(MicrocloudchipAuthAccessError,
-                          lambda: self.user_manager.update_user(self.other_static_id, update_req))
+            # 이미지 파일 여부
+            if not img_file:
+                # 이미지 파일이 없는 경우 None 처리
+                req['img-raw-data'], req['img-extension'] = None, None
+            else:
+                # Raw Data를 불러오고 확장자를 따로 저장
+                real_img_root: str = self.EXAMPLE_FILES_ROOT + img_file
+                req['img-raw-data'] = read_test_file(real_img_root)
+                req['img-extension'] = real_img_root.split("/")[-1].split('.')[-1]
 
-        # Admin 이름을 사용할 수 없다
-        update_req['name'] = 'admin'
-        self.assertRaises(MicrocloudchipAuthAccessError,
-                          lambda: self.user_manager.update_user(self.admin_static_id, update_req))
+            # 성공 여부
+            if is_succeed:
+                self.user_manager.update_user(self.change_str_to_static_id(request_user), req)
+                # 이미지 삽입/삭제 명령문에 포함될 경우 이미지 파일 존재 여부 확인 필요
+                if img_changeable:
 
-        update_req['name'] = "client2"
-        # 클라이언트 이미지가 들어가 있는 루트
-        client_img_root = os.path.join(self.config.get_system_root(), "storage", self.client_static_id, 'asset',
-                                       'user.png')
+                    # user_asset_directory_root: asset 디렉토리 실제 주소
+                    user_asset_directory_root = \
+                        os.path.join(
+                            self.config.get_system_root(), "storage", req['static-id'], 'asset'
+                        )
+                    if img_file:
+                        # 이미지 삽입 및 변경이 명령문이었을 경우
+                        self.assertTrue(os.path.isfile(os.path.join(user_asset_directory_root,
+                                                                    f"user.{req['img-extension']}")))
+                    else:
+                        self.assertCountEqual(glob.glob(os.path.join(user_asset_directory_root, "user.*")), [])
 
-        # 삭제 전
-        self.assertTrue(os.path.isfile(client_img_root))
+            else:
+                # 실패 케이스
+                try:
+                    # 에러 떠야됨
+                    self.user_manager.update_user(self.change_str_to_static_id(request_user), req)
+                except MicrocloudchipException as e:
+                    # 제대로 된 에러가 호출되었는 지 확인
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    # 그게 아니면 사실 상 잘못 된 것
+                    raise AssertionError("This Case must be failed but it passed or other exception\n"
+                                         f"req: {req}")
 
-        # 이미지 삭제
-        # img-raw-data 가 None -> 이미지 삭제
-        update_req['img-changeable'] = True
-        self.user_manager.update_user(self.admin_static_id, update_req)
+        # 테스팅 프로세스 실행
+        runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
+        runner.set_process('update-user', __cmd_update_user).run()
 
-        # 삭제 후
-        self.assertFalse(os.path.isfile(client_img_root))
-
-        # 다시 생성
-        update_req['img-raw-data'] = read_test_file(self.IMG_EXAMPLE_ROOT)
-        update_req['img-extension'] = self.IMG_EXAMPLE_ROOT.split(self.token)[-1].split('.')[-1]
-
-        # 생성 후 체크
-        self.user_manager.update_user(self.admin_static_id, update_req)
-        self.assertTrue(os.path.isfile(client_img_root))
-
-    def test_add_datas(self):
+    @test_flow("app/tests/test-input-data/manager_operation/test_add_datas.json")
+    def test_add_datas(self, test_flow: TestCaseFlow):
         """ File/Directory 권한에 따른 저장 """
 
-        ex_filename: str = self.TEST_FILES[0]
-        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+        def __cmd_upload_file(
+                target_user: str, request_user: str,
+                file_root: str,
+                is_succeed: str, exception_str: str
+        ):
+            # Test Method: Upload File
 
-        file_add_req = {
-            "static-id": self.admin_static_id,
-            "target-root": self.TEST_FILES[0],
-            "raw-data": raw
-        }
-        dir_add_req = {
-            "static-id": self.admin_static_id,
-            "target-root": "test-dir"
-        }
+            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
 
-        # File Checking
-        self.storage_manager.upload_file(
-            self.admin_static_id,
-            file_add_req,
-            self.user_manager
-        )
-        self.assertTrue(
-            os.path.isfile(
-                os.path.join(self.SYSTEM_ROOT, 'storage', self.admin_static_id,
-                             'root', file_add_req['target-root'])
-            )
-        )
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
 
-        # Directory Checking
-        self.storage_manager.generate_directory(
-            self.admin_static_id,
-            dir_add_req
-        )
-        self.assertTrue(
-            os.path.isdir(
-                os.path.join(self.SYSTEM_ROOT, 'storage', self.admin_static_id,
-                             'root', dir_add_req['target-root'])
-            )
-        )
-
-        """ 다른 사용자가 파일및 디렉토리를 추가할 수 없다"""
-        self.assertRaises(
-            MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.upload_file(
-                self.client_static_id,
-                file_add_req,
-                self.user_manager
-            )
-        )
-
-        self.assertRaises(
-            MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.generate_directory(
-                self.client_static_id,
-                dir_add_req,
-            )
-        )
-
-        """동일 파일 및 폴더는 생성 불가"""
-        self.assertRaises(
-            MicrocloudchipFileAlreadyExistError,
-            lambda: self.storage_manager.upload_file(
-                self.admin_static_id,
-                file_add_req,
-                self.user_manager
-            )
-        )
-        self.assertRaises(
-            MicrocloudchipDirectoryAlreadyExistError,
-            lambda: self.storage_manager.generate_directory(
-                self.admin_static_id,
-                dir_add_req,
-            )
-        )
-
-        """사용량 초과 시 알림"""
-        file_add_req['static-id'] = self.client_static_id
-        # 테스트용 클라이언트는 최대 사용 가능 용량이 1KB
-
-        self.assertRaises(
-            MicrocloudchipStorageOverCapacityError,
-            lambda: self.storage_manager.upload_file(
-                self.client_static_id,
-                file_add_req,
-                self.user_manager
-            )
-        )
-
-        """ 파일 및 디렉토리 점검 """
-        file_add_req['static-id'] = self.admin_static_id
-
-        # 성공 케이스
-
-        # 파일 탐색
-        self.storage_manager.get_file_info(self.admin_static_id, file_add_req)
-        # 디렉토리 탐색
-        self.storage_manager.get_dir_info(self.admin_static_id, dir_add_req)
-
-        # 실패 케이스
-        file_add_req['static-id'] = self.client_static_id
-        dir_add_req['static-id'] = self.client_static_id
-
-        # 파일 탐색
-        self.assertRaises(
-            MicrocloudchipFileNotFoundError,
-            lambda: self.storage_manager.get_file_info(self.client_static_id, file_add_req)
-        )
-        # 디렉토리 탐색
-        self.assertRaises(
-            MicrocloudchipDirectoryNotFoundError,
-            lambda: self.storage_manager.get_dir_info(self.client_static_id, dir_add_req)
-        )
-
-    def test_object_download(self):
-        # 파일 및 디렉토리 생성
-        """
-        TEST_FILES[0]
-        TEST_FILES[1]
-        [dir]test
-            TEST_FILES[2]
-        """
-        file_add_req = {
-            'static-id': self.admin_static_id,
-            'target-root': None,
-            'raw-data': None,
-        }
-        dir_add_req = {
-            'static-id': self.admin_static_id,
-            'target-root': 'test'
-        }
-
-        # 파일 및 디렉토리 생성
-        for i in range(0, 2):
-            file_add_req['target-root'] = self.TEST_FILES[i]
-            file_add_req['raw-data'] = read_test_file(os.path.join(self.TEST_FILE_ROOT, self.TEST_FILES[i]))
-            self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
-        self.storage_manager.generate_directory(self.admin_static_id, dir_add_req)
-        file_add_req['target-root'] = 'test' + "/" + self.TEST_FILES[2]
-        file_add_req['raw-data'] = read_test_file(os.path.join(self.TEST_FILE_ROOT, self.TEST_FILES[2]))
-        self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
-
-        req = {
-            'static-id': self.admin_static_id,
-            'parent-root': '',
-            'object-list': [{'object-name': self.TEST_FILES[0], 'type': 'file'}]
-        }
-        # 파일 데이터 다운로드
-        self.storage_manager.download_objects(self.admin_static_id, req)
-
-        # 디렉토리 데이터 다운로드
-        req['object-list'] = [{'object-name': 'test', 'type': 'dir'}]
-        result_root, _ = self.storage_manager.download_objects(self.admin_static_id, req)
-        self.assertTrue(os.path.isfile(result_root))
-        if os.path.isfile(result_root):
-            os.remove(result_root)
-
-        # 다중 선택 다운로드
-        req['object-list'] = [
-            {'object-name': 'test', 'type': 'dir'},
-            {'object-name': self.TEST_FILES[0], 'type': 'file'},
-            {'object-name': self.TEST_FILES[1], 'type': 'file'},
-        ]
-        result_root, _ = self.storage_manager.download_objects(self.admin_static_id, req)
-        if os.path.isfile(result_root):
-            os.remove(result_root)
-
-        # 실패 케이스
-        # 파일 못찾음
-        req['object-list'] = [{'object-name': 'shit', 'type': 'file'}]
-        self.assertRaises(
-            MicrocloudchipFileNotFoundError,
-            lambda: self.storage_manager.download_objects(self.admin_static_id, req)
-        )
-        # 디렉토리 못찾음
-        req['object-list'] = [{'object-name': 'shit', 'type': 'dir'}]
-        self.assertRaises(
-            MicrocloudchipDirectoryNotFoundError,
-            lambda: self.storage_manager.download_objects(self.admin_static_id, req)
-        )
-
-        # 두개 이상 객체 압축할 때 중간에 못찾는 부분 있어도 패싱해야 한다
-        # 다중 선택 다운로드
-        req['object-list'] = [
-            {'object-name': 'test', 'type': 'dir'},
-            {'object-name': "failed", 'type': 'file'},
-            {'object-name': self.TEST_FILES[1], 'type': 'file'},
-        ]
-        result_root, _ = self.storage_manager.download_objects(self.admin_static_id, req)
-        self.assertTrue(os.path.isfile(result_root))
-        if os.path.isfile(result_root):
-            os.remove(result_root)
-
-    def test_update_datas(self):
-
-        ex_filename: str = self.TEST_FILES[0]
-        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
-
-        # 파일과 디렉토리 생성
-        file_add_req = {
-            "static-id": self.admin_static_id,
-            "target-root": ex_filename,
-            "raw-data": raw
-        }
-        dir_add_req = {
-            "static-id": self.admin_static_id,
-            "target-root": "test-dir"
-        }
-
-        test_file_ex: str = ex_filename.split('.')[-1]
-        self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
-
-        self.storage_manager.generate_directory(self.admin_static_id, dir_add_req)
-
-        # 파일 및 디렉토리 수정
-        file_update_req = {
-            "static-id": self.admin_static_id,
-            "target-root": ex_filename,
-            "change": {
-                "name": "reddd." + test_file_ex
+            req = {
+                # 요청 데이터
+                "static-id": target_id,
+                'target-root': file_root,
+                'raw-data': read_test_file(real_file_root)
             }
-        }
-        dir_update_req = {
-            "static-id": self.admin_static_id,
-            "target-root": "test-dir",
-            "change": {
-                "name": "other-dir"
+
+            if is_succeed:
+                # 성공 케이스
+                self.storage_manager.upload_file(request_id, req, self.user_manager)
+                # 업로드 한 후 정상적으로 파일이 저장되어 있는 지 확인
+                self.assertTrue(
+                    os.path.isfile(
+                        os.path.join(self.SYSTEM_ROOT, 'storage', target_id, 'root', file_root)
+                    )
+                )
+            else:
+                # 실패 케이스
+                try:
+                    self.storage_manager.upload_file(request_id, req, self.user_manager)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    raise AssertionError("This Case must be failed but it passed or other exception"
+                                         f"error case: {req}")
+
+        def __cmd_generate_directory(
+                target_user: str, request_user: str,
+                dir_root: str,
+                is_succeed: str, exception_str: str
+        ):
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+            req = {
+                'static-id': target_id,
+                'target-root': dir_root
             }
-        }
+            if is_succeed:
+                # 성공 케이스
+                self.storage_manager.generate_directory(request_id, req)
+                # 정상적으로 생성 되었는 지 확인
+                self.assertTrue(
+                    os.path.isdir(
+                        os.path.join(self.SYSTEM_ROOT, 'storage', target_id, 'root', dir_root)
+                    )
+                )
+            else:
+                # 실패 케이스
+                try:
+                    self.storage_manager.generate_directory(request_id, req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    raise AssertionError("This Case must be failed but it passed or other exception"
+                                         f"error case: {req}")
 
-        self.storage_manager.update_file(self.admin_static_id, file_update_req)
-        self.storage_manager.update_directory(self.admin_static_id, dir_update_req)
+        # 테스트 실행
+        runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
+        runner.set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_directory) \
+            .run()
 
-        """ 동일한 파일 이름을 수정 할 때 존재하는 파일 및 디렉토리 이름으로 수정이 불가능하다. """
-        self.storage_manager.upload_file(self.admin_static_id, file_add_req, self.user_manager)
-        self.storage_manager.generate_directory(self.admin_static_id, dir_add_req)
+    @test_flow("app/tests/test-input-data/manager_operation/test_object_download.json")
+    def test_object_download(self, test_flow: TestCaseFlow):
+        # 파일 오브젝트 다운로드 테스트
 
-        self.assertRaises(
-            MicrocloudchipFileAlreadyExistError,
-            lambda: self.storage_manager.update_file(self.admin_static_id, file_update_req)
-        )
-        self.assertRaises(
-            MicrocloudchipDirectoryAlreadyExistError,
-            lambda: self.storage_manager.update_directory(self.admin_static_id, dir_update_req)
-        )
+        def __cmd_upload_file(
+                target_user: str, request_user: str,
+                file_root: str
+        ):
+            # Test Method: Upload File
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
 
-        file_update_req['change']['name'] = "xx" + test_file_ex
-        dir_update_req['change']['name'] = "ch-dir"
+            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
 
-        """ 다른 계정이 변경을 시도하면 안된다 """
-        self.assertRaises(
-            MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.update_file(self.client_static_id, file_update_req)
-        )
-        self.assertRaises(
-            MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.update_directory(self.client_static_id, dir_update_req)
-        )
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
 
-    def test_get_list_in_directory(self):
+            req = {
+                # 요청 데이터
+                "static-id": target_id,
+                'target-root': file_root,
+                'raw-data': read_test_file(real_file_root)
+            }
+            self.storage_manager.upload_file(request_id, req, self.user_manager)
 
-        # 상위 디렉토리 생성
-        dir_format: dict = {
-            "static-id": self.admin_static_id,
-            "target-root": "test-dir"
-        }
-        self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+        def __cmd_generate_directory(
+                target_user: str, request_user: str,
+                dir_root: str,
+        ):
 
-        # 디렉토리들 생성
-        sub_dir_name = ['d01', 'd02', 'd03']
-        for d in sub_dir_name:
-            dir_format['target-root'] = f'test-dir/{d}'
-            self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+            # Test Method: Generate Directory
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
 
-        # 파일 하나 생성
-        ex_filename: str = self.TEST_FILES[0]
-        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+            req = {
+                'static-id': target_id,
+                'target-root': dir_root
+            }
+            self.storage_manager.generate_directory(request_id, req)
 
-        file_format: dict = {
-            "static-id": self.admin_static_id,
-            "target-root": f'test-dir/{ex_filename}',
-            "raw-data": raw
-        }
-        self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
+        def __cmd_download_object(
+                target_user: str, request_user: str,
+                parent_root: str, objects: list[str],
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: Generate Directory
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
 
-        # 데이터 요청 포맷
-        req_format: dict = {
-            "static-id": self.admin_static_id,
-            "target-root": 'test-dir'
-        }
-        file_list, directory_list = self.storage_manager.get_dirlist(self.admin_static_id, req_format)
+            req = {
+                'static-id': target_id,
+                'parent-root': parent_root,
+                'object-list': objects
+            }
 
-        # 검색된 디렉토리 이름 리스트
-        checked_dir_list: list[str] = [a.name for a in directory_list]
+            if is_succeed:
+                # 성공 케이스
+                result_root, _ = self.storage_manager.download_objects(request_id, req)
+                # 단일 파일 / 단일 디렉토리 / 다중 파일 x 다중 디렉토리에 따라 다르다
+                if len(objects) == 1 and objects[0]['type'] == "file":
+                    # 단일 파일일 경우
+                    self.assertTrue(os.path.isfile(result_root))
+                elif len(objects) == 1 and objects[0]['type'] == "dir":
+                    self.assertTrue(os.path.isfile(result_root))
+                    os.remove(result_root)
+                elif len(objects) > 1:
+                    self.assertTrue(os.path.isfile(result_root))
+                    os.remove(result_root)
 
-        # 측정
-        self.assertEqual(file_list[0].name, ex_filename)
-        self.assertCountEqual(sub_dir_name, checked_dir_list)
+            else:
+                # 실패 케이스
+                try:
+                    self.storage_manager.download_objects(request_id, req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    raise AssertionError("This Case must be failed but it passed or other exception"
+                                         f"error case: {req}")
 
-        # 다른 사용자가 접근해서는 안된다
-        self.assertRaises(
-            MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.get_dirlist(self.client_static_id, req_format)
-        )
-        # 디렉토리 못찾음
-        req_format['target-root'] = 'aaaa'
-        self.assertRaises(
-            MicrocloudchipDirectoryNotFoundError,
-            lambda: self.storage_manager.get_dirlist(self.admin_static_id, req_format)
+        # 테스트 실행
+        runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
+        runner.set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_directory) \
+            .set_process('download-object', __cmd_download_object) \
+            .run()
 
-        )
+    @test_flow("app/tests/test-input-data/manager_operation/test_update_datas.json")
+    def test_update_datas(self, test_flow: TestCaseFlow):
+        # 데이터 정보수정 테스트
 
-    def test_delete_datas(self):
+        def __cmd_upload_file(
+                target_user: str, request_user: str,
+                file_root: str
+        ):
+            # Test Method: Upload File
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
+
+            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
+
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                # 요청 데이터
+                "static-id": target_id,
+                'target-root': file_root,
+                'raw-data': read_test_file(real_file_root)
+            }
+            self.storage_manager.upload_file(request_id, req, self.user_manager)
+
+        def __cmd_generate_directory(
+                target_user: str, request_user: str,
+                dir_root: str,
+        ):
+            # Test Method: Generate Directory
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
+
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+            req = {
+                'static-id': target_id,
+                'target-root': dir_root
+            }
+            self.storage_manager.generate_directory(request_id, req)
+
+        def __cmd_update_file(
+                target_user: str, request_user: str,
+                target_root: str, new_file_name: str,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: rename filename
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                "static-id": target_id, "target-root": target_root,
+                "change": {
+                    "name": new_file_name
+                }
+            }
+
+            if is_succeed:
+                self.storage_manager.update_file(request_id, req)
+            else:
+                try:
+                    self.storage_manager.update_file(request_id, req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+
+        def __cmd_update_directory(
+                target_user: str, request_user: str,
+                target_root: str, new_dir_name: str,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: rename directory name
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                "static-id": target_id, "target-root": target_root,
+                "change": {
+                    "name": new_dir_name
+                }
+            }
+
+            if is_succeed:
+                self.storage_manager.update_directory(request_id, req)
+            else:
+                try:
+                    self.storage_manager.update_directory(request_id, req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    raise AssertionError("This Case must be failed but it passed or other exception"
+                                         f"error case: {req}")
+
+        # 테스트 코드 실행
+        runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
+        runner.set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_directory) \
+            .set_process('update-file', __cmd_update_file) \
+            .set_process('update-dir', __cmd_update_directory) \
+            .run()
+
+    @test_flow("app/tests/test-input-data/manager_operation/test_get_list_in_directory.json")
+    def test_get_list_in_directory(self, test_flow: TestCaseFlow):
+        # 디렉토리 에 있는 요소 갖고오기
+
+        def __cmd_upload_file(
+                target_user: str, request_user: str,
+                file_root: str
+        ):
+            # Test Method: Upload File
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
+
+            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
+
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                # 요청 데이터
+                "static-id": target_id,
+                'target-root': file_root,
+                'raw-data': read_test_file(real_file_root)
+            }
+            self.storage_manager.upload_file(request_id, req, self.user_manager)
+
+        def __cmd_generate_directory(
+                target_user: str, request_user: str,
+                dir_root: str,
+        ):
+            # Test Method: Generate Directory
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
+
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+            req = {
+                'static-id': target_id,
+                'target-root': dir_root
+            }
+            self.storage_manager.generate_directory(request_id, req)
+
+        def __cmd_get_directory_information(
+                target_user: str, request_user: str,
+                dir_root: str,
+                is_succeed: bool, exception_str: str,
+                expected_file_list: list[str], expected_dir_list: list[str]
+        ):
+            # Test Method: Get Directory Information
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                "static-id": target_id,
+                "target-root": dir_root
+            }
+
+            if is_succeed:
+                # 성공 케이스
+                f_list, d_list = self.storage_manager.get_dirlist(request_id, req)
+
+                f_list_only_name = [f['file-name'] for f in f_list]
+                d_list_only_name = [d['dir-name'] for d in d_list]
+
+                # 검색된 파일 및 디렉토리가 제대로 맞는지 확인
+                self.assertListEqual(sorted(expected_file_list), sorted(f_list_only_name))
+                self.assertListEqual(sorted(expected_dir_list), sorted(d_list_only_name))
+
+            else:
+                try:
+                    self.storage_manager.get_dirlist(request_id, req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    raise AssertionError("This Case must be failed but it passed or other exception"
+                                         f"error case: {req}")
+
+        # 테스트 솔루션 실행
+        runner: TestCaseFlowRunner = TestCaseFlowRunner(test_flow)
+        runner.set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_directory) \
+            .set_process('get-dir-info', __cmd_get_directory_information) \
+            .run()
+
+    @test_flow("app/tests/test-input-data/manager_operation/test_delete_datas.json")
+    def test_delete_datas(self, test_flow: TestCaseFlow):
 
         """ Info: Raw 단계와는 달리 Manager 단위에서는 디렉토리를 삭제할 때
             Recursive 하게 삭제합니다.
         """
 
-        # 상위 디렉토리 생성
-        dir_format: dict = {
-            "static-id": self.admin_static_id,
-            "target-root": "test-dir"
-        }
-        self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+        def __cmd_upload_file(
+                target_user: str, request_user: str,
+                file_root: str
+        ):
+            # Test Method: Upload File
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
 
-        # 디렉토리들 생성
-        sub_dir_name = ['d01', 'd02', 'd03']
-        for d in sub_dir_name:
-            dir_format['target-root'] = f'test-dir/{d}'
-            self.storage_manager.generate_directory(self.admin_static_id, dir_format)
+            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
 
-        # 파일 하나 생성
-        ex_filename: str = self.TEST_FILES[0]
-        raw: bytes = read_test_file(os.path.join(self.TEST_FILE_ROOT, ex_filename))
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
 
-        file_format: dict = {
-            "static-id": self.admin_static_id,
-            "target-root": f'test-dir/{ex_filename}',
-            "raw-data": raw
-        }
-        self.storage_manager.upload_file(self.admin_static_id, file_format, self.user_manager)
+            req = {
+                # 요청 데이터
+                "static-id": target_id,
+                'target-root': file_root,
+                'raw-data': read_test_file(real_file_root)
+            }
+            self.storage_manager.upload_file(request_id, req, self.user_manager)
 
-        req_dir_delete_format: dict = {
-            'static-id': self.admin_static_id,
-            'target-root': 'test-dir'
-        }
+        def __cmd_generate_directory(
+                target_user: str, request_user: str,
+                dir_root: str,
+        ):
+            # Test Method: Generate Directory
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
 
-        # 다른 계정이 함부로 삭제할 수 없다
-        self.assertRaises(
-            MicrocloudchipAuthAccessError,
-            lambda: self.storage_manager.delete_directory(self.client_static_id, req_dir_delete_format)
-        )
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+            req = {
+                'static-id': target_id,
+                'target-root': dir_root
+            }
+            self.storage_manager.generate_directory(request_id, req)
 
-        # 제대로 된 삭제
-        self.storage_manager.delete_directory(self.admin_static_id, req_dir_delete_format)
-        f_list, d_list = self.storage_manager.get_dirlist(self.admin_static_id, {
-            'static-id': self.admin_static_id,
-            'target-root': ''
-        })
+        def __cmd_get_directory_information(
+                target_user: str, request_user: str,
+                dir_root: str,
+                expected_file_list: list[str], expected_dir_list: list[str]
+        ):
+            # Test Method: Get Directory Information
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
 
-        self.assertEqual(len(f_list), 0)
-        self.assertEqual(len(d_list), 0)
+            req = {
+                "static-id": target_id,
+                "target-root": dir_root
+            }
+
+            f_list, d_list = self.storage_manager.get_dirlist(request_id, req)
+            f_list_only_name = [f['file-name'] for f in f_list]
+            d_list_only_name = [d['dir-name'] for d in d_list]
+
+            # 검색된 파일 및 디렉토리가 제대로 맞는지 확인
+            self.assertListEqual(sorted(expected_file_list), sorted(f_list_only_name))
+            self.assertListEqual(sorted(expected_dir_list), sorted(d_list_only_name))
+
+        def __cmd_remove(
+                mode: str,
+                target_user: str, request_user: str,
+                target_root: str,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: Get Directory Information
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                'static-id': target_id,
+                'target-root': target_root
+            }
+
+            if is_succeed:
+                if mode == 'file':
+                    self.storage_manager.delete_file(request_id, req)
+                elif mode == 'dir':
+                    self.storage_manager.delete_directory(request_id, req)
+            else:
+                try:
+                    if mode == 'file':
+                        self.storage_manager.delete_file(request_id, req)
+                    elif mode == 'dir':
+                        self.storage_manager.delete_directory(request_id, req)
+                except MicrocloudchipException as e:
+                    self.assertEqual(type(e).__name__, exception_str)
+                else:
+                    raise AssertionError("This Case must be failed but it passed or other exception"
+                                         f"error case: {req}")
+
+        TestCaseFlowRunner(test_flow) \
+            .set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_directory) \
+            .set_process('get-dir-info', __cmd_get_directory_information) \
+            .set_process('remove', __cmd_remove) \
+            .run()
 
     def test_delete_user(self):
         # 데이터 생성

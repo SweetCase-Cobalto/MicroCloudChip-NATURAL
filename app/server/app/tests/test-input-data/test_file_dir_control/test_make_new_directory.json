@@ -1,0 +1,15 @@
+{
+  "test-flow": [
+    { "type": "dir", "filename": "aavvccs/vkdsfdsd", "output": false, "exception": "MicrocloudchipDirectoryNotFoundError" },
+    { "type": "dir", "filename": "fs:fds:fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "", "output": false, "exception": "MicrocloudchipFileAndDirectoryNameEmpty" },
+    { "type": "dir", "filename": "fs*fds*fd", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "fs?fs?fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "fs>fs>fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "fs<fs<Fs", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "''fs\"fs\"fs''", "output": false, "exception": "MicrocloudchipFileAndDirectoryValidateError" },
+    { "type": "dir", "filename": "mydirectory", "output": true, "exception": null },
+    { "type": "dir", "filename": "mydirectory", "output": false, "exception": "MicrocloudchipDirectoryAlreadyExistError" },
+    { "type": "dir", "filename": "mydirectory/semidirectory", "output": true, "exception": null }
+  ]
+}

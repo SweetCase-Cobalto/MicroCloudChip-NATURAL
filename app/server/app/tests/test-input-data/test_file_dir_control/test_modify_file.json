@@ -1,0 +1,12 @@
+{
+  "test-flow": [
+    {"type": "file", "file": "angel-in-the-galaxy.mid", "root":  ""},
+    {"type": "file", "file": "example-jpg.jpg", "root":  ""},
+    {"type": "file", "file": "example-text.txt", "root":  ""},
+
+    {"type": "modify", "file": "example-jpg.jpg", "root":  "", "new-name": "new.jpg", "is-succeed": true, "exception":  null},
+    {"type": "modify", "file": "new.jpg", "root":  "", "new-name": "new.jpg", "is-succeed": false, "exception": "MicrocloudchipSystemAbnormalAccessError"},
+    {"type": "modify", "file": "new.jpg", "root":  "", "new-name": "example-text.txt", "is-succeed":  false, "exception": "MicrocloudchipFileAlreadyExistError"},
+    {"type": "modify", "file": "new.jpg", "root":  "", "new-name": "asddf><><dsdss.jpg", "is-succeed": false, "exception": "MicrocloudchipFileAndDirectoryValidateError"}
+  ]
+}

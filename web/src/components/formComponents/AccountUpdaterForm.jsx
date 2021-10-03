@@ -130,22 +130,47 @@ const AccountUpdaterForm = (props) => {
         let userNameRegex = /^[a-zA-Z0-9]{4,16}$/;
         
         // Null값 확인하기
-        if(userName == "" || pswd == "" || pswdRepeat == "" || email == "") {
-            alert("입력란을 채워주세요");
-            return;
+        if(actionType == "add") {
+            // ADD일 경우 모든 데이터가 입력되어야 한다
+            if(userName == "" || pswd == "" || pswdRepeat == "" || email == "") {
+                alert("입력란을 채워주세요");
+                return;
+            }
+            if(!userNameRegex.test(userName)) {
+                alert("잘못된 유저 이름 입니다.");
+                return;
+            }
+            if(pswd.length < 8 || pswd.length > 128) {
+                alert("패스워드는 8자 이상 128자 이하 입니다.");
+                return;
+            }
+            if(pswd != pswdRepeat) {
+                alert("패스워드가 일치하지 않습니다.");
+                return;
+            }
+        } else {
+            // 수정하는 경우
+            if(userName == "" && pswd == "" && changedIconImage == undefined) {
+                // 이중에 하나만 입력해도 됨
+                alert("입력란을 채워주세요");
+                return;
+            }
+            if(userName != "" && !userNameRegex.test(userName)) {
+                alert("잘못된 유저 이름 입니다.");
+                return;
+            }
+            if(pswd != "") {
+                if(pswd.length < 8 || pswd.length > 128) {
+                    alert("패스워드는 8자 이상 128자 이하 입니다.");
+                    return;
+                }
+                if(pswd != pswdRepeat) {
+                    alert("패스워드가 일치하지 않습니다.");
+                    return;
+                }
+            }
         }
-        if(!userNameRegex.test(userName)) {
-            alert("잘못된 유저 이름 입니다.");
-            return;
-        }
-        if(pswd.length < 8 || pswd.length > 128) {
-            alert("패스워드는 8자 이상 128자 이하 입니다.");
-            return;
-        }
-        if(pswd != pswdRepeat) {
-            alert("패스워드가 일치하지 않습니다.");
-            return;
-        }
+
 
         
         // 유저 추가 / 수정 에 따라 요청이 달라진다
@@ -201,8 +226,10 @@ const AccountUpdaterForm = (props) => {
             
             // 수정 요청을 위한 FormData 생성
             const formData = new FormData();
-            formData.append('name', userName);
-            formData.append('password', pswd);
+            if(userName != "")
+                formData.append('name', userName);
+            if(pswd != "")
+                formData.append('password', pswd);
 
             
             if(changedIconImage == undefined)
@@ -226,19 +253,27 @@ const AccountUpdaterForm = (props) => {
                 if(data.code == 0) {
                     // 변경 성공
                     alert("변경에 성공했습니다.");
+
+                    
                 } else {
                     alert("변경에 실패했습니다.");
-                    alert(data.code);
                 }
             }).catch((err) => {
                 alert("전송 오류");
             }).finally(() => {
-                // 페이지 나가기
+                // 페이지 리로딩
                 if(props.isAdmin) {
-                    // 관리자 계정
-                    window.location.href = "/accounts";
+                    if(target == "other") {
+                        // 자신이 관리자이고 다른 사람의 정보를 수정할 때
+                        // Accounts로 빠져나온다
+                        window.location.href = "/accounts";
+                    } else {
+                        // 내 정보를 수정하는 경우 settings를 리로딩 한다
+                        window.location.href = "/settings";
+                    }
                 } else {
-                    // 일반 계정
+                    // 일반 사용자일 경우
+                    // 역시 settings로 돌아간다
                     window.location.href = "/settings";
                 }
             })

@@ -1,6 +1,5 @@
 {
   "test-case": [
-
     {
       "is-passed": false,
       "request": {}
@@ -44,7 +43,7 @@
     {
       "is-passed": false,
       "request": {
-        "name": "  ",
+        "name": "this is name",
         "pswd": "password1234",
         "email": "myname@gmail",
         "volume-type": "GUEST",
@@ -139,6 +138,16 @@
         "name": "user",
         "pswd": "passwords",
         "email": "python@example-com",
+        "volume-type": "GUEST",
+        "is-admin": false
+      }
+    },
+    {
+      "is-passed": false,
+      "request": {
+        "name": "user",
+        "pswd": "passwords",
+        "email": "python@example.com.com",
         "volume-type": "GUEST",
         "is-admin": false
       }

@@ -94,6 +94,12 @@ class MicrocloudchipDirectoryDeleteFailedBacauseOfSomeData(MicrocloudchipExcepti
         super().__init__(err_msg, 0x07 | STORAGE_PREFIX)
 
 
+# Add in 0.0.4
+class MicrocloudchipFileAndDirectoryNameEmpty(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x08 | STORAGE_PREFIX)
+
+
 # AccessException
 class MicrocloudchipAuthAccessError(MicrocloudchipException):
     def __init__(self, err_msg: str):

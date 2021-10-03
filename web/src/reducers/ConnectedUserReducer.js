@@ -157,6 +157,12 @@ export const userLogin = (email, pswd) => {
                 data.data['volume-type']['value']['volume']
             )
 
+            // 아이콘 이미지 있는 지 확인
+            let iconLink = usrIcon;
+            if("user-icon" in data.data) {
+                iconLink = `${CONFIG.URL}${data.data["user-icon"]}`;
+            }
+
             return dispatch({
                 type: LOGIN,
                 data: {
@@ -165,7 +171,7 @@ export const userLogin = (email, pswd) => {
                     email: data.data['email'],
                     isAdmin: data.data['is-admin'],
                     maximumVolume: raw_maximum_volume,
-                    usrImgLink: usrIcon,
+                    usrImgLink: iconLink,
                     usedVolume: -1,
                     token: data.data['token']
                 }
@@ -187,7 +193,7 @@ export const userLogout = (token) => {
             if(data.code == 0) {
                 // 로그아웃 성공
                 return dispatch({
-                    type: LOGIN,
+                    type: LOGOUT,
                     data: {
                         id: "",
                         userName: "",
