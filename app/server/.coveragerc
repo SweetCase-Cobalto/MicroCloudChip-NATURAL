@@ -1,6 +1,6 @@
 [run]
 omit =
-    D:\\projects\\venvs\\micro\\*
+    venv/*
     app/tests/*
     server/*
 
