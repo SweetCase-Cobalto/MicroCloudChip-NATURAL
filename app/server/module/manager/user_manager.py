@@ -106,7 +106,7 @@ class UserManager(WorkerManager):
         user: model.User = r[0]
         user_volume_type: UserVolumeType = UserValidator.validate_volume_type_by_string(user.volume_type)
 
-        return {
+        req = {
             # 결과 값
             "static-id": user.static_id,
             "name": user.name,
@@ -120,6 +120,14 @@ class UserManager(WorkerManager):
                 }
             }
         }
+
+        # Check User Icon
+        img_raw_directory_root: str = os.path.join(self.config.get_system_root(), 'storage', user.static_id, 'asset')
+        l = os.listdir(img_raw_directory_root)
+        if 'user.jpg' in l or 'user.png' in l:
+            req['user-icon'] = f"/server/user/download/icon/{user.static_id}"
+
+        return req
 
     # User Control
     def add_user(self, req_static_id: str, data_format: dict):

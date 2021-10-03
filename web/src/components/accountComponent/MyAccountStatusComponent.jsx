@@ -8,7 +8,6 @@ import { useState } from "react";
 import defaultUserIcon from '../../asset/img/icons/user-icon.svg';
 
 import { cookieRequestedImgUrlToAvailableUrl } from  '../../modules/tool/cookieRequestedImgUrlToAvailableUrl';
-import { volume_label_to_raw } from "../../modules/tool/volume";
 
 
 const MyAccountStatusComponent = (props) => {
@@ -16,7 +15,7 @@ const MyAccountStatusComponent = (props) => {
 
     const [isConnected, setIsConnected] = useState(0);
     const [usrIcon, setUsrIcon] = useState(undefined);
-
+    
     if(!isConnected) {
         // 아직 서버와 동기화를 하지 못했다면
         // 동기화 한다.
