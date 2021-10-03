@@ -1,13 +1,11 @@
-import os
 from django.test import TestCase, Client
 from django.http.response import JsonResponse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.files import File
 from django.test.client import encode_multipart
 
-import json
-
 import app.models as model
+from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
 
 from module.manager.storage_manager import StorageManager
 from module.manager.token_manager import TokenManager
@@ -45,413 +43,322 @@ class TestAPIUnittest(TestCase):
         )
         return u
 
+    @staticmethod
+    def __get_user_id_for_test(user_name):
+        return model.User.objects.get(name=user_name).static_id
+
+    def check_exception_code(
+            self,
+            is_succeed: bool,
+            error_code: int,
+            expected_error_str: str,
+            error_input: object = None
+    ):
+        expected_error_code: int = \
+            0 if is_succeed else eval(expected_error_str)("").errorCode
+        self.assertEqual(expected_error_code, error_code, msg=f"failed input: {error_input}")
+
     def setUp(self) -> None:
         self.client = Client()
         self.admin_static_id = model.User.objects.get(is_admin=True).static_id
 
-    def test_login_logout(self):
-        # Admin 계정으로 로그인
-        # False [KeyError]
-        response: JsonResponse = self.client.post('/server/user/login', json.dumps({}),
-                                                  content_type='application/json')
-        self.assertEqual(response.json()['code'], MicrocloudchipSystemAbnormalAccessError("").errorCode)
+    @test_flow("app/tests/test-input-data/test_api/test_login_logout.json")
+    def test_login_logout(self, test_flow: TestCaseFlow):
+        token_header: dict = {}
 
-        # False [LoginFailed]
-        response = self.client.post(
-            '/server/user/login',
-            dict(email="seokbong60@gmail.com", pswd="9999999")
+        def __cmd_login(
+                email: str, password: str,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: Login
+            # Make Req
+            req = {}
+            if email:
+                req['email'] = email
+            if password:
+                req['pswd'] = password
+            # Send
+            res: JsonResponse = self.client.post('/server/user/login', req)
+            # Exception Code Check
+            self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
+            if is_succeed:
+                # 성공시 token_header 갱신
+                token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
 
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipLoginFailedError("").errorCode)
+        def __cmd_logout():
+            # TODO Logout에 대한 특별한 예외는 없으며 차기 버전에 추가할 예정
+            self.client.get("/server/user/logout", **token_header)
 
-        # Success
-        # 단 install.pl 에서 설정한 이메일을 입력해야 success 가 나온다.
-        # 패스워드는 12345678 동일
-        response = self.client.post(
-            '/server/user/login',
-            dict(email='seokbong60@gmail.com', pswd='12345678')
-        )
-        self.assertEqual(response.json()['code'], 0)
-        self.assertIsNotNone(response.json()['data']['token'])
+        TestCaseFlowRunner(test_flow).set_process("login", __cmd_login) \
+            .set_process("logout", __cmd_logout).run()
 
-        admin_token: str = response.json()['data']['token']
-        token_header: dict = {"HTTP_Set-Cookie": admin_token}
-
-        # 로그아웃
-        self.client.get(
-            '/server/user/logout',
-            **token_header
-        )
-
-    def test_user_add_and_delete(self):
+    @test_flow("app/tests/test-input-data/test_api/test_user_add_and_delete.json")
+    def test_user_add_and_delete(self, test_flow: TestCaseFlow):
         # 로그인이 안 된 상태에서 수행 불가
 
         # 만료되었다고 가정하는 임의의 쿠키
         token_header: dict = {"HTTP_Set-Cookie": "aldifjalsdkfjaldfkjaldskf"}
 
-        response = self.client.post(
-            '/server/user', {
-                'name': 'the-client',
-                'email': 'napalosense@gmail.com',
-                'password': '098765432',
-                'volume-type': 'TEST',
-                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
-            },
-            **token_header
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipLoginConnectionExpireError("").errorCode)
+        def __cmd_login(
+                email: str, password: str
+        ):
+            # Test Method: Login
+            # Make Req
+            req = {"email": email, "pswd": password}
+            # Send
+            res: JsonResponse = self.client.post('/server/user/login', req)
+            token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
 
-        # Admin Login
-        response = self.client.post(
-            '/server/user/login',
-            dict(email='seokbong60@gmail.com', pswd='12345678')
-        )
-        self.assertEqual(response.json()['code'], 0)
-        self.assertIsNotNone(response.json()['data']['token'])
+        def __cmd_add_user(
+                name: str, email: str, password: str,
+                volume_type_str: str, img: str,
+                is_succeed: bool, exception_str: str
+        ):
 
-        # 토큰 발행
-        admin_token: str = response.json()['data']['token']
-        token_header = {"HTTP_Set-Cookie": admin_token}
+            req = dict()
+            # if문 두줄짜리라 줄 없애려고 일부로 dict 씀
+            """원래 구문
+                if key:
+                    req['key'] = value
+            """
+            if name:
+                req['name'] = name
+            if email:
+                req['email'] = email
+            if password:
+                req['password'] = password
+            if volume_type_str:
+                req['volume-type'] = volume_type_str
+            if img:
+                req['img'] = TestAPIUnittest.make_uploaded_file(f"{self.FILES_ROOT}/{img}")
+            res = self.client.post('/server/user', req, **token_header)
 
-        # Success
-        response = self.client.post(
-            '/server/user', {
-                'name': 'theclient',
-                'email': 'napalosense@gmail.com',
-                'password': '098765432',
-                'volume-type': 'TEST'
-            },
-            **token_header
-        )
-        self.assertEqual(response.json()['code'], 0)
+            # Exception Code Check
+            self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
 
-        # Failed[Same email]
-        response = self.client.post(
-            '/server/user', {
-                'name': 'theclient2',
-                'email': 'napalosense@gmail.com',
-                'password': '934852323',
-                'volume-type': 'TEST',
-            },
-            **token_header
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+        def __cmd_modify_user(
+                target: str,
+                new_name: str, new_password: str,
+                img_changeable: bool, img_name: str,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: Modify User
+            # static id 구하기
+            target_id: str = self.__get_user_id_for_test(target)
+            req = {}
+            if new_name:
+                req['name'] = new_name
+            if new_password:
+                req['password'] = new_password
+            req['img-changeable'] = 1 if img_changeable else 0
+            if img_name:
+                req['img'] = self.make_uploaded_file(f"{self.FILES_ROOT}/{img_name}")
 
-        # 테스트용 클라이언트 고정 아이디를 구해보자
-        client_static_id: str = model.User.objects.get(is_admin=False).static_id
+            res = self.client.patch(
+                f"/server/user/{target_id}",
+                data=encode_multipart(self.BOUNDARY_VALUE, req),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
 
-        # 유저 리스트 갖고오기
-        response = self.client.get('/server/user/list', **token_header)
-        self.assertFalse(response.json()['code'])
+            self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
 
-        # 데이터 수정 -> 이름 바꾸기
-        response = self.client.patch(
-            f"/server/user/{client_static_id}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                'name': 'sclient2',
-                'img-changeable': 0
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
+        def __cmd_get_user_list(expected_users: list[str]):
+            # Test Method: get user list
+            # user가 제대로 검색 되었는 지 체크
+            res = self.client.get("/server/user/list", **token_header)
+            raw = res.json()
+            self.assertFalse(raw['code'])
+            searched_user_list = [user["username"] for user in raw["data"]]
+            self.assertListEqual(sorted(expected_users), sorted(searched_user_list))
 
-        self.assertFalse(response.json()['code'])
+        def __cmd_get_user_info(
+                target: str, is_raw_id: bool,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: Get user Information
+            target_id = target if is_raw_id else self.__get_user_id_for_test(target)
+            res = self.client.get(f"/server/user/{target_id}", **token_header)
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str, target)
 
-        # 데이터 수정 -> 이미지 변경을 하려고 하는데 이미지 데이터가 없음 -> 실패
-        response = self.client.patch(
-            f"/server/user/{client_static_id}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                'img-changeable': 1
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipUserInformationValidateError("").errorCode)
+        def __cmd_remove_user(
+                target: str, is_raw_id: bool,
+                is_succeed: bool, exception_str: str
+        ):
+            # Test Method: remove user
+            target_id = target if is_raw_id else self.__get_user_id_for_test(target)
+            res = self.client.delete(f"/server/user/{target_id}", **token_header)
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str, target)
 
-        # 데이터 수정 -> 이미지 추가
-        response = self.client.patch(
-            f"/server/user/{client_static_id}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                'img-changeable': 1,
-                'img': TestAPIUnittest.make_uploaded_file(os.path.join(self.USR_IMG_ROOT, 'example.png'))
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
+        # 테스트 실행
+        TestCaseFlowRunner(test_flow) \
+            .set_process('login', __cmd_login) \
+            .set_process('add-user', __cmd_add_user) \
+            .set_process('modify-user', __cmd_modify_user) \
+            .set_process('get-user-info', __cmd_get_user_info) \
+            .set_process('remove-user', __cmd_remove_user) \
+            .set_process('get-user-list', __cmd_get_user_list) \
+            .run()
 
-        # 데이터 갖고오기
-        response = self.client.get(f"/server/user/{client_static_id}", **token_header)
-        self.assertFalse(response.json()['code'])
+    @test_flow("app/tests/test-input-data/test_api/test_add_modify_and_delete_data.json")
+    def test_add_modify_and_delete_data(self, test_flow: TestCaseFlow):
 
-        # 잘못된 결과
-        response = self.client.get(f"/server/user/aaaaaaaaaaaaaaaaaaa", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
+        token_header: dict = {}
 
-        # 유저 삭제하기
-        # 정상적인 삭제
-        response = self.client.delete(f"/server/user/{client_static_id}", **token_header)
-        self.assertFalse(response.json()['code'])
+        def __cmd_login(
+                email: str, password: str
+        ):
+            # Test Method: Login
+            # Make Req
+            req = {"email": email, "pswd": password}
+            # Send
+            res: JsonResponse = self.client.post('/server/user/login', req)
+            token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
 
-        # Admin 삭제 불가 [적어도 현재 버전은 Admin 삭제가 불가하다]
-        response = self.client.delete(f"/server/user/{self.admin_static_id}", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipAuthAccessError("").errorCode)
+        def __cmd_upload_file(file_root: str, is_succeed: bool, exception_str: str):
+            # Test Method: Upload file
+            f: SimpleUploadedFile = \
+                self.make_uploaded_file(f"{self.FILES_ROOT}/{file_root.split('/')[-1]}")
+            # Run
+            res = self.client.post(
+                f'/server/storage/data/file/{self.admin_static_id}/root/{file_root}',
+                data=encode_multipart(self.BOUNDARY_VALUE, {"file": f}),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
+            # check result code
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str, file_root)
 
-        # 존재하지 않는 클라이언트 삭제 시 실패 송출
-        response = self.client.delete(f"/server/user/{client_static_id}", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipUserDoesNotExistError("").errorCode)
+        def __cmd_generate_dir(dir_root: str, is_succeed: bool, exception_str: str):
+            # Test Method: generate directory
+            res = \
+                self.client.post(
+                    f"/server/storage/data/dir/{self.admin_static_id}/root/{dir_root}",
+                    **token_header
+                )
+            self.check_exception_code(is_succeed, res.json()["code"], exception_str, dir_root)
 
-    def test_add_modify_and_delete_data(self):
-        # 로그인
-        response: JsonResponse = self.client.post(
-            '/server/user/login',
-            dict(email='seokbong60@gmail.com', pswd='12345678')
-        )
+        def __cmd_get_info(mode: str, root: str, is_succeed: bool, exception_str: str,
+                           expected_files: list[str], expected_dirs: list[str]):
+            # Test Method: get information of FILE or DIRECTORY
+            uri = f"/server/storage/data/{mode}/{self.admin_static_id}/root"
+            uri += f"/{root}" if root else ""
+            res = self.client.get(uri, **token_header)
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str, [mode, root])
 
-        admin_token: str = response.json()['data']['token']
-        token_header: dict = {"HTTP_Set-Cookie": admin_token}
+            # 디렉토리일 경우 하위 파일 / 디렉토리가 제대로 검색 되어있는 지 조사
+            if mode == 'dir' and is_succeed:
+                data = res.json()['data']['list']
+                files, dirs = [f['name'] for f in data['file']], [d for d in data['dir']]
+                self.assertListEqual(sorted(files), sorted(expected_files),
+                                     msg=f"files not matched: {root}")
+                self.assertListEqual(sorted(dirs), sorted(expected_dirs),
+                                     msg=f"files not matched: {root}")
 
-        # 테스트 대상 파일
-        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
+        def __cmd_modify_file(file_root: str, new_name: str, is_succeed: bool, exception_str: str):
+            # Test Method: modify file information
+            res = self.client.patch(
+                f"/server/storage/data/file/{self.admin_static_id}/root/{file_root}",
+                data=encode_multipart(self.BOUNDARY_VALUE, {"filename": {new_name}}),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
+            self.check_exception_code(is_succeed, res.json()['code'],
+                                      exception_str, [file_root, new_name])
 
-        # 정상적인 파일 하나 생성을 해보자
-        response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "file": example_binary_file
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
+        def __cmd_modify_dir(dir_root: str, new_name: str, is_succeed: bool, exception_str: str):
+            # Test Method: modify directory imformation
+            res = self.client.patch(
+                f"/server/storage/data/dir/{self.admin_static_id}/root/{dir_root}",
+                data=encode_multipart(self.BOUNDARY_VALUE, {"dir-name": {new_name}}),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str,
+                                      [dir_root, new_name])
 
-        # 동일한 파일은 생성 불가
-        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
-        response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "file": example_binary_file
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipFileAlreadyExistError("").errorCode)
+        def __cmd_remove(mode: str, root: str, is_succeed: bool, exception_str: str):
+            # Test Method: remove file / directory
+            res = self.client.delete(
+                f"/server/storage/data/{mode}/{self.admin_static_id}/root/{root}", **token_header)
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str, [mode, root])
 
-        # 디렉토리 생성
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요", **token_header)
-        self.assertFalse(response.json()['code'])
+        # 테스트 코드 실행
+        TestCaseFlowRunner(test_flow) \
+            .set_process('login', __cmd_login) \
+            .set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_dir) \
+            .set_process('get-info', __cmd_get_info) \
+            .set_process('modify-file-info', __cmd_modify_file) \
+            .set_process('modify-dir-info', __cmd_modify_dir) \
+            .set_process('remove', __cmd_remove) \
+            .run()
 
-        # 동일 디렉토리 추가 안됨
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryAlreadyExistError("").errorCode)
-
-        # 올바르지 않은 디렉토리명 생성 불가
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/esx:dfsd", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipFileAndDirectoryValidateError("").errorCode)
-
-        # 유니코드 이름으로 된 파일 추가
-        example_text_file_unicode: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/텍스트파일.txt")
-        response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "file": example_text_file_unicode
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
-
-        # 파일 정보 갖고오기
-        response = \
-            self.client.get(
-                f"/server/storage/data/file/{self.admin_static_id}/root/안냥하세요/{example_text_file_unicode.name}",
-                **token_header)
-        self.assertFalse(response.json()['code'])
-
-        # 존재하지 않는 파일은 정보 못 갖고옴
-        response = \
-            self.client.get(f"/server/storage/data/file/{self.admin_static_id}/root/asfkljasfdkljasfdklj",
-                            **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipFileNotFoundError("").errorCode)
-
-        # 디렉토리 정보 갖고오기
-        # 루트부분
-        response = \
-            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root", **token_header)
-        self.assertFalse(response.json()['code'])
-
-        # 하위 디렉토리 부분
-        response = \
-            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요", **token_header)
-        self.assertFalse(response.json()['code'])
-
-        # 존재하지 않는 디렉토리는 못 갖고옴
-        response = \
-            self.client.get(f"/server/storage/data/dir/{self.admin_static_id}/root/야야야야야야", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
-
-        # TODO 다운로드를 위한 파일 바이너리 데이터 출력하기
-
-        # 파일 정보 바꾸기
-        # 이때 파일에 확장자가 존재하는 경우 확장자는 변경하면 안된다.
-
-        # 올바르지 않은 파일 수정 불가능
-        response = self.client.patch(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "filename": "nf:S::FD::S"
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertEqual(response.json()['code'], MicrocloudchipFileAndDirectoryValidateError("").errorCode)
-
-        # 수정 성공
-        response = self.client.patch(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "filename": "nest"
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
-
-        # 디렉토리 이름 수정
-        response = self.client.patch(
-            f"/server/storage/data/dir/{self.admin_static_id}/root/안냥하세요",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                'dir-name': '연녕하세요'
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
-
-        # 디렉토리와 피일 죄다 삭제하기
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요", **token_header)
-        self.assertFalse(response.json()['code'])
-
-        # 없는 건 삭제 불가
-        response = self.client.delete(f"/server/storage/data/dir/{self.admin_static_id}/root/연녕하세요", **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
-
-        # 파일도 삭제하기
-        response = self.client.delete(f"/server/storage/data/file/{self.admin_static_id}/root/nest.jpg", **token_header)
-        self.assertFalse(response.json()['code'])
-
-        # 삭제한 거 다시 생성
-        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/example-jpg.jpg")
-        response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "file": example_binary_file
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
-
-        # 파일 도로 삭제
-        response = self.client.delete(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}", **token_header)
-        self.assertFalse(response.json()['code'])
-
-    def test_storge_data_download(self):
-        CONTENT_TYPE_JSON = 'application/json'
+    @test_flow("app/tests/test-input-data/test_api/test_storage_data_download.json")
+    def test_storge_data_download(self, test_flow: TestCaseFlow):
+        # 데이터 다운로드 관련 테스트
         CONTENT_TYPE_ZIP = "application/x-zip-compressed"
-        # 로그인
-        response: JsonResponse = self.client.post(
-            '/server/user/login',
-            dict(email='seokbong60@gmail.com', pswd='12345678')
-        )
 
-        admin_token: str = response.json()['data']['token']
-        token_header: dict = {"HTTP_Set-Cookie": admin_token}
+        token_header: dict = {}
 
-        # 파일과 디렉토리 생성
-        EX_FILENAME: str = 'example-jpg.jpg'
-        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/{EX_FILENAME}")
-        EX_DIRECTORY_NAME: str = "test"
+        def __cmd_login(
+                email: str, password: str
+        ):
+            # Test Method: Login
+            # Make Req
+            req = {"email": email, "pswd": password}
+            # Send
+            res: JsonResponse = self.client.post('/server/user/login', req)
+            token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
 
-        # 정상적인 파일 하나 생성을 해보자
-        response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "file": example_binary_file
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
+        def __cmd_upload_file(file_root: str):
+            # Test Method: Upload file
+            f: SimpleUploadedFile = \
+                self.make_uploaded_file(f"{self.FILES_ROOT}/{file_root.split('/')[-1]}")
+            # Run
+            self.client.post(
+                f'/server/storage/data/file/{self.admin_static_id}/root/{file_root}',
+                data=encode_multipart(self.BOUNDARY_VALUE, {"file": f}),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
 
-        # 디렉토리 생성하고  그 안에 파일도 생성
-        response = self.client.post(f"/server/storage/data/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
-                                    **token_header)
-        self.assertEqual(response.json()['code'], 0)
+        def __cmd_generate_dir(dir_root: str):
+            # Test Method: generate directory
+            self.client.post(
+                f"/server/storage/data/dir/{self.admin_static_id}/root/{dir_root}",
+                **token_header
+            )
 
-        example_binary_file: SimpleUploadedFile = self.make_uploaded_file(f"{self.FILES_ROOT}/{EX_FILENAME}")
-        response = self.client.post(
-            f"/server/storage/data/file/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}/{example_binary_file.name}",
-            data=encode_multipart(self.BOUNDARY_VALUE, {
-                "file": example_binary_file
-            }),
-            content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-            **token_header
-        )
-        self.assertFalse(response.json()['code'])
+        def __cmd_download_single(mode: str, root: str, is_succeed: bool, exception_str: bool):
+            # Test Method: download single file or directory
+            uri = f"/server/storage/download/single/{mode}/{self.admin_static_id}/root"
+            if mode == "file":
+                uri += f"/{root}"
+            elif mode == "dir":
+                if root != "":
+                    uri = f"/{root}"
 
-        # 파일 다운로드
-        response = self.client.get(f"/server/storage/download/single/file/{self.admin_static_id}/root/{EX_FILENAME}",
-                                   **token_header)
-        # 온전한 파일 데이터 이므로 Json도 아니고 zip도 아니다
-        self.assertNotEquals(response.headers['Content-Type'],
-                             CONTENT_TYPE_JSON, msg="This File Download Test is Failed")
-        self.assertNotEquals(response.headers['Content-Type'],
-                             CONTENT_TYPE_ZIP, msg="This File Download Test is Failed")
+            res = self.client.get(uri, **token_header)
+            if res.headers['Content-Type'] == 'application/json':
+                # 다운로드 실패
+                self.check_exception_code(is_succeed, res.json()['code'], exception_str)
 
-        # 디렉토리 압축파일 다운로드
-        response = self.client.get(
-            f"/server/storage/download/single/dir/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}",
-            **token_header)
-        # Zip File 이어야 한다
-        self.assertEqual(response.headers['Content-Type'],
-                         CONTENT_TYPE_ZIP, msg="Directory Donwload result data must be zip file")
+        def __cmd_download_multiple(params: dict[str], is_succeed: bool, exception_str: str):
+            # Test Method: download multiple objects
+            uri = f'/server/storage/download/multiple/{self.admin_static_id}/root'
+            res = self.client.get(uri, data=params, **token_header)
 
-        # 디렉토리 속 파일 다운로드
-        response = self.client.get(
-            f"/server/storage/download/single/file/{self.admin_static_id}/root/{EX_DIRECTORY_NAME}/{EX_FILENAME}",
-            **token_header)
-        self.assertNotEquals(response.headers['Content-Type'],
-                             CONTENT_TYPE_JSON, msg="This File Download Test is Failed")
-        self.assertNotEquals(response.headers['Content-Type'],
-                             CONTENT_TYPE_ZIP, msg="This File Download Test is Failed")
+            if res.headers['Content-Type'] == 'application/json':
+                # 다운로드 실패
+                self.check_exception_code(is_succeed, res.json()['code'], exception_str)
+            if is_succeed:
+                self.assertEqual(CONTENT_TYPE_ZIP, res.headers['Content-Type'])
 
-        # 이름이 잘못된 파일 출력
-        response = self.client.get(f"/server/storage/download/single/dir/{self.admin_static_id}/root/aaaa",
-                                   **token_header)
-        self.assertEqual(response.json()['code'], MicrocloudchipDirectoryNotFoundError("").errorCode)
-
-        # 다중파일 다운로드
-        multiple_param: dict = {
-            'file-0': EX_FILENAME,
-            'dir-0': EX_DIRECTORY_NAME
-        }
-        response = self.client.get(
-            f'/server/storage/download/multiple/{self.admin_static_id}/root',
-            data=multiple_param,
-            **token_header
-        )
-        self.assertEqual(response.headers['Content-Type'],
-                         CONTENT_TYPE_ZIP, msg="Multiple Download response must be zip file")
-
-        # 다중 파일 리스트 중에 올바르지 않은 파일이 있다고 해도 무시하고 진행해야 한다.
-        multiple_param['dir-0'] = "aaaaaa"
-        response = self.client.get(
-            f'/server/storage/download/multiple/{self.admin_static_id}/root',
-            data=multiple_param,
-            **token_header
-        )
-        self.assertEqual(response.headers['Content-Type'],
-                         CONTENT_TYPE_ZIP,
-                         msg="Multiple Download response must be zip file if some of req file is not exist")
+        TestCaseFlowRunner(test_flow) \
+            .set_process('login', __cmd_login) \
+            .set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_dir) \
+            .set_process('download-single', __cmd_download_single) \
+            .set_process('download-multiple', __cmd_download_multiple) \
+            .run()

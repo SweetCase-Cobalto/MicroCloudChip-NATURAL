@@ -1,0 +1,71 @@
+{
+  "test-flow": [
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678"
+    },
+
+
+    {
+      "type": "upload-file",
+      "fileroot": "example-text.txt"
+    },
+    {
+      "type": "generate-dir",
+      "dir-root": "안녕하세요"
+    },
+    {
+      "type": "upload-file",
+      "dir-root": "안녕하세요/텍스트파일.txt"
+    },
+
+
+    {
+      "type": "download-single", "mode": "file",
+      "root": "example-text.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-single", "mode": "file",
+      "root": "안녕하세요/텍스트파일.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-single", "mode": "file",
+      "root": "안녕하세요/텍스트파일2.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError"
+    },
+    {
+      "type": "download-single", "mode": "dir",
+      "root": "안녕하세요",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-single", "mode": "dir",
+      "root": "",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-single", "mode": "dir",
+      "root": "ㄴㄴㄴ",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryNotFoundError"
+    },
+
+    {
+      "type": "download-multiple",
+      "param": {
+        "file-0": "example-text.txt",
+        "dir-0": "안녕하세요"
+      },
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "download-multiple",
+      "param": {
+        "file-0": "example-text.txt",
+        "dir-0": "안녕하세요2"
+      },
+      "is-succeed": true, "exception": null
+    }
+  ]
+}

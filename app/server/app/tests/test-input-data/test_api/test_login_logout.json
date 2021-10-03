@@ -1,0 +1,22 @@
+{
+  "test-flow": [
+    {
+      "type": "login",
+      "email": null, "password": null,
+      "is-succeed": false, "exception": "MicrocloudchipSystemAbnormalAccessError"
+    },
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "9999999",
+      "is-succeed": false, "exception": "MicrocloudchipLoginFailedError"
+    },
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type":"logout"
+    }
+  ]
+}
