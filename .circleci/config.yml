@@ -11,6 +11,9 @@ jobs:
   test-for-coverage:
     docker:
       - image: cimg/python:3.9
+    environment:
+      TEST_ROOT: /home/circleci/project/test-dir
+      TEST_EMAIL: napalosense@gmail.com # Real email for test
     steps:
       - checkout
       - run:
@@ -23,10 +26,20 @@ jobs:
             cd app
             pip install -r requirements.txt
       - run:
-          name: test coverage
+          name: set config file
+          command: |
+            cd bin
+            perl setConfigure-sqlite.pl $TEST_ROOT 8000 127.0.0.1 $TEST_EMAIL
+      - run:
+          name: migration inner database
           command: |
             cd app/server
-            pwd
+            python manage.py makemigrations
+            python manage.py migrate
+
+
+
+            
 
 
 
