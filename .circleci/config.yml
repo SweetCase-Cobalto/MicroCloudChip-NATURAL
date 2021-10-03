@@ -13,7 +13,7 @@ jobs:
       - image: cimg/python:3.9
     environment:
       TEST_ROOT: /home/circleci/project/test-dir/microcloudchip
-      TEST_EMAIL: napalosense@gmail.com # Real email for test
+      TEST_EMAIL: seokbong60@gmail.com # Real email for test
     steps:
       - checkout
       - run:
