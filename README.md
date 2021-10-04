@@ -8,6 +8,9 @@
 </a>
 <a href="https://hub.docker.com/repository/docker/recomadock/microcloudchip-natural">
 <img alt="GitHub" src="https://img.shields.io/github/license/SweetCase-Cobalto/MicroCloudChip-NATURAL?style=flat-square">
+<a href="https://codecov.io/gh/SweetCase-Cobalto/microcloudchip-natural">
+  <img src="https://codecov.io/gh/SweetCase-Cobalto/microcloudchip-natural/branch/master/graph/badge.svg?token=F1Vw1qOmiu"/>
+</a>
 </p>
 
 
