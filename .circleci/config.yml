@@ -44,7 +44,7 @@ jobs:
           command: |
             cd app/server
             coverage run manage.py test
-            coverage report
+            codecov
             
 
 # Invoke jobs via workflows
