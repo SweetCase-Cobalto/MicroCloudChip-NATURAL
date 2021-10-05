@@ -26,8 +26,8 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     # Production Version에서만 사용
-    #url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
-    #url(r'^(storage)|(accounts)|(settings)/', TemplateView.as_view(template_name='index.html'), name='index'),
+    url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    url(r'^(storage)|(accounts)|(settings)/', TemplateView.as_view(template_name='index.html'), name='index'),
 
     #path('admin/', admin.site.urls),
 
