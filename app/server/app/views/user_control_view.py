@@ -8,7 +8,7 @@ from module.label.file_type import FileVolumeType
 from module.label.user_volume_type import UserVolumeType
 
 from . import *
-from .custom_decorators import check_token_in_class_view
+from .custom_decorators import check_token_in_class_view, check_is_admin_in_class_view
 
 
 class UserControlView(APIView):
@@ -118,6 +118,7 @@ class UserControlView(APIView):
         return JsonResponse(res)
 
     @check_token_in_class_view
+    @check_is_admin_in_class_view
     def delete(self, request: Request, static_id: str, req_static_id: str):
 
         """ 유저 삭제 """
