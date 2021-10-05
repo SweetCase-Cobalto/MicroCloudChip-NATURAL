@@ -67,7 +67,7 @@ def check_token_in_class_view(func):
 
 
 def check_is_admin(func):
-    def wrapper(request: Request,  *args, **kwargs):
+    def wrapper(request: Request, *args, **kwargs):
         try:
             req_static_id = kwargs['req_static_id']
         except KeyError:
@@ -81,5 +81,25 @@ def check_is_admin(func):
             return JsonResponse({'code': e.errorCode})
         else:
             return func(request, *args, **kwargs)
+
     return wrapper
 
+
+def check_is_admin_in_class_view(func):
+    def wrapper(view_instance, *args, **kwargs):
+        request: Request = args[0]
+        try:
+            req_static_id = kwargs['req_static_id']
+        except KeyError:
+            e = MicrocloudchipAuthAccessError("request static id does not exist")
+            print(e)
+            return JsonResponse({'code': e.errorCode})
+
+        if not __check_is_admin(req_static_id):
+            # Admin 아님
+            e = MicrocloudchipAuthAccessError("You are not admin")
+            return JsonResponse({'code': e.errorCode})
+        else:
+            return func(view_instance, *args, **kwargs)
+
+    return wrapper
