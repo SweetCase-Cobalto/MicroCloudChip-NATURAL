@@ -9,7 +9,7 @@
       "volume-type": "TEST",
       "img": "example-jpg.jpg",
 
-      "is-succeed": false, "exception": "MicrocloudchipLoginConnectionExpireError"
+      "is-succeed": false, "exception": "MicrocloudchipSystemAbnormalAccessError"
     },
     {
       "type": "login",
@@ -28,6 +28,12 @@
 
       "is-succeed": true, "exception": null
     },
+    {
+      "type": "get-user-icon",
+      "name": "theclient", "is_raw_id": false,
+      "is-succeed": false, "exception": "MicrocloudchipSystemAbnormalAccessError"
+    },
+
     {
       "type": "add-user",
 
@@ -73,6 +79,17 @@
       "img": "ex2.jpg",
 
       "is-succeed": true, "exception": null
+    },
+
+    {
+      "type": "get-user-icon",
+      "name": "sclient2", "is_raw_id": false,
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "get-user-icon",
+      "name": "asdfadasdf", "is_raw_id": true,
+      "is-succeed": false, "exception": "MicrocloudchipSystemAbnormalAccessError"
     },
 
     {

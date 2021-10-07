@@ -86,8 +86,8 @@ class TestAPIUnittest(TestCase):
                 token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
 
         def __cmd_logout():
-            # TODO Logout에 대한 특별한 예외는 없으며 차기 버전에 추가할 예정
-            self.client.get("/server/user/logout", **token_header)
+            res = self.client.get("/server/user/logout", **token_header)
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
         TestCaseFlowRunner(test_flow).set_process("login", __cmd_login) \
             .set_process("logout", __cmd_logout).run()
@@ -117,10 +117,6 @@ class TestAPIUnittest(TestCase):
 
             req = dict()
             # if문 두줄짜리라 줄 없애려고 일부로 dict 씀
-            """원래 구문
-                if key:
-                    req['key'] = value
-            """
             if name:
                 req['name'] = name
             if email:
@@ -135,6 +131,9 @@ class TestAPIUnittest(TestCase):
 
             # Exception Code Check
             self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
+
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
         def __cmd_modify_user(
                 target: str,
@@ -163,6 +162,9 @@ class TestAPIUnittest(TestCase):
 
             self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
         def __cmd_get_user_list(expected_users: list[str]):
             # Test Method: get user list
             # user가 제대로 검색 되었는 지 체크
@@ -181,6 +183,9 @@ class TestAPIUnittest(TestCase):
             res = self.client.get(f"/server/user/{target_id}", **token_header)
             self.check_exception_code(is_succeed, res.json()['code'], exception_str, target)
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
         def __cmd_remove_user(
                 target: str, is_raw_id: bool,
                 is_succeed: bool, exception_str: str
@@ -190,6 +195,19 @@ class TestAPIUnittest(TestCase):
             res = self.client.delete(f"/server/user/{target_id}", **token_header)
             self.check_exception_code(is_succeed, res.json()['code'], exception_str, target)
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
+        def __cmd_get_user_icon(
+            target: str, is_raw_id: bool,
+            is_succeed: bool, exception_str: str
+        ):
+            target_id = target if is_raw_id else self.__get_user_id_for_test(target)
+            res = self.client.get(f"/server/user/download/icon/{target_id}", **token_header)
+
+            if res.headers['Content-Type'] == "application/json":
+                self.check_exception_code(is_succeed, res.json()['code'], exception_str, target)
+
         # 테스트 실행
         TestCaseFlowRunner(test_flow) \
             .set_process('login', __cmd_login) \
@@ -198,6 +216,7 @@ class TestAPIUnittest(TestCase):
             .set_process('get-user-info', __cmd_get_user_info) \
             .set_process('remove-user', __cmd_remove_user) \
             .set_process('get-user-list', __cmd_get_user_list) \
+            .set_process('get-user-icon', __cmd_get_user_icon) \
             .run()
 
     @test_flow("app/tests/test-input-data/test_api/test_add_modify_and_delete_data.json")
@@ -229,6 +248,9 @@ class TestAPIUnittest(TestCase):
             # check result code
             self.check_exception_code(is_succeed, res.json()['code'], exception_str, file_root)
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
         def __cmd_generate_dir(dir_root: str, is_succeed: bool, exception_str: str):
             # Test Method: generate directory
             res = \
@@ -238,6 +260,9 @@ class TestAPIUnittest(TestCase):
                 )
             self.check_exception_code(is_succeed, res.json()["code"], exception_str, dir_root)
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
         def __cmd_get_info(mode: str, root: str, is_succeed: bool, exception_str: str,
                            expected_files: list[str], expected_dirs: list[str]):
             # Test Method: get information of FILE or DIRECTORY
@@ -245,6 +270,9 @@ class TestAPIUnittest(TestCase):
             uri += f"/{root}" if root else ""
             res = self.client.get(uri, **token_header)
             self.check_exception_code(is_succeed, res.json()['code'], exception_str, [mode, root])
+
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
             # 디렉토리일 경우 하위 파일 / 디렉토리가 제대로 검색 되어있는 지 조사
             if mode == 'dir' and is_succeed:
@@ -266,6 +294,9 @@ class TestAPIUnittest(TestCase):
             self.check_exception_code(is_succeed, res.json()['code'],
                                       exception_str, [file_root, new_name])
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
         def __cmd_modify_dir(dir_root: str, new_name: str, is_succeed: bool, exception_str: str):
             # Test Method: modify directory imformation
             res = self.client.patch(
@@ -277,11 +308,17 @@ class TestAPIUnittest(TestCase):
             self.check_exception_code(is_succeed, res.json()['code'], exception_str,
                                       [dir_root, new_name])
 
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
         def __cmd_remove(mode: str, root: str, is_succeed: bool, exception_str: str):
             # Test Method: remove file / directory
             res = self.client.delete(
                 f"/server/storage/data/{mode}/{self.admin_static_id}/root/{root}", **token_header)
             self.check_exception_code(is_succeed, res.json()['code'], exception_str, [mode, root])
+
+            if exception_str != "MicrocloudchipSystemAbnormalAccessError":
+                token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
         # 테스트 코드 실행
         TestCaseFlowRunner(test_flow) \
@@ -316,19 +353,21 @@ class TestAPIUnittest(TestCase):
             f: SimpleUploadedFile = \
                 self.make_uploaded_file(f"{self.FILES_ROOT}/{file_root.split('/')[-1]}")
             # Run
-            self.client.post(
+            res = self.client.post(
                 f'/server/storage/data/file/{self.admin_static_id}/root/{file_root}',
                 data=encode_multipart(self.BOUNDARY_VALUE, {"file": f}),
                 content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
                 **token_header
             )
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
         def __cmd_generate_dir(dir_root: str):
             # Test Method: generate directory
-            self.client.post(
+            res = self.client.post(
                 f"/server/storage/data/dir/{self.admin_static_id}/root/{dir_root}",
                 **token_header
             )
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
         def __cmd_download_single(mode: str, root: str, is_succeed: bool, exception_str: bool):
             # Test Method: download single file or directory

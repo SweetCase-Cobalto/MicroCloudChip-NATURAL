@@ -45,13 +45,13 @@ class DataControlView(APIView):
                 return '/'.join(root_list[1:])
 
     @check_token_in_class_view
-    def post(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
+    def post(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str):
         # 파일을 업로드 하거나, 디렉토리를 생성합니다.
 
         try:
             root: str = DataControlView.get_real_root(root)
         except MicrocloudchipException as e:
-            return JsonResponse({'code': e.errorCode})
+            return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
 
         # 타입 축정
         if data_type == 'file':
@@ -77,7 +77,7 @@ class DataControlView(APIView):
                 STORAGE_MANAGER.upload_file(req_static_id, req, USER_MANAGER)
             except MicrocloudchipException as e:
                 # 생성 실패
-                return JsonResponse({"code": e.errorCode})
+                return JsonResponse({"code": e.errorCode, 'new-token': updated_token})
 
             # 파일 및 디렉토리 업로드
         elif data_type == 'dir':
@@ -91,21 +91,21 @@ class DataControlView(APIView):
                 # 디렉토리 생성
                 STORAGE_MANAGER.generate_directory(req_static_id, req)
             except MicrocloudchipException as e:
-                return JsonResponse({"code": e.errorCode})
+                return JsonResponse({"code": e.errorCode,'new-token': updated_token})
 
         else:
             # 접근 에러
             err = MicrocloudchipSystemAbnormalAccessError("Access Error")
             return JsonResponse({'code': err.errorCode})
-        return JsonResponse({"code": 0})
+        return JsonResponse({"code": 0,'new-token': updated_token})
 
     @check_token_in_class_view
-    def get(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str) -> JsonResponse:
+    def get(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str) -> JsonResponse:
         # 데이터[정보] 갖고오기
         try:
             root: str = DataControlView.get_real_root(root)
         except MicrocloudchipFileAndDirectoryValidateError as e:
-            return JsonResponse({'code': e.errorCode})
+            return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
 
         # Input Data
         req = {
@@ -117,9 +117,10 @@ class DataControlView(APIView):
             try:
                 f: FileData = STORAGE_MANAGER.get_file_info(req_static_id, req)
             except MicrocloudchipException as e:
-                return JsonResponse({'code': e.errorCode})
+                return JsonResponse({'code': e.errorCode, "new-token": updated_token})
             return JsonResponse({
                 'code': 0,
+                'new-token': updated_token,
                 'data': {
                     'create-date': f['create-date'].strftime(TIME_FORMAT),
                     'modify-date': f['modify-date'].strftime(TIME_FORMAT),
@@ -142,10 +143,11 @@ class DataControlView(APIView):
                 d_list_arr = [_d['dir-name'] for _d in d_list]
 
             except MicrocloudchipException as e:
-                return JsonResponse({'code': e.errorCode})
+                return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
 
             return JsonResponse({
                 'code': 0,
+                'new-token': updated_token,
                 'data': {
                     'info': {
                         # Create Date와 Modify Date의 TimeFormat -> YYYY/MM/DD HH:MM:SS
@@ -165,7 +167,7 @@ class DataControlView(APIView):
             return JsonResponse({'code': err.errorCode})
 
     @check_token_in_class_view
-    def patch(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
+    def patch(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str):
         # 파일 및 디렉토리 수정
 
         root: str = DataControlView.get_real_root(root)
@@ -200,7 +202,7 @@ class DataControlView(APIView):
             try:
                 STORAGE_MANAGER.update_file(req_static_id, req)
             except MicrocloudchipException as e:
-                return JsonResponse({'code': e.errorCode})
+                return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
 
         elif data_type == 'dir':
 
@@ -223,15 +225,15 @@ class DataControlView(APIView):
                 # 디렉토리 정보 수정
                 STORAGE_MANAGER.update_directory(req_static_id, req)
             except MicrocloudchipException as e:
-                return JsonResponse({'code': e.errorCode})
+                return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
         else:
             err = MicrocloudchipSystemAbnormalAccessError("Access Error")
             return JsonResponse({'code': err.errorCode})
 
-        return JsonResponse({"code": 0})
+        return JsonResponse({"code": 0, 'new-token': updated_token})
 
     @check_token_in_class_view
-    def delete(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str):
+    def delete(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str):
 
         root: str = DataControlView.get_real_root(root)
 
@@ -249,7 +251,7 @@ class DataControlView(APIView):
                 err = MicrocloudchipSystemAbnormalAccessError("Access Error")
                 return JsonResponse({'code': err.errorCode})
         except MicrocloudchipException as e:
-            return JsonResponse({'code': e.errorCode})
+            return JsonResponse({'code': e.errorCode,'new-token': updated_token})
 
         # 성공 시
-        return JsonResponse({"code": 0})
+        return JsonResponse({"code": 0,'new-token': updated_token})

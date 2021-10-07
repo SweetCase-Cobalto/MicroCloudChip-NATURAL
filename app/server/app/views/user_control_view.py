@@ -16,7 +16,7 @@ class UserControlView(APIView):
     UPDATE_USER_ATTRIBUTES: list[str] = ['name', 'password', 'volume-type']
 
     @check_token_in_class_view
-    def patch(self, request: Request, static_id: str, req_static_id: str) -> JsonResponse:
+    def patch(self, request: Request, static_id: str, req_static_id: str, updated_token: str) -> JsonResponse:
 
         # 유저 정보의 일부를 업데이트한다.
         # 따라서 결과 값은 성공 여부가 된다.
@@ -63,10 +63,10 @@ class UserControlView(APIView):
         except MicrocloudchipException as e:
             err = e
         finally:
-            return JsonResponse({"code": err.errorCode})
+            return JsonResponse({"code": err.errorCode, "new-token": updated_token})
 
     @check_token_in_class_view
-    def get(self, request: Request, static_id: str, req_static_id: str) -> JsonResponse:
+    def get(self, request: Request, static_id: str, req_static_id: str, updated_token: str) -> JsonResponse:
 
         # 데이터 갖고오기
         user_info: dict = USER_MANAGER.get_user_by_static_id(req_static_id, static_id)
@@ -74,7 +74,7 @@ class UserControlView(APIView):
         # 못찾음
         if not user_info:
             e = MicrocloudchipUserDoesNotExistError("User is not exist")
-            return JsonResponse({'code': e.errorCode})
+            return JsonResponse({'code': e.errorCode, "new-token": updated_token})
 
         # 제한 용량 Json 형식에 맞추어 자료형 변경하기
         user_volume_type: UserVolumeType = user_info['volume-type']
@@ -107,6 +107,7 @@ class UserControlView(APIView):
         # 결과 데이터 작성
         res: dict = {
             "code": 0,
+            "new-token": updated_token,
             "user-info": user_info,
             "used-volume": {
                 'type': volume_type_to_str,
@@ -119,7 +120,7 @@ class UserControlView(APIView):
 
     @check_token_in_class_view
     @check_is_admin_in_class_view
-    def delete(self, request: Request, static_id: str, req_static_id: str):
+    def delete(self, request: Request, static_id: str, req_static_id: str, updated_token: str):
 
         """ 유저 삭제 """
         target_static_id: str = static_id
@@ -132,4 +133,4 @@ class UserControlView(APIView):
             # 실패 시 에러 데이터 삽입
             err = e
         finally:
-            return JsonResponse({'code': err.errorCode})
+            return JsonResponse({'code': err.errorCode, "new-token": updated_token})

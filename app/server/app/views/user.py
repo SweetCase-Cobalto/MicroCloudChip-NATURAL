@@ -40,8 +40,9 @@ def view_user_login(request: Request) -> JsonResponse:
     })
 
 
+@check_token
 @api_view(['GET'])
-def view_user_logout(request: Request) -> JsonResponse:
+def view_user_logout(request: Request, req_static_id: str, updated_token: str) -> JsonResponse:
     # 쿠키에 있는 토큰 갖고오기
     try:
         token: str = request.headers.get('Set-Cookie')
@@ -49,13 +50,14 @@ def view_user_logout(request: Request) -> JsonResponse:
         raise MicrocloudchipSystemAbnormalAccessError("Token is nothing - error")
     TOKEN_MANAGER.logout(token)
     return JsonResponse({
-        "code": 0x00
+        "code": 0x00,
+        'new-token': updated_token
     })
 
 
 @check_token
 @api_view(['POST'])
-def view_add_user(request: Request, req_static_id: str) -> JsonResponse:
+def view_add_user(request: Request, req_static_id: str, updated_token: str) -> JsonResponse:
     try:
         # 데이터 확인
         email: str = request.data['email']
@@ -63,9 +65,10 @@ def view_add_user(request: Request, req_static_id: str) -> JsonResponse:
         volume_type_str: str = request.data['volume-type']
         name: str = request.data['name']
     except KeyError:
+        # TODO: SYSTEM ABNORMAL ERORR 일 경우, token을 in activated 처리 필요
         _e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
         return JsonResponse({
-            'code': _e.errorCode
+            'code': _e.errorCode,
         })
 
     # 이미지를 추가 안했다면 None으로 처리한다
@@ -87,14 +90,13 @@ def view_add_user(request: Request, req_static_id: str) -> JsonResponse:
     except MicrocloudchipException as e:
         err = e
     finally:
-        return JsonResponse({"code": err.errorCode})
+        return JsonResponse({"code": err.errorCode, "new-token": updated_token})
 
 
 @check_token
 @check_is_admin
 @api_view(['GET'])
-def view_get_user_list(request: Request, req_static_id: str) -> JsonResponse:
-
+def view_get_user_list(request: Request, req_static_id: str, updated_token: str) -> JsonResponse:
     raw_user_data = USER_MANAGER.get_users()
     user_list_by_dict = []
 
@@ -108,4 +110,4 @@ def view_get_user_list(request: Request, req_static_id: str) -> JsonResponse:
             data['userImgLink'] = _u['userImgLink']
         user_list_by_dict.append(data)
 
-    return JsonResponse({'code': 0, 'data': user_list_by_dict})
+    return JsonResponse({'code': 0, 'data': user_list_by_dict, 'new-token': updated_token})

@@ -1,19 +1,20 @@
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
+from module.MicrocloudchipException.exceptions import *
 
 import random
 import string
+import datetime
 
-import threading
-import time
 import jwt
 
 
 class TokenManager(WorkerManager):
-    # TODO: 0.1.0 때 토큰 저장 및 업데이트 방식 변경 필요
-    time_limit: int
-    user_table: dict
-    token_checker_thread: threading.Thread
+
+    time_limit: datetime.timedelta
+    token_key: str
+    TIME_FORMAT: str = "%m/%d/%Y-%H:%M:%S"
+    TOKEN_METHOD: str = "HS256"
 
     def __new__(cls, config: SystemConfig, time_limit: int):
         if not hasattr(cls, 'user_manager_instance'):
@@ -24,39 +25,10 @@ class TokenManager(WorkerManager):
         super().__init__(system_config)
 
         # 초 단위
-        self.time_limit = time_limit
-        self.user_table = {}
-        """
-            key: JWT Token
-            value: {'start': start_time, key: 복호화 키}
-        """
+        self.time_limit = datetime.timedelta(seconds=time_limit)
 
-        # 쓰레드 작동
-        self.token_checker_thread = threading.Thread(target=self.__thread_work)
-        self.token_checker_thread.daemon = True
-        self.token_checker_thread.start()
-
-    def __thread_work(self):
-        # 멀티스레드 동작으로
-        # 해당 토큰이 기한 이상이면 삭제
-        while True:
-            time.sleep(1 / 10 ** 3)  # 1 milliseconds
-
-            self.process_locker.acquire()
-            tokens = list(self.user_table.keys())
-            for token in tokens:
-                if time.time() - self.user_table[token]['start'] >= self.time_limit:
-                    # 시간 초과될 경우 처리
-                    try:
-                        del self.user_table[token]
-                    except KeyError:
-                        pass
-            self.process_locker.release()
-
-    def login(self, user_static_id: str) -> str:
-
-        # 랜덤 Key 생성
-        def generate_key() -> str:
+        # token key 생성
+        def __generate_key() -> str:
             alphabet = string.ascii_lowercase
             numbers = '1234567890'
 
@@ -69,42 +41,69 @@ class TokenManager(WorkerManager):
                     new_token += alphabet[random.randint(0, len(numbers) - 1)]
             return new_token
 
-        self.process_locker.acquire()
-        # 토큰 발급 시작
-        k: str = generate_key()
-        token: str = jwt.encode({"user-static-id": user_static_id}, k, algorithm='HS256')
-        # User Table에 Token 추가
-        self.user_table[token] = {
-            "key": k,
-            "start": time.time()
-        }
-        # 토큰 발급 끝
-        self.process_locker.release()
+        self.token_key = __generate_key()
 
+    def login(self, user_static_id: str) -> str:
+        # 토큰 발급
+        info: dict = {
+            "user-static-id": user_static_id,
+            "start-time": datetime.datetime.now().strftime(self.TIME_FORMAT),
+            "is-activate": True
+        }
+        token: str = jwt.encode(info, self.token_key, algorithm=self.TOKEN_METHOD)
         return token
 
-    def __update_token(self, token: str):
-        # 토큰 기한 갱신
-        if token in self.user_table:
-            self.process_locker.acquire()
-            self.user_table[token]['start'] = time.time()
-            self.process_locker.release()
-
-    def is_logined(self, token: str) -> str:
+    def is_logined(self, token: str) -> (str, str):
+        pass
         # 로그인이 되어있는 지 확인
-        # 로그인이 되어있으면 static id를 반환한다.
-        if token not in self.user_table:
-            return None
+        # 로그인이 되어있으면 static id과 새로운 token을 반환한다.
+        # 아닐 경우 (None, None)을 반환한다.
 
-        self.__update_token(token)
+        try:
 
-        # Decoding 후 static_id 전송
-        static_id: str = jwt.decode(token, self.user_table[token]['key'], algorithms='HS256')["user-static-id"]
-        return static_id
+            # decode token
+            info: dict = jwt.decode(token, self.token_key, algorithms=self.TOKEN_METHOD)
+            static_id: str = info['user-static-id']
+            is_activate: bool = info["is-activate"]
 
-    def logout(self, token: str):
-        # 로그아웃
-        if token in self.user_table:
-            self.process_locker.acquire()
-            del self.user_table[token]
-            self.process_locker.release()
+            start_time: datetime = \
+                datetime.datetime.strptime(info['start-time'], self.TIME_FORMAT)
+
+            # 예상 종료 시간
+            expected_end_time = start_time + self.time_limit
+
+            # 예상 종료 시간보다 현재 시간이 더 길거나 만료처리될 경우
+            if datetime.datetime.now() > expected_end_time or not is_activate:
+                return None, None
+
+            # 만료가 아닌 경우 start time 업데이트된 토큰 반환
+            info['start-time'] = datetime.datetime.now().strftime(self.TIME_FORMAT)
+            new_token: str = \
+                jwt.encode(info, self.token_key, algorithm=self.TOKEN_METHOD)
+
+            return static_id, new_token
+
+        except jwt.exceptions.PyJWTError as e:
+            raise MicrocloudchipSystemAbnormalAccessError("Token is not valid: failed to decode token")
+        except KeyError:
+            # 디코딩은 됐는 데 이에 대한 데이터가 없음
+            raise MicrocloudchipSystemAbnormalAccessError("Token data is not valid")
+
+    def logout(self, token: str) -> str:
+        # 디코딩이 안되어 있는 경우
+        try:
+            info: dict = jwt.decode(token, self.token_key, algorithms=self.TOKEN_METHOD)
+
+            if set(info.keys()) != {"user-static-id", "start-time", "is-activate"}:
+                raise KeyError("")
+
+            # 만료 처리하고 token return
+            info['is-activate'] = False
+
+            return jwt.encode(info, self.token_key, algorithm=self.TOKEN_METHOD)
+
+        except jwt.exceptions.PyJWTError:
+            raise MicrocloudchipSystemAbnormalAccessError("Token is not valid: failed to decode token")
+        except KeyError:
+            # 디코딩은 됐는 데 이에 대한 데이터가 없음
+            raise MicrocloudchipSystemAbnormalAccessError("Token data is not valid")

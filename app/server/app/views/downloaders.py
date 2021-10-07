@@ -21,7 +21,8 @@ def view_download_single_object(
         data_type: str,
         static_id: str,
         root: str,
-        req_static_id: str):
+        req_static_id: str,
+        updated_token: str):
     # parent root 찾기
     splited_root: list[str] = DataControlView.get_real_root(root).split('/')
     parent_root: str = ""
@@ -82,7 +83,8 @@ def view_download_multiple_object(
         request: Request,
         static_id: str,
         parent_root: str,
-        req_static_id: str) -> HttpResponse:
+        req_static_id: str,
+        updated_token: str) -> HttpResponse:
     # get param 갖고오기
     params: QueryDict = request.GET
     # root를 제외한 실제 Root 구하기
@@ -132,7 +134,8 @@ def view_download_multiple_object(
 def view_download_user_icon(
         request: Request,
         static_id: str,
-        req_static_id: str
+        req_static_id: str,
+        updated_token: str
 ) -> HttpResponse:
     # Get Raw Asset Directory
     raw_root: str = os.path.join(SYSTEM_CONFIG.get_system_root(), 'storage', static_id, 'asset')
