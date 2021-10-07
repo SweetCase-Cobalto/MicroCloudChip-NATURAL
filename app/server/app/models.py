@@ -1,3 +1,6 @@
+import datetime
+import random
+import string
 from django.db import models
 from module.validator.user_validator import UserValidator
 
@@ -20,3 +23,22 @@ class User(models.Model):
             'volume_type': self.volume_type,
             'is_admin': self.is_admin
         }
+
+
+class SharedFile(models.Model):
+    user_static_id = models.ForeignKey(
+        "User", on_delete=models.CASCADE,
+        db_column="user_static_id",
+        validators=[UserValidator.validate_static_id]
+    )
+    shared_id = models.CharField(max_length=54, primary_key=True, blank=True)
+    file_root = models.TextField()
+    start_date = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # random id 생성
+        self.shared_id = \
+            datetime.datetime.now().strftime("%Y%m%d") + \
+            ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(16))
+
+        super().save(*args, *kwargs)

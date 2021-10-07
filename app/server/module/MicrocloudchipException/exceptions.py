@@ -100,6 +100,27 @@ class MicrocloudchipFileAndDirectoryNameEmpty(MicrocloudchipException):
         super().__init__(err_msg, 0x08 | STORAGE_PREFIX)
 
 
+# Add In 0.1.0
+class MicrocloudchipSharedFileAlreadyExistError(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x09 | STORAGE_PREFIX)
+
+
+class MicrocloudchipFileIsNotSharedError(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x0A | STORAGE_PREFIX)
+
+
+class MicrocloudchipFileSharedButRemovedError(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x0B | STORAGE_PREFIX)
+
+
+class MicrocloudchipDataFormatNotCalled(MicrocloudchipException):
+    def __init__(self, err_msg: str):
+        super().__init__(err_msg, 0x0C | STORAGE_PREFIX)
+
+
 # AccessException
 class MicrocloudchipAuthAccessError(MicrocloudchipException):
     def __init__(self, err_msg: str):

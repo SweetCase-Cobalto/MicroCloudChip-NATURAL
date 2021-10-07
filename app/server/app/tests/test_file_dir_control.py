@@ -1,4 +1,3 @@
-import json
 from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
 
 from django.test import TestCase
@@ -29,7 +28,7 @@ class FileDirControlTestUnittest(TestCase):
         1. 디렉토리 정보 갖고오기
         2. 디렉토리 정보 수정
         2. 디렉토리 recursive 삭제
-        
+            
         
         주의
         해당 테스트는 오직 '파일 및 디렉토리' 만 운용하는 테스트를 한다

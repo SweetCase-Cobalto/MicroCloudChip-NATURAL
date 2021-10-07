@@ -183,3 +183,8 @@ ALLOWED_HOSTS = [
 CORS_ALLOW_HEADERS = [
     'Set-Cookie'
 ]
+
+REST_FRAMEWORK = {
+    # datetime format 지정
+    'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S.%f%z",
+}

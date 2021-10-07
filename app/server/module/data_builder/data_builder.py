@@ -1,8 +1,10 @@
 import sys
 from abc import ABCMeta, abstractmethod
 
+from module.data_builder.builder import MicrocloudchipBuilder
 
-class DataBuilder(metaclass=ABCMeta):
+
+class DataBuilder(MicrocloudchipBuilder):
     TOKEN: str = '\\' if sys.platform == "win32" else '/'
     system_root: str
 

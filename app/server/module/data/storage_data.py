@@ -4,19 +4,19 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime
 
 from module.MicrocloudchipException.exceptions import *
+from module.data.microcloudchip_data import MicrocloudchipData
 
 from module.label.file_type import FileType, FileVolumeType
 from module.validator.storage_validator import StorageValidator
 
 
-class StorageData(metaclass=ABCMeta):
+class StorageData(MicrocloudchipData):
     # 파일 및 디렉토리를 검색할 때 결과를 출력하기 위한 객체
     # call 함수를 사용해서 데이터를 불러온다.
     name: str
     modify_date: datetime
     create_date: datetime
     full_root: str
-    is_called: bool = False
     token: str = '\\' if sys.platform == 'win32' else '/'
 
     def __init__(self, full_root: str):
@@ -25,6 +25,8 @@ class StorageData(metaclass=ABCMeta):
         # URL 루트를 Raw 루트로 변경
         # OS 가 Windows 환경일 경우 루트를 /에서 \로 변경한다.
         self.full_root = full_root
+        self.is_called = False
+
 
     @abstractmethod
     def __call__(self):

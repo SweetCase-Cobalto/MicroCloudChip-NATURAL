@@ -1,3 +1,4 @@
+from module.data_builder.builder import MicrocloudchipBuilder
 from module.label.user_volume_type import UserVolumeType
 from django.core.exceptions import ValidationError
 from module.MicrocloudchipException.exceptions import MicrocloudchipUserInformationValidateError
@@ -7,7 +8,7 @@ import string
 import random
 
 
-class UserBuilder:
+class UserBuilder(MicrocloudchipBuilder):
     """
         User 를 생성하기 위한 오구 데이터
         생성하는 클래스

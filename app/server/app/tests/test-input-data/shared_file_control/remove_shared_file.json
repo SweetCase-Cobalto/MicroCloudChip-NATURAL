@@ -1,0 +1,58 @@
+{
+  "test-flow": [
+    {
+      "type": "add-user",
+      "is-admin": true, "name": "admin", "email": "test@example.com"
+    },
+    {
+      "type": "add-file",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "text": "this is text1"
+    },
+    {
+      "type": "add-file",
+      "target-user": "admin",
+      "file-root": "test2.txt",
+      "text": "this is text2"
+    },
+
+    {
+      "type": "add-directory",
+      "target-user": "admin",
+      "file-root": "dir1"
+    },
+    {
+      "type": "add-file",
+      "target-user": "admin",
+      "file-root": "dir1/test2.txt",
+      "text": "this is text2"
+    },
+
+    {
+      "type": "share-file",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "share-file",
+      "target-user": "admin",
+      "file-root": "dir1/test2.txt",
+      "is-succeed": true, "exception": null
+    },
+
+    {
+      "type": "unshare-file",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "unshare-file",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError"
+    }
+  ]
+}
