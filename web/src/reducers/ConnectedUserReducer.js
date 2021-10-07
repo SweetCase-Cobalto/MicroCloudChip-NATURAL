@@ -87,6 +87,10 @@ export const syncUserInfo = (staticId, token) => {
                         userImgLink = `${CONFIG.URL}${data['user-info']['user-icon']}`;
                     }
 
+                    // Token 갱신
+                    if('new-token' in data)
+                        token = data['new-token']
+
                     return dispatch({
                         type: SYNC_USER_INFO,
                         data: {
