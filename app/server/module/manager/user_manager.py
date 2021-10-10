@@ -5,6 +5,7 @@ import app.models as model
 from module.MicrocloudchipException.exceptions import *
 from module.data_builder.user_builder import UserBuilder
 from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
+from module.manager.share_manager import ShareManager
 from module.manager.storage_manager import StorageManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
@@ -402,7 +403,8 @@ class UserManager(WorkerManager):
 
         self.process_locker.release()
 
-    def delete_user(self, req_static_id: str, target_static_id: str, storage_manager: StorageManager):
+    def delete_user(self, req_static_id: str, target_static_id: str,
+                    storage_manager: StorageManager, share_manager: ShareManager):
         # 유저 삭제 (Admin 만 가능)
 
         is_accessible = len(model.User.objects.filter(is_admin=True).filter(static_id=req_static_id))
@@ -432,7 +434,7 @@ class UserManager(WorkerManager):
             storage_manager.delete_directory(target_static_id, {
                 'static-id': target_static_id,
                 'target-root': ''
-            })
+            }, share_manager)
 
             # 기타 유저 데이터 삭제
             user_root = os.path.join(self.config.get_system_root(), 'storage', target_static_id)

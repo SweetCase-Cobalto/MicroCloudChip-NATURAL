@@ -2,7 +2,7 @@
   "test-flow": [
     {
       "type": "add-user",
-      "is-admin": true, "name": "admin", "email": "test@example.com"
+      "name": "client", "email": "test@example.com"
     },
     {
       "type": "add-file",
@@ -46,14 +46,14 @@
       "type": "get-shared-file",
       "target-user": "admin",
       "file-root": "aaggccddss",
-      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError",
       "expected-file-data": null
     },
     {
       "type": "get-shared-file",
       "target-user": "admin",
       "file-root": "dir1",
-      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError",
       "expected-file-data": null
     },
     {
@@ -63,7 +63,6 @@
       "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError",
       "expected-file-data": null
     },
-
     {
       "type": "get-shared-file",
       "target-user": "admin",
@@ -78,11 +77,10 @@
       "file-root": "test1.txt"
     },
     {
-      "type": "get-shared-file",
+      "type": "check-shared-db",
       "target-user": "admin",
       "file-root": "test1.txt",
-      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError",
-      "expected-file-data": null
+      "is-exist": false
     }
   ]
 }

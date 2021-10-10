@@ -6,6 +6,7 @@ import app.models as model
 from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
 
 from module.MicrocloudchipException.exceptions import *
+from module.manager.share_manager import ShareManager
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
 from module.specification.System_config import SystemConfig
@@ -34,6 +35,7 @@ class ManagerOperationUnittest(TestCase):
 
     user_manager: UserManager = None
     storage_manager: StorageManager = None
+    share_manager: ShareManager = None
 
     # 테스트 대상 Users
     admin_static_id: str = ""
@@ -51,6 +53,8 @@ class ManagerOperationUnittest(TestCase):
         # 없을 경우 config information 을 확인하여 Admin User 를 생성한다.
 
         self.storage_manager = StorageManager(self.config)
+
+        self.share_manager = ShareManager(self.config)
 
         # admin_static_id 갖고오기
         self.admin_static_id = self.user_manager.get_users()[0]['static_id']
@@ -647,15 +651,15 @@ class ManagerOperationUnittest(TestCase):
 
             if is_succeed:
                 if mode == 'file':
-                    self.storage_manager.delete_file(request_id, req)
+                    self.storage_manager.delete_file(request_id, req, self.share_manager)
                 elif mode == 'dir':
-                    self.storage_manager.delete_directory(request_id, req)
+                    self.storage_manager.delete_directory(request_id, req, self.share_manager)
             else:
                 try:
                     if mode == 'file':
-                        self.storage_manager.delete_file(request_id, req)
+                        self.storage_manager.delete_file(request_id, req, self.share_manager)
                     elif mode == 'dir':
-                        self.storage_manager.delete_directory(request_id, req)
+                        self.storage_manager.delete_directory(request_id, req, self.share_manager)
                 except MicrocloudchipException as e:
                     self.assertEqual(type(e).__name__, exception_str)
                 else:
@@ -699,12 +703,13 @@ class ManagerOperationUnittest(TestCase):
         self.assertRaises(
             MicrocloudchipAuthAccessError,
             lambda: self.user_manager.delete_user(
-                self.client_static_id, self.other_static_id, self.storage_manager
+                self.client_static_id, self.other_static_id, self.storage_manager, self.share_manager
             )
         )
 
         # 삭제
-        self.user_manager.delete_user(self.admin_static_id, self.other_static_id, self.storage_manager)
+        self.user_manager.delete_user(self.admin_static_id, self.other_static_id, self.storage_manager,
+                                      self.share_manager)
 
         # 삭제 확인
         self.assertFalse(os.path.isdir(os.path.join(self.config.get_system_root(), 'storage', self.other_static_id)))

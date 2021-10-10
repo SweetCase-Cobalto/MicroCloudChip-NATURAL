@@ -1,3 +1,5 @@
+from typing import Optional, Dict
+
 from rest_framework import serializers
 
 from app.models import SharedFile
@@ -16,8 +18,11 @@ class SharedFileSerializer(serializers.Serializer):
     file_root = serializers.CharField()
     start_date = serializers.DateTimeField(format=DATETIME_FORMAT)
 
-    def change_start_date_to_datetime(self, start_date: str) -> datetime:
-        return datetime.strptime(start_date, DATETIME_FORMAT)
+    def create(self) -> Dict:
+        r: Dict[Optional] = dict(self.data)
+        r['user_static_id'] = self.data['user_static_id'].split()[2][1:-1]
+        r['start_date'] = datetime.strptime(self.data['start_date'], DATETIME_FORMAT)
+        return r
 
     def build(self) -> SharedFile:
         self.is_valid()

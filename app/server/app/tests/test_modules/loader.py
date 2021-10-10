@@ -60,7 +60,12 @@ class TestCaseFlowRunner:
         while not self.test_flow.is_empty():
             case = self.test_flow()
             command, case = case[0], case[1:]
-            self.test_statements[command](*case)
+            try:
+                self.test_statements[command](*case)
+            except Exception as e:
+                print(self.test_statements[command])
+                print(case)
+                raise e
 
     def is_empty(self):
         return self.test_flow.is_empty()

@@ -128,7 +128,7 @@ class UserControlView(APIView):
         err: MicrocloudchipException = MicrocloudchipSucceed()
         try:
             # 유저 삭제
-            USER_MANAGER.delete_user(req_static_id, target_static_id, STORAGE_MANAGER)
+            USER_MANAGER.delete_user(req_static_id, target_static_id, STORAGE_MANAGER, SHARE_MANAGER)
         except MicrocloudchipException as e:
             # 실패 시 에러 데이터 삽입
             err = e

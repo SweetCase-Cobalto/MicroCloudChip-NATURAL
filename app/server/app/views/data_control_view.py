@@ -244,9 +244,9 @@ class DataControlView(APIView):
 
         try:
             if data_type == 'file':
-                STORAGE_MANAGER.delete_file(req_static_id, req)
+                STORAGE_MANAGER.delete_file(req_static_id, req, SHARE_MANAGER)
             elif data_type == 'dir':
-                STORAGE_MANAGER.delete_directory(req_static_id, req)
+                STORAGE_MANAGER.delete_directory(req_static_id, req, SHARE_MANAGER)
             else:
                 err = MicrocloudchipSystemAbnormalAccessError("Access Error")
                 return JsonResponse({'code': err.errorCode})

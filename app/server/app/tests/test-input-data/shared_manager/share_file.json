@@ -2,21 +2,11 @@
   "test-flow": [
     {
       "type": "add-user",
-      "is-admin": true, "name": "admin", "email": "test@example.com"
-    },
-    {
-      "type": "add-user",
-      "is-admin": true, "name": "client", "email": "test2@example.com"
+      "name": "client", "email": "client@example.com"
     },
     {
       "type": "add-file",
       "target-user": "admin",
-      "file-root": "test1.txt",
-      "text": "this is text1"
-    },
-    {
-      "type": "add-file",
-      "target-user": "client",
       "file-root": "test1.txt",
       "text": "this is text1"
     },
@@ -54,12 +44,6 @@
     {
       "type": "share-file",
       "target-user": "admin",
-      "file-root": "test1.txt",
-      "is-succeed": true, "exception": null
-    },
-    {
-      "type": "share-file",
-      "target-user": "client",
       "file-root": "test1.txt",
       "is-succeed": true, "exception": null
     },

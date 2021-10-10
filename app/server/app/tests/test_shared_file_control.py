@@ -145,10 +145,10 @@ class SharedFileControlUnittest(TestCase):
 
         # Search Shared File
         try:
-            SharedFileData(static_id, target_root)()
+            SharedFileData(self.SYSTEM_CONFIG.get_system_root(), static_id, target_root)()
         except MicrocloudchipFileIsNotSharedError as e:
             # 등록되지 않음 -> 실패
-            self.assertFalse(is_succeed)
+            self.assertFalse(is_succeed, msg=f"{[target_user, target_root, exception_str]}")
         else:
             is_shared = True
 
@@ -188,18 +188,17 @@ class SharedFileControlUnittest(TestCase):
                 self.assertEqual(r, expected_data_to_byte, msg=f"Result Data Not Equal: {target_user}/{target_root}")
 
     def __unshare_file(self, target_user: str, target_root: str,
-                        is_succeed: bool, exception_str: str):
+                       is_succeed: bool, exception_str: str):
 
         static_id: str = self.__get_user_id_for_test(target_user)
 
         try:
-            sf: SharedFileData = SharedFileData(static_id, target_root)()
+            sf: SharedFileData = SharedFileData(self.SYSTEM_CONFIG.get_system_root(), static_id, target_root)()
         except MicrocloudchipException as e:
             self.assertFalse(is_succeed)
             self.assertEqual(type(e).__name__, exception_str)
         else:
             sf.unshare()
-
 
     # Test FUNCTIONS
     @test_flow(f"{TEST_ROOT}/make_shared.json")
@@ -226,7 +225,7 @@ class SharedFileControlUnittest(TestCase):
             .run()
 
     @test_flow(f"{TEST_ROOT}/remove_shared_file.json")
-    def test_remove_shared_file(self, test_flow:TestCaseFlow):
+    def test_remove_shared_file(self, test_flow: TestCaseFlow):
         # 공유된 파일 해제
         TestCaseFlowRunner(test_flow) \
             .set_process("add-user", self.__add_user) \

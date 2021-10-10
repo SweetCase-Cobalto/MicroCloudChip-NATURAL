@@ -37,6 +37,15 @@ class MicrocloudchipLoginConnectionExpireError(MicrocloudchipException):
         super().__init__(err_msg, 0x04 | SYSTEM_PREFIX)
 
 
+# Add In 0.1.0
+class MicrocloudchipSystemInternalException(MicrocloudchipException):
+    # Microcloudchip관련 에러가 아닌 내부 에러가 발생한 경우
+    # msg는 직접 세팅한다.
+    def __init__(self, __e: Exception):
+        err_msg: str = f"Internal Exception Occured: {type(__e).__name__}:{__e}"
+        super().__init__(err_msg, 0x04 | SYSTEM_PREFIX)
+
+
 # User Exception
 class MicrocloudchipUserInformationValidateError(MicrocloudchipException):
     def __init__(self, err_msg: str):

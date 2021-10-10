@@ -3,4 +3,6 @@ omit =
     venv/*
     app/tests/*
     server/*
+    app/migrations/*
+    manage.py
 

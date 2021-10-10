@@ -3,6 +3,7 @@ from module.data.storage_data import FileData, DirectoryData
 from module.data_builder.directory_builder import DirectoryBuilder
 from module.data_builder.file_builder import FileBuilder
 from module.label.file_type import FileVolumeType
+from module.manager.share_manager import ShareManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 
@@ -263,15 +264,13 @@ class StorageManager(WorkerManager):
 
         return f_list, d_list
 
-    def delete_file(self, req_static_id: str, req: dict):
+    def delete_file(self, req_static_id: str, req: dict, shared_manager: ShareManager):
         # 파일 삭제
-
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
         except KeyError as e:
             raise e
-
         # 권한 체크
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
@@ -293,13 +292,19 @@ class StorageManager(WorkerManager):
         try:
             # 데이터 갖고오기
             file_data: FileData = FileData(full_root)()
+
+            # 공유가 걸려있는 경우 삭제
+            shared_id: str = shared_manager.get_shared_id(target_static_id, target_root)
+            if shared_id:
+                shared_manager.unshare_file(req_static_id, target_static_id, shared_id)
+
             # 삭제
             file_data.remove()
         except Exception as e:
             # 에러 안일어나긴 하는데 혹시 모르니까
             raise e
 
-    def delete_directory(self, req_static_id: str, req: dict):
+    def delete_directory(self, req_static_id: str, req: dict, share_manager: ShareManager):
 
         # 데이터 체크
         try:
@@ -339,8 +344,8 @@ class StorageManager(WorkerManager):
                 for f in f_list:
                     self.delete_file(req_static_id, {
                         'static-id': target_static_id,
-                        'target-root': os.path.join(r, f.name)
-                    })
+                        'target-root': os.path.join(r, f.name),
+                    }, share_manager)
 
                 # 파일을 전부 삭제하고 디렉토리가 없는 경우
                 # 그냥 현재 디렉토리를 삭제한다

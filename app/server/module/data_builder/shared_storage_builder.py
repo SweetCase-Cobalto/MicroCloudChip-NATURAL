@@ -43,7 +43,8 @@ class SharedFileBuilder(SharedStorageBuilder):
             # is file
 
             # 이미 등록되어있는 지 확인하기
-            if model.SharedFile.objects.filter(file_root=self.target_root).exists():
+            if model.SharedFile.objects.filter(user_static_id=self.author_static_id) \
+                    .filter(file_root=self.target_root).exists():
                 raise MicrocloudchipSharedFileAlreadyExistError(f"Shared File is aleady exist: {full_root}")
 
             # Save to database
