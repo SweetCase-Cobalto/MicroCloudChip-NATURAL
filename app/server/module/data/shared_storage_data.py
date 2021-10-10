@@ -1,4 +1,5 @@
 import os
+import sys
 from abc import abstractmethod
 from typing import Dict, Optional, List
 
@@ -110,8 +111,9 @@ class SharedFileData(SharedStorageData):
         # Real Root 출력
         if not self.is_called:
             return None
+        t = '\\' if sys.platform == "win32" else "/"
         return os.path.join(self.system_root, "storage", self.static_id, "root",
-                            '\\'.join(self.target_root.split('/')))
+                            t.join(self.target_root.split('/')))
 
     @staticmethod
     def init_shared_data_from_database(system_root: str, obj: model.SharedFile):
