@@ -436,10 +436,10 @@ class ManagerOperationUnittest(TestCase):
             }
 
             if is_succeed:
-                self.storage_manager.update_file(request_id, req)
+                self.storage_manager.update_file(request_id, req, self.share_manager)
             else:
                 try:
-                    self.storage_manager.update_file(request_id, req)
+                    self.storage_manager.update_file(request_id, req, self.share_manager)
                 except MicrocloudchipException as e:
                     self.assertEqual(type(e).__name__, exception_str)
 
@@ -462,10 +462,10 @@ class ManagerOperationUnittest(TestCase):
             }
 
             if is_succeed:
-                self.storage_manager.update_directory(request_id, req)
+                self.storage_manager.update_directory(request_id, req, self.share_manager)
             else:
                 try:
-                    self.storage_manager.update_directory(request_id, req)
+                    self.storage_manager.update_directory(request_id, req, self.share_manager)
                 except MicrocloudchipException as e:
                     self.assertEqual(type(e).__name__, exception_str)
                 else:

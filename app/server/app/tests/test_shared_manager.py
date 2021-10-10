@@ -29,6 +29,7 @@ class SharedFileManagerUnittest(TestCase):
             3.2 정상적인 공유 해제
         4 공유 대상 파일이 삭제된 경우, Shared Db도 같이 삭제되는지 확인
         5 상위 디렉토리가 삭제된 경우, Shared DB도 같이 삭제되는 지 확인
+        6.디렉토리 및 파일의 이름이 바뀔 경우, Shared Data도 변경이 일어나는 지 확인
     """
     SYSTEM_CONFIG: SystemConfig = SystemConfig("server/config.json")
     TEST_FILE_ROOT: str = "app/tests/test-input-data/shared_manager/"
@@ -115,7 +116,6 @@ class SharedFileManagerUnittest(TestCase):
         # Test Method: Get Shared Data(real root)
         static_id: str = self.__change_name_to_id(target_user)
         log = [target_user, file_root, is_succeed, exception_str, expected_file_data]
-
         try:
             shared_id: str = self.SHARE_MANAGER.get_shared_id(static_id, file_root)
             real_root: str = self.SHARE_MANAGER.download_shared_file(shared_id)
@@ -178,13 +178,39 @@ class SharedFileManagerUnittest(TestCase):
             "static-id": static_id, "target-root": dir_root
         }, self.SHARE_MANAGER)
 
+    def __cmd_update_file_name(self, target_user: str, file_root: str, new_name: str):
+
+        admin_static_id: str = self.__change_name_to_id("admin")
+        static_id: str = self.__change_name_to_id(target_user)
+
+        req = {
+            "static-id": static_id, "target-root": file_root,
+            "change": {
+                "name": new_name
+            }
+        }
+        self.STORAGE_MANAGER.update_file(admin_static_id, req, self.SHARE_MANAGER)
+
+    def __cmd_update_directory(self, target_user: str, dir_root: str, new_dir_name: str):
+
+        admin_static_id: str = self.__change_name_to_id("admin")
+        static_id: str = self.__change_name_to_id(target_user)
+
+        req = {
+            "static-id": static_id, "target-root": dir_root,
+            "change": {
+                "name": new_dir_name
+            }
+        }
+        self.STORAGE_MANAGER.update_directory(admin_static_id, req, self.SHARE_MANAGER)
+
     # Run Functions
     def setUp(self) -> None:
         # 매니저 생성
         self.USER_MANAGER = UserManager(self.SYSTEM_CONFIG)
         self.STORAGE_MANAGER = StorageManager(self.SYSTEM_CONFIG)
         self.SHARE_MANAGER = \
-            ShareManager(self.SYSTEM_CONFIG, datetime.timedelta(seconds=5))
+            ShareManager(self.SYSTEM_CONFIG, datetime.timedelta(days=30))
 
     @test_flow(f"{TEST_FILE_ROOT}share_file.json")
     def test_share_file(self, test_flow: TestCaseFlow):
@@ -199,16 +225,6 @@ class SharedFileManagerUnittest(TestCase):
     @test_flow(f"{TEST_FILE_ROOT}get_share_data.json")
     def test_get_share_data(self, test_flow: TestCaseFlow):
 
-        def __cmd_check_shared_file_in_raw(target_user: str, target_root: str, is_exist: bool):
-            # Test Method: Shared Data가 남아있는 지 확인
-            static_id: str = self.__change_name_to_id(target_user)
-            try:
-                shared_id: str = self.SHARE_MANAGER.get_shared_id(static_id, target_root)
-            except Exception as e:
-                raise AssertionError(f"Uknown Exception: {type(e)}:{str(e)}")
-            else:
-                self.assertEqual((shared_id is None), not is_exist)
-
         # 공유 데이터 파일 얻기 테스트
         TestCaseFlowRunner(test_flow) \
             .set_process('add-user', self.__cmd_add_user) \
@@ -216,8 +232,6 @@ class SharedFileManagerUnittest(TestCase):
             .set_process('share-file', self.__cmd_share_file) \
             .set_process('add-directory', self.__cmd_generate_directory) \
             .set_process('get-shared-file', self.__cmd_get_shared_data) \
-            .set_process('remove-file', self.__cmd_remove_file) \
-            .set_process('check-shared-db', __cmd_check_shared_file_in_raw) \
             .run()
 
     @test_flow(f"{TEST_FILE_ROOT}unshare_file.json")
@@ -252,4 +266,18 @@ class SharedFileManagerUnittest(TestCase):
             .set_process('add-directory', self.__cmd_generate_directory) \
             .set_process('get-shared-file', self.__cmd_get_shared_data) \
             .set_process("remove-dir", self.__cmd_remove_directory) \
+            .run()
+
+    @test_flow(f"{TEST_FILE_ROOT}auto_changed_name_when_file_or_directory_changed.json")
+    def test_auto_changed_name_when_file_or_directory_changed(self, test_flow: TestCaseFlow):
+        # 공유 데이터 파일 얻기 테스트
+
+        TestCaseFlowRunner(test_flow) \
+            .set_process('add-user', self.__cmd_add_user) \
+            .set_process('add-file', self.__cmd_add_file) \
+            .set_process('share-file', self.__cmd_share_file) \
+            .set_process('add-directory', self.__cmd_generate_directory) \
+            .set_process('get-shared-file', self.__cmd_get_shared_data) \
+            .set_process('update-file', self.__cmd_update_file_name) \
+            .set_process('update-dir', self.__cmd_update_directory) \
             .run()

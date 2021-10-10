@@ -1,21 +1,27 @@
+import os
+import stat
+from abc import abstractmethod
 from typing import Set
 
-import os, stat
-
+import app.models as model
 from module.MicrocloudchipException.exceptions import *
 from module.data_builder.storage_builder import StorageBuilder
-from abc import abstractmethod
-
-import app.models as model
 
 
 class SharedStorageBuilder(StorageBuilder):
     # 공유된 파일 및 디렉토리 빌더 클래스의 상위 클래스
 
-    REQUESTED_BUILDER_ATTR: Set[str] = {'author_static_id', 'target_root', "system_root"}
+    REQUESTED_BUILDER_ATTR: Set[str] = {'author_static_id', 'target_root', "system_root", "selected_root"}
+
+    selected_root: str # 사용자가 설정한 루트 그대로
 
     def is_all_have(self) -> bool:
         return set(self.__dict__.keys()) == SharedStorageBuilder.REQUESTED_BUILDER_ATTR
+
+    def set_target_root(self, target_root):
+        super().set_target_root(target_root)
+        self.selected_root = target_root
+        return self
 
     @abstractmethod
     def save(self):
@@ -44,13 +50,13 @@ class SharedFileBuilder(SharedStorageBuilder):
 
             # 이미 등록되어있는 지 확인하기
             if model.SharedFile.objects.filter(user_static_id=self.author_static_id) \
-                    .filter(file_root=self.target_root).exists():
-                raise MicrocloudchipSharedFileAlreadyExistError(f"Shared File is aleady exist: {full_root}")
+                    .filter(file_root=self.selected_root).exists():
+                raise MicrocloudchipSharedFileAlreadyExistError(f"Shared File is aleady exist: {self.selected_root}")
 
             # Save to database
             model.SharedFile(
                 user_static_id=model.User.objects.get(static_id=self.author_static_id),
-                file_root=self.target_root
+                file_root=self.selected_root
             ).save()
         elif stat.S_ISDIR(file_stat.st_mode):
             # is dir

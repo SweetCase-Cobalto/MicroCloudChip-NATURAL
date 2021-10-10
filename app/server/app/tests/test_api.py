@@ -401,3 +401,44 @@ class TestAPIUnittest(TestCase):
             .set_process('download-single', __cmd_download_single) \
             .set_process('download-multiple', __cmd_download_multiple) \
             .run()
+
+    @test_flow("app/tests/test-input-data/test_api/test_shared_file_task.json")
+    def test_shared_file_task(self, test_flow: TestCaseFlow):
+        token_header: dict = {}
+
+        def __cmd_login(
+                email: str, password: str
+        ):
+            # Test Method: Login
+            # Make Req
+            req = {"email": email, "pswd": password}
+            # Send
+            res: JsonResponse = self.client.post('/server/user/login', req)
+            token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
+
+        def __cmd_upload_file(file_root: str):
+            # Test Method: Upload file
+            f: SimpleUploadedFile = \
+                self.make_uploaded_file(f"{self.FILES_ROOT}/{file_root.split('/')[-1]}")
+            # Run
+            res = self.client.post(
+                f'/server/storage/data/file/{self.admin_static_id}/root/{file_root}',
+                data=encode_multipart(self.BOUNDARY_VALUE, {"file": f}),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
+        def __cmd_generate_dir(dir_root: str):
+            # Test Method: generate directory
+            res = self.client.post(
+                f"/server/storage/data/dir/{self.admin_static_id}/root/{dir_root}",
+                **token_header
+            )
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
+        TestCaseFlowRunner(test_flow) \
+            .set_process('login', __cmd_login) \
+            .set_process('upload-file', __cmd_upload_file) \
+            .set_process('generate-dir', __cmd_generate_dir) \
+            .run()

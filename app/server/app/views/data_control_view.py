@@ -200,7 +200,7 @@ class DataControlView(APIView):
                 }
             }
             try:
-                STORAGE_MANAGER.update_file(req_static_id, req)
+                STORAGE_MANAGER.update_file(req_static_id, req, SHARE_MANAGER)
             except MicrocloudchipException as e:
                 return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
 
@@ -223,7 +223,7 @@ class DataControlView(APIView):
             }
             try:
                 # 디렉토리 정보 수정
-                STORAGE_MANAGER.update_directory(req_static_id, req)
+                STORAGE_MANAGER.update_directory(req_static_id, req, SHARE_MANAGER)
             except MicrocloudchipException as e:
                 return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
         else:

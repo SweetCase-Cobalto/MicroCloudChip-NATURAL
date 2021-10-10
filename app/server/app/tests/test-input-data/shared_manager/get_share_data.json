@@ -69,18 +69,6 @@
       "file-root": "test1.txt",
       "is-succeed": true, "exception": null,
       "expected-file-data": "this is text1"
-    },
-
-    {
-      "type": "remove-file",
-      "target-user": "admin",
-      "file-root": "test1.txt"
-    },
-    {
-      "type": "check-shared-db",
-      "target-user": "admin",
-      "file-root": "test1.txt",
-      "is-exist": false
     }
   ]
 }

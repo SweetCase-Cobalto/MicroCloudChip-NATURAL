@@ -50,7 +50,7 @@ class StorageManager(WorkerManager):
 
         # 용량 체크
         user_info = user_manager.get_user_by_static_id(req_static_id, target_static_id)
-        
+
         # 사용가능한 남아있는 용량
         available_storage: tuple = FileVolumeType.sub(user_info['volume-type'].to_tuple(),
                                                       user_manager.get_used_size(target_static_id))
@@ -86,7 +86,7 @@ class StorageManager(WorkerManager):
         # 권한 체크
         if req_static_id != target_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access update file")
-        
+
         # 실제 파일 루트
         src_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
         try:
@@ -104,6 +104,7 @@ class StorageManager(WorkerManager):
             self,
             req_static_id: str,
             req: dict,
+            share_manager: ShareManager
     ):
         # 파일 정보 수정(이름 수정)
         try:
@@ -130,6 +131,12 @@ class StorageManager(WorkerManager):
 
             # 이름 바꾸기
             f.update_name(change_elements['name'])
+
+            # Share 여부 판단 후 변경
+            shared_id: str = share_manager.get_shared_id(target_static_id, target_root)
+            if shared_id:
+                # 되어있으면 변경
+                share_manager.change_shared_file_root(shared_id, '/'.join(target_root.split('/')[:-1] + [f.name]))
 
         except MicrocloudchipException as e:
             raise e
@@ -164,7 +171,8 @@ class StorageManager(WorkerManager):
     def update_directory(
             self,
             req_static_id: str,
-            req: dict
+            req: dict,
+            share_manager: ShareManager
     ):
         # 디렉토리 정보 수정(이름 수정)
         try:
@@ -192,6 +200,9 @@ class StorageManager(WorkerManager):
             # 이름 바꾸기
             d.update_name(change_elements['name'])
 
+            # Shared Data 내용도 바꾸기
+            share_manager.change_shared_file_root_by_changed_directory(target_static_id, target_root, d.name)
+
         except MicrocloudchipException as e:
             raise e
         except Exception as e:
@@ -209,7 +220,7 @@ class StorageManager(WorkerManager):
         # 권한 체크
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
-        
+
         # 디렉토리 루트
         full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
 
@@ -238,7 +249,8 @@ class StorageManager(WorkerManager):
         d_list: list[DirectoryData] = []
 
         # 실제 루트
-        full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+        full_root: str = os.path.join(self.__get_user_root(target_static_id), self.TOKEN.join(target_root.split('/')))
+        # full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
 
         # 디렉토리 확인
         if not os.path.isdir(full_root):
@@ -274,10 +286,9 @@ class StorageManager(WorkerManager):
         # 권한 체크
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
-        
+
         # 삭제 대상 실제 루트
         full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
-
         # 파일 정보 확인하기
         try:
             f_stat: os.stat_result = os.stat(full_root)
@@ -290,14 +301,15 @@ class StorageManager(WorkerManager):
 
         # 데이터 정보 갖고오고 삭제하기
         try:
-            # 데이터 갖고오기
-            file_data: FileData = FileData(full_root)()
 
             # 공유가 걸려있는 경우 삭제
+
             shared_id: str = shared_manager.get_shared_id(target_static_id, target_root)
             if shared_id:
                 shared_manager.unshare_file(req_static_id, target_static_id, shared_id)
 
+            # 데이터 갖고오기
+            file_data: FileData = FileData(full_root)()
             # 삭제
             file_data.remove()
         except Exception as e:
@@ -330,10 +342,14 @@ class StorageManager(WorkerManager):
         # BFS 방식으로 삭제
         try:
 
-            stack = [full_root]
+            stack = [target_root]
 
             while stack:
                 r = stack[-1]
+
+                # Full Real Root
+                full_r = os.path.join(self.config.system_root, "storage",
+                                      target_static_id, "root", self.TOKEN.join(r.split('/')))
 
                 f_list, d_list = self.get_dirlist(req_static_id, {
                     "static-id": target_static_id,
@@ -344,21 +360,23 @@ class StorageManager(WorkerManager):
                 for f in f_list:
                     self.delete_file(req_static_id, {
                         'static-id': target_static_id,
-                        'target-root': os.path.join(r, f.name),
+                        'target-root': f"{r}/{f.name}",
                     }, share_manager)
 
                 # 파일을 전부 삭제하고 디렉토리가 없는 경우
                 # 그냥 현재 디렉토리를 삭제한다
                 if len(d_list) == 0:
                     stack.pop()
-                    deleted_d: DirectoryData = DirectoryData(r)()
+                    # get full root
+
+                    deleted_d: DirectoryData = DirectoryData(full_r)()
                     deleted_d.remove()
                 else:
                     # 루트 를 더하고 스택에 추가
                     # POP 을 하지 않는 이유는 모든 모든 디렉토리가 없는 경우 대해 한 번 더 함수를 실행해서
                     # 루트 자체를 삭제하기 위해
                     for d in d_list:
-                        next_r = os.path.join(r, d.name)
+                        next_r = f"{r}/{d.name}"
                         stack.append(next_r)
 
         except Exception as e:
@@ -450,7 +468,6 @@ class StorageManager(WorkerManager):
 
             # req full root list 채우기
             for obj in object_list:
-
                 # 파일이 존재하지 않는 경우 패싱
                 req_full_root: str = os.path.join(
                     self.__get_user_root(target_static_id),

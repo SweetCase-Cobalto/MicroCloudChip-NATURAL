@@ -1,0 +1,20 @@
+{
+  "test-flow": [
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678"
+    },
+    {
+      "type": "upload-file",
+      "fileroot": "example-text.txt"
+    },
+    {
+      "type": "generate-dir",
+      "dir-root": "안녕하세요"
+    },
+    {
+      "type": "upload-file",
+      "dir-root": "안녕하세요/텍스트파일.txt"
+    }
+  ]
+}

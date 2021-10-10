@@ -27,7 +27,6 @@ class StorageData(MicrocloudchipData):
         self.full_root = full_root
         self.is_called = False
 
-
     @abstractmethod
     def __call__(self):
         # 로컬 저장소로부터 데이터를 갖고와서 변수에 저장하기
@@ -86,7 +85,7 @@ class FileData(StorageData):
         _volume = file_stat.st_size
         self.raw_volume = _volume
         self.volume_unit, self.volume = FileVolumeType.get_file_volume_type(_volume)
-    
+
         # 데이터를 불러왔음을 확인
         self.is_called = True
 
@@ -249,7 +248,7 @@ class DirectoryData(StorageData):
 
         # 파일 이름 변경 루트 생성
         new_full_root = self.token.join(self.full_root.split(self.token)[:-1] + [new_name])
-        
+
         # 같은 이름의 파일 및 디렉토리가 존재하는 지 살펴본 후 이름 변경
         if os.path.isfile(new_full_root):
             raise MicrocloudchipFileAlreadyExistError("This new root is aleady exists as file")

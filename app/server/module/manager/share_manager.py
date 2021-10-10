@@ -94,6 +94,24 @@ class ShareManager(WorkerManager):
             self.process_locker.release()
             raise e
 
+    def change_shared_file_root(self, target_shared_id: str, new_root: str) -> str:
+        # 파일 명 변경 및 루트 변경
+        # StorageManager 안에서 작동해야 하며 절대 단독으로 사용하지 말 것
+        try:
+            self.process_locker.acquire()
+            sf: SharedFileData = SharedFileData(shared_id=target_shared_id, system_root=self.config.system_root)()
+            sf.update_root(new_root)
+            self.process_locker.release()
+
+        except MicrocloudchipException as e:
+            self.process_locker.release()
+            raise e
+
+    def change_shared_file_root_by_changed_directory(self, user_static_id: str,
+                                                     from_directory: str, new_directory: str):
+        # 절대 단독으로 사용하지 말고 storage manager에서 변경 수행을 끝낸 다음에 사용할 것
+        SharedFileData.change_file_root_by_changed_directory(user_static_id, from_directory, new_directory)
+
     def __thread_process(self):
         # Application Sub Thread
 
@@ -109,7 +127,8 @@ class ShareManager(WorkerManager):
             thread_timers['time-delta'] = self.time_limit / 10
 
         # 다음 새로고침 대상 시간
-        thread_timers['next-refresh-time'] = thread_timers['refreshed-time'] + thread_timers['time-delta']
+        # 처음엔 바로 작동해야 하므로 now로 설정
+        thread_timers['next-refresh-time'] = thread_timers['refreshed-time']
 
         # Task Functions
         def refresh():
