@@ -7,6 +7,7 @@ import StoragePage from './page/StoragePage';
 import AccountsPage from './page/AccountsPage';
 import AccountAdderPage from './page/AccountAdderPage';
 import AccountModifyPage from './page/AccountModifyPage';
+import SharedFilePage from './page/SharedFilePage';
 
 const App = () => {
     
@@ -19,6 +20,7 @@ const App = () => {
                 <Route exact path="/accounts" component={AccountsPage} />
                 <Route exact path="/accounts/account-adder" component={AccountAdderPage} />
                 <Route exact path="/accounts/modify/:staticId" component={AccountModifyPage} />
+                <Route exact path="/shared/file/:sharedId" component={SharedFilePage} />
             </Switch>
         </div>
     );

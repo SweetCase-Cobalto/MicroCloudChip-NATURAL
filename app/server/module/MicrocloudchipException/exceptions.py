@@ -43,7 +43,7 @@ class MicrocloudchipSystemInternalException(MicrocloudchipException):
     # msg는 직접 세팅한다.
     def __init__(self, __e: Exception):
         err_msg: str = f"Internal Exception Occured: {type(__e).__name__}:{__e}"
-        super().__init__(err_msg, 0x04 | SYSTEM_PREFIX)
+        super().__init__(err_msg, 0x05 | SYSTEM_PREFIX)
 
 
 # User Exception

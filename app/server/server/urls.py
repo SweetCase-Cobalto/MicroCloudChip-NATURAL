@@ -29,7 +29,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     # Production Version에서만 사용
     #url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
-    #url(r'^(storage)|(accounts)|(settings)/', TemplateView.as_view(template_name='index.html'), name='index'),
+    #url(r'^(storage)|(accounts)|(settings)|(shared)/', TemplateView.as_view(template_name='index.html'), name='index'),
 
     #path('admin/', admin.site.urls),
 
@@ -52,8 +52,9 @@ urlpatterns = [
     path(r'server/storage/download/single/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object),
     path(r'server/storage/download/multiple/<str:static_id>/<path:parent_root>', view_download_multiple_object),
 
-    # Shared System
+    # Shared System)
     path(r'server/storage/shared/file', view_share_file),
+    path(r'server/storage/shared/file/share-id', view_get_shared_id),
     path(r'server/storage/shared/file/<str:shared_id>', SharedFileControlView.as_view())
 
 ]

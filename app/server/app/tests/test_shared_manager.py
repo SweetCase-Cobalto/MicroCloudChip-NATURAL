@@ -120,7 +120,7 @@ class SharedFileManagerUnittest(TransactionTestCase):
         log = [target_user, file_root, is_succeed, exception_str, expected_file_data]
         try:
             shared_id: str = self.SHARE_MANAGER.get_shared_id(static_id, file_root)
-            real_root: str = self.SHARE_MANAGER.download_shared_file(shared_id)
+            _, real_root = self.SHARE_MANAGER.download_shared_file(shared_id)
 
             # get data
             rd: bytes = b''

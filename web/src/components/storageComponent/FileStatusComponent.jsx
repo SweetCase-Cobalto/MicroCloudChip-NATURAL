@@ -91,7 +91,7 @@ const FileStatusComponent = (props) => {
             axios.get(TARGET_URL, {
                 headers: {"Set-Cookie": props.userInfo.token },
                 withCredentials: true,
-                crossDomain: true
+                crossDomain: true,
             })
             .then((response) => {
                 // 데이터 갖고오기
@@ -367,6 +367,7 @@ const FileStatusComponent = (props) => {
                     <Button variant="success" style={{ width: "100%", marginBottom: "15px"}} onClick={() =>{downloadSingleObjectEvent()}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
                         <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
+
                     </div>
                     <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={() => setIsDeleteObjectModalOpen(true)}>삭제</Button>
 
@@ -392,6 +393,149 @@ const FileStatusComponent = (props) => {
 
             }
             let __printedVolume = `${floorVolume(dataInfo['size']['size-volume'], 3)} ${dataInfo['size']['size-type']}`
+
+
+            const SharedButtonComponent = () => {
+                
+                const LOADING = "LOADING";
+                const UNSHARED = "unshared";
+                const SHARED = "shared";
+
+                const [status, setStatus] = useState({"status": LOADING, "shared-id": undefined});
+                const [sharedResultModalOpened, setSharedResultModalOpened] = useState(false);
+                
+                let __list = props.parentDir.curUrl.slice(1);
+                __list.push(filename);
+                let file_root = __list.join('/');
+                let SHARE_REQ_URL = CONFIG.URL + "/server/storage/shared/file";
+
+                if(status['status'] == LOADING) {
+
+                    // shared id 갖고오기
+                    let REQ_URL = `${SHARE_REQ_URL}/share-id`;
+                    axios.get(REQ_URL, {
+                        headers: { "Set-Cookie": props.userInfo.token },
+                        withCredentials: true,
+                        crossDomain: true,
+                        params: {"file-root": file_root}
+                    }).then((r) => {
+                        // 연결 성공
+                        let data = r.data;
+                        if(data.code > 0) {
+                            // Result 탐색
+                            alert("알수 없는 접근 입니다.");
+                        } else {
+                            // Shared Data 확인
+                            if(data.data['shared-id'] == null)
+                                // 공유가 되지 않음
+                                setStatus({"status": UNSHARED, "shared-id": undefined});
+                            else
+                                // 공유가 된 경우
+                                setStatus({"status": SHARED, "shared-id": data.data['shared-id']});
+                        }
+                    });
+                    
+                    return <Button variant="secondary" style={{ width: "50%"}} disabled>공유</Button>
+                } else if(status['status']  == UNSHARED) {
+
+                    const handleShow = () => setSharedResultModalOpened(true);
+                    const handleClose = () => {
+                        window.location.reload();
+                    }
+
+                    // 공유가 되지 않은 경우
+                    const shareEvent = () => {
+                        let formData = new FormData();
+                        formData.append("file-root", file_root);
+                        
+                        // 공유 파일 지정
+                        axios.post(SHARE_REQ_URL, formData, {
+                            headers: { "Set-Cookie": props.userInfo.token },
+                            withCredentials: true,
+                            crossDomain: true
+                        }).then((r) => {
+                            // 통신 셩공
+                            let data = r.data;
+                            
+                            if(data.code > 0) {
+                                switch(data.code) {
+                                    case ErrorCodes.ERR_FILE_NOT_FOUND_ERR:
+                                        alert("파일이 존재하지 않습니다.");
+                                    case ErrorCodes.ERR_DIR_ALEADY_EXISTS_ERR:
+                                        alert("해당 객체는 파일이 아닌 디렉토리입니다.");
+                                    case ErrorCodes.ERR_SHARED_FILE_ALEADY_EXIST_ERR:
+                                        alert("이미 공유되었습니다.");
+                                    default:
+                                        alert("알수 없는 에러로 인해 공유에 실패했습니다.");
+                                }
+                                location.window.reload();
+                            } else {
+                                // 성공
+                                status['shared-id'] = data.data['shared-id'];
+                                // Modal Open
+                                handleShow();
+                            }
+                            
+                        }).catch((e) => {
+                            // 통신 에러
+                            alert("server error");
+                            location.window.reload();
+                        })
+                        
+                    }
+                    
+
+                    return (
+                            <div style={{ width: "50%"}}>
+                                <Button variant="outline-primary" onClick={shareEvent} style={{ width: "100%"}}>공유</Button>
+
+                                <Modal show={sharedResultModalOpened} onHide={handleClose}>
+                                    <Modal.Header closeButton>
+                                        <Modal.Title>공유 성공!</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <p>밑의 url를 사용하면 공유된 파일을 다운받을 수 있습니다.</p>
+                                        <Form>
+                                            <Form.Control type="text" value={
+                                                `${window.location.protocol}//${window.location.hostname}:${window.location.port}/shared/file/${status['shared-id']}`
+                                            } disabled/>
+                                        </Form>
+                                    </Modal.Body>
+                                </Modal>
+                            </div>
+                        );
+                } else {
+                    // 공유가 된 경우
+                    const unShareEvent = () => {
+                        // 공유 해제
+                        let REQ_URL = `${SHARE_REQ_URL}/${status['shared-id']}`;
+                        axios.delete(REQ_URL, {
+                            headers: { "Set-Cookie": props.userInfo.token },
+                            withCredentials: true,
+                            crossDomain: true}
+                        ).then((r) => {
+                            // 통신 성공
+                            let data = r.data;
+                            if(data.code > 0) {
+                                if(data.code == ErrorCodes.ERR_FILE_IS_NOT_SHARED) {
+                                    // 원래 공유 안되어 있음
+                                    alert("이미 파일의 공유가 해제되었습니다.");
+                                } else {
+                                    alert("대상 파일이 존재하지 않습니다.");
+                                }
+                                window.location.reload();
+                            } else {
+                                alert("공유가 해제되었습니다.");
+                                window.location.reload();
+                            }
+                        }).catch((e) => {
+                            alert("통신 에러");
+                            window.location.reload();
+                        })
+                    }
+                    return <Button variant="outline-primary" style={{ width: "50%"}} onClick={unShareEvent}>공유 취소</Button>
+                }
+            }
             
             return (
                 <Layout>
@@ -423,7 +567,8 @@ const FileStatusComponent = (props) => {
     
                     <Button variant="success" style={{ width: "100%", marginBottom: "15px"}} onClick={() =>{downloadSingleObjectEvent()}}>다운로드</Button>
                     <div style={{ marginBottom: "15px", display: "flex" }}>
-                        <Button variant="outline-success" style={{ width: "100%"}} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
+                        <Button variant="outline-success" style={{ width: "50%", marginRight: "4%" }} onClick={() => setIsModifyObjectModalOpen(true)}>이름 변경</Button>
+                        <SharedButtonComponent />
                     </div>
                     <Button variant="danger" style={{ width: "100%", marginBottom: "15px"}} onClick={() => setIsDeleteObjectModalOpen(true)}>삭제</Button>
 

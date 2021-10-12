@@ -9,7 +9,7 @@ from module.specification.System_config import SystemConfig
 import datetime
 import app.models as model
 import heapq
-from typing import List
+from typing import List, Tuple
 import threading
 
 
@@ -99,13 +99,17 @@ class ShareManager(WorkerManager):
         else:
             self.process_locker.release()
 
-    def download_shared_file(self, target_shared_id: str) -> str:
+    def download_shared_file(self, target_shared_id: str) -> (str, str):
         # Raw File Root를 반환한다.
         try:
             self.process_locker.acquire()
-            s = str(SharedFileData(system_root=self.config.system_root, shared_id=target_shared_id)())
+            sfd = SharedFileData(system_root=self.config.system_root, shared_id=target_shared_id)()
+
+            filename: str = sfd.target_root.split('/')[-1]
+            real_root: str = str(sfd)
+
             self.process_locker.release()
-            return s
+            return filename, real_root
         except MicrocloudchipException as e:
             self.process_locker.release()
             raise e

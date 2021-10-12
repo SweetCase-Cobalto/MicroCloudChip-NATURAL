@@ -37,3 +37,18 @@ def view_share_file(request: Request, req_static_id: str, updated_token: str) ->
     finally:
         res['code'] = err.errorCode
         return JsonResponse(res)
+
+
+
+@check_token
+@api_view(['GET'])
+def view_get_shared_id(request: Request, req_static_id: str, updated_token: str):
+    # static_id와 root를 이용해 shared id 구하기
+    try:
+        file_root: str = request.GET['file-root']
+    except KeyError:
+        _e = MicrocloudchipSystemAbnormalAccessError("Access Failed")
+        return JsonResponse({"code": _e.errorCode})
+
+    shared_id: str = SHARE_MANAGER.get_shared_id(req_static_id, file_root)
+    return JsonResponse({"code": MicrocloudchipSucceed().errorCode, "data":{"shared-id": shared_id}})
