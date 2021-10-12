@@ -17,9 +17,9 @@ class TokenManager(WorkerManager):
     TOKEN_METHOD: str = "HS256"
 
     def __new__(cls, config: SystemConfig, time_limit: int):
-        if not hasattr(cls, 'user_manager_instance'):
-            cls.instance = super(WorkerManager, cls).__new__(cls)
-        return cls.instance
+        if not hasattr(cls, 'token_manager_instance'):
+            cls.token_manager_instance = super(TokenManager, cls).__new__(cls)
+        return cls.token_manager_instance
 
     def __init__(self, system_config: SystemConfig, time_limit: int):
         super().__init__(system_config)

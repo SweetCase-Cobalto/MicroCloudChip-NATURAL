@@ -5,6 +5,7 @@ import app.models as model
 from module.MicrocloudchipException.exceptions import *
 from module.data_builder.user_builder import UserBuilder
 from module.label.user_volume_type import UserVolumeType, UserVolumeTypeKeys
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.share_manager import ShareManager
 from module.manager.storage_manager import StorageManager
 from module.manager.worker_manager import WorkerManager
@@ -20,8 +21,8 @@ class UserManager(WorkerManager):
     def __new__(cls, config: SystemConfig):
         # Singletone 기법으로 작동한다.
         if not hasattr(cls, 'user_manager_instance'):
-            cls.instance = super(WorkerManager, cls).__new__(cls)
-        return cls.instance
+            cls.user_manager_instance = super(UserManager, cls).__new__(cls)
+        return cls.user_manager_instance
 
     def __make_user_directory(self, user_static_id: str) -> list[str]:
         # User Directory 생성
@@ -52,10 +53,12 @@ class UserManager(WorkerManager):
         # 최상위 디렉토리 루트 반환
         return super_dir_root
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def __init__(self, system_config: SystemConfig):
         super().__init__(system_config)
 
         # Admin 계정이 DB에 존재하는 지 확인
+
         admin_num: int = len(model.User.objects.filter(is_admin=True))
 
         if admin_num == 0:
@@ -94,6 +97,7 @@ class UserManager(WorkerManager):
             # 어드민 디렉토리가 사라진 경우 복구 (있으면 생성하지 않는다)
             self.__make_user_directory(admin_static_id)
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def login(self, user_email: str, user_password: str) -> dict:
         # 로그인
 
@@ -131,6 +135,7 @@ class UserManager(WorkerManager):
         return req
 
     # User Control
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def add_user(self, req_static_id: str, data_format: dict):
         # 유저 추가
         """
@@ -203,7 +208,7 @@ class UserManager(WorkerManager):
         self.process_locker.acquire()
         # 한번에 하나 씩 생성 (데이터 중복을 막기 위해)
         # TODO: Error Exception 발생 시 예외처리 필요
-        
+
         # Directory 생성
         new_user_static_id: str = user_builder.static_id
         self.__make_user_directory(new_user_static_id)
@@ -220,6 +225,7 @@ class UserManager(WorkerManager):
 
         self.process_locker.release()
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def get_users(self) -> list:
         # user list 갖고오기
         r = []
@@ -232,6 +238,7 @@ class UserManager(WorkerManager):
             r.append(_u)
         return r
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def get_user_by_static_id(self, req_static_id: str, static_id: str) -> dict:
         # 유저 데이터 갖고오기
 
@@ -265,6 +272,7 @@ class UserManager(WorkerManager):
         except model.User.DoesNotExist:
             return None
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def get_used_size(self, static_id: str, zfill_counter: int = 0) -> tuple:
         # 사용 용량 구하기
 
@@ -294,6 +302,7 @@ class UserManager(WorkerManager):
         r = FileVolumeType.cut_zfill(r, zfill_counter)
         return r
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def update_user(self, req_static_id: str, data_format: dict):
         # 유저 데이터 수정
 
@@ -315,7 +324,7 @@ class UserManager(WorkerManager):
         except model.User.DoesNotExist:
             # 그새 사라진 경우
             raise MicrocloudchipAuthAccessError("User is not exist")
-        
+
         try:
             # 이미지 요청 데이터 확인
             if 'img-changeable' not in data_format:
@@ -356,7 +365,7 @@ class UserManager(WorkerManager):
             except MicrocloudchipException as e:
                 raise e
             target_user.volume_type = data_format['volume-type']
-        
+
         # DB 데이터 변경
         target_user.save()
         # 이미지 변경 여부
@@ -405,9 +414,12 @@ class UserManager(WorkerManager):
 
     def delete_user(self, req_static_id: str, target_static_id: str,
                     storage_manager: StorageManager, share_manager: ShareManager):
-        # 유저 삭제 (Admin 만 가능)
 
+        # 유저 삭제 (Admin 만 가능)
+        InternalDatabaseConcurrencyManager(SystemConfig()).lock_db_process()
         is_accessible = len(model.User.objects.filter(is_admin=True).filter(static_id=req_static_id))
+        InternalDatabaseConcurrencyManager(SystemConfig()).unlock_db_process()
+
         if not is_accessible:
             raise MicrocloudchipAuthAccessError("Auth Error for delete user")
 
@@ -417,9 +429,12 @@ class UserManager(WorkerManager):
 
         # 상대 유저 확인
         try:
+            InternalDatabaseConcurrencyManager(SystemConfig()).lock_db_process()
             user_data: model.User = model.User.objects.get(static_id=target_static_id)
+            InternalDatabaseConcurrencyManager(SystemConfig()).unlock_db_process()
         except model.User.DoesNotExist:
             # 유저 없음
+            InternalDatabaseConcurrencyManager(SystemConfig()).unlock_db_process()
             raise MicrocloudchipUserDoesNotExistError("User Not Exist")
 
         # Admin 계정 삭제 불가
@@ -427,7 +442,9 @@ class UserManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Admin could not be deleted")
 
         # 유저 제거
+        InternalDatabaseConcurrencyManager(SystemConfig()).lock_db_process()
         user_data.delete()
+        InternalDatabaseConcurrencyManager(SystemConfig()).unlock_db_process()
 
         # Storage 제거
         try:

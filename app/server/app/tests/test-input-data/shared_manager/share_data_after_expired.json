@@ -1,0 +1,26 @@
+{
+  "test-flow": [
+    {
+      "type": "add-user",
+      "name": "client", "email": "test@example.com"
+    },
+    {
+      "type": "add-file",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "text": "this is text1"
+    },
+    {
+      "type": "share-file",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "get-shared-file-after-expired",
+      "target-user": "admin",
+      "file-root": "test1.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError"
+    }
+  ]
+}

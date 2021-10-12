@@ -15,6 +15,9 @@ from pathlib import Path
 import json
 import os
 
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
+from module.specification.System_config import SystemConfig
+
 config = None
 # Load Config File
 try:
@@ -32,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # 해당 어플리케이션은 사용작 직접 NAS에 설치하게 되므로 50자 랜덤으로 설정한다.
-chars = ''.join([string.ascii_letters, string.digits, string.punctuation]).\
+chars = ''.join([string.ascii_letters, string.digits, string.punctuation]). \
     replace('\'', '').replace('"', '').replace('\\', '')
 SECRET_KEY = ''.join([random.SystemRandom().choice(chars) for i in range(50)])
 
@@ -45,7 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    #'django.contrib.sessions',
+    # 'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
@@ -69,7 +72,7 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        #'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        # 'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -88,7 +91,6 @@ STATICFILES_DIRS = [
 ]
 """
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
 
 WSGI_APPLICATION = 'server.wsgi.application'
 # Database
@@ -150,7 +152,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -188,3 +190,7 @@ REST_FRAMEWORK = {
     # datetime format 지정
     'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S.%f%z",
 }
+
+SYSTEM_CONFIG: SystemConfig = SystemConfig()
+INTERNAL_DATABASE_MANAGER: InternalDatabaseConcurrencyManager = \
+    InternalDatabaseConcurrencyManager(SYSTEM_CONFIG)

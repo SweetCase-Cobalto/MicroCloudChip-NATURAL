@@ -6,6 +6,9 @@ import os
 import sys
 import shutil
 
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
+from module.specification.System_config import SystemConfig
+
 
 def test_set_info_to_user_builder(user_builder: UserBuilder, req: dict):
     try:
@@ -19,6 +22,7 @@ def test_set_info_to_user_builder(user_builder: UserBuilder, req: dict):
         raise MicrocloudchipUserInformationValidateError(str(e))
 
 
+@InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
 def test_upload_user_in_step_routinetest(model_user: model.User, system_root: str, user_img_example_root: str = None):
     """ 이 테스트 루틴은 차후 UserManager 에서 활용하게 된다"""
 
@@ -63,6 +67,7 @@ def test_upload_user_in_step_routinetest(model_user: model.User, system_root: st
     raise MicrocloudchipUserUploadFailedError("same email user is exist")
 
 
+@InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
 def test_reset_because_of_failed_upload_failed(static_id_list: list[str], system_root: str):
     # 테스트 실패할 경우 Reset
     for static_id in static_id_list:

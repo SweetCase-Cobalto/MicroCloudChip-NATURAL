@@ -6,6 +6,8 @@ from typing import Set
 import app.models as model
 from module.MicrocloudchipException.exceptions import *
 from module.data_builder.storage_builder import StorageBuilder
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
+from module.specification.System_config import SystemConfig
 
 
 class SharedStorageBuilder(StorageBuilder):
@@ -30,6 +32,8 @@ class SharedStorageBuilder(StorageBuilder):
 
 class SharedFileBuilder(SharedStorageBuilder):
     # 공유된 파일 클래스
+
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def save(self):
         # Check attributes
         try:

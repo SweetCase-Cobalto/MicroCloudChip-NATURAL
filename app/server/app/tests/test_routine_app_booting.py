@@ -6,7 +6,6 @@ from module.specification.System_config import SystemConfig
 
 
 class AppBootingUnittest(TestCase):
-    
     # Test File Roots
     TEST_DIR: str = "app/tests/test-input-data/app_booting"
 
@@ -26,10 +25,10 @@ class AppBootingUnittest(TestCase):
             raise FileNotFoundError(f"{AppBootingUnittest.CONFIG_OUTPUT_EXPECT_RESULT} is not exist")
 
     def test_check_config_file_valid(self):
-        
+
         # Config 파일 유효성 측정
         # Sample Config File 을 Test 로 Config Data 를 제대로 뽑을 수 있는 지 확인
-        
+
         import json
         from module.MicrocloudchipException.exceptions import MicrocloudchipSystemConfigFileParsingError
 

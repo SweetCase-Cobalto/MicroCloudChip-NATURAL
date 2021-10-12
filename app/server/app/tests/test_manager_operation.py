@@ -6,6 +6,7 @@ import app.models as model
 from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
 
 from module.MicrocloudchipException.exceptions import *
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.share_manager import ShareManager
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
@@ -713,4 +714,8 @@ class ManagerOperationUnittest(TestCase):
 
         # 삭제 확인
         self.assertFalse(os.path.isdir(os.path.join(self.config.get_system_root(), 'storage', self.other_static_id)))
+
+        InternalDatabaseConcurrencyManager(SystemConfig()).lock_db_process()
         self.assertRaises(model.User.DoesNotExist, lambda: model.User.objects.get(static_id=self.other_static_id))
+        InternalDatabaseConcurrencyManager(SystemConfig()).unlock_db_process()
+

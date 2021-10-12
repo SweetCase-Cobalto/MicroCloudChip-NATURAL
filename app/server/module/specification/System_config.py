@@ -14,11 +14,21 @@ class SystemConfig:
         객체
     """
 
+    INTERNAL: str = "sqlite"
+    MYSQL: str = "mysql"
+
     system_root: str
     system_port: int
     admin_email: str
+    rdbms_type: str
 
-    def __init__(self, config_root: str):
+    def __new__(cls, config_root: str = "server/config.json"):
+        # Singletone 기법으로 작동한다.
+        if not hasattr(cls, 'system_config_instance'):
+            cls.system_config_instance = super(SystemConfig, cls).__new__(cls)
+        return cls.system_config_instance
+
+    def __init__(self, config_root: str = "server/config.json"):
         """
             config_root: config.json File root
         """
@@ -27,10 +37,12 @@ class SystemConfig:
                 _j = json.load(f)
                 config_raw_data = _j['system']
                 admin_data = _j['admin']
+                database_data = _j['database']
 
             # Get Data
             system_root = config_raw_data['root']
             system_port = config_raw_data['port']
+            self.rdbms_type = database_data['rdbms']['type']
 
             # 유효성 확인
             # system_root

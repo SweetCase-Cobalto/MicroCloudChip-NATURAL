@@ -18,9 +18,9 @@ class StorageManager(WorkerManager):
 
     def __new__(cls, config: SystemConfig):
         # Singletone 방식
-        if not hasattr(cls, 'user_manager_instance'):
-            cls.instance = super(WorkerManager, cls).__new__(cls)
-        return cls.instance
+        if not hasattr(cls, 'storage_manager_instance'):
+            cls.storage_manager_instance = super(StorageManager, cls).__new__(cls)
+        return cls.storage_manager_instance
 
     def __get_user_root(self, static_id: str) -> str:
         # user root 구하기

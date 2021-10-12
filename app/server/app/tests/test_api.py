@@ -6,14 +6,11 @@ from django.test.client import encode_multipart
 
 import app.models as model
 from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
-
-from module.manager.storage_manager import StorageManager
-from module.manager.token_manager import TokenManager
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.user_manager import UserManager
-from module.specification.System_config import SystemConfig
-from module.MicrocloudchipException.exceptions import *
 
-SYSTEM_CONFIG: SystemConfig
+from module.MicrocloudchipException.exceptions import *
+from module.specification.System_config import SystemConfig
 
 
 class TestAPIUnittest(TestCase):
@@ -29,11 +26,8 @@ class TestAPIUnittest(TestCase):
     def setUpClass(cls) -> None:
         super(TestAPIUnittest, cls).setUpClass()
 
-        # Admin
-        SYSTEM_CONFIG = SystemConfig("server/config.json")
+        from app.views import SYSTEM_CONFIG
         UserManager(SYSTEM_CONFIG)
-        StorageManager(SYSTEM_CONFIG)
-        TokenManager(SYSTEM_CONFIG, 60)
 
     @staticmethod
     def make_uploaded_file(root: str) -> SimpleUploadedFile:
@@ -44,6 +38,7 @@ class TestAPIUnittest(TestCase):
         return u
 
     @staticmethod
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def __get_user_id_for_test(user_name):
         return model.User.objects.get(name=user_name).static_id
 
@@ -54,10 +49,12 @@ class TestAPIUnittest(TestCase):
             expected_error_str: str,
             error_input: object = None
     ):
+
         expected_error_code: int = \
             0 if is_succeed else eval(expected_error_str)("").errorCode
         self.assertEqual(expected_error_code, error_code, msg=f"failed input: {error_input}")
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def setUp(self) -> None:
         self.client = Client()
         self.admin_static_id = model.User.objects.get(is_admin=True).static_id
@@ -199,8 +196,8 @@ class TestAPIUnittest(TestCase):
                 token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
         def __cmd_get_user_icon(
-            target: str, is_raw_id: bool,
-            is_succeed: bool, exception_str: str
+                target: str, is_raw_id: bool,
+                is_succeed: bool, exception_str: str
         ):
             target_id = target if is_raw_id else self.__get_user_id_for_test(target)
             res = self.client.get(f"/server/user/download/icon/{target_id}", **token_header)

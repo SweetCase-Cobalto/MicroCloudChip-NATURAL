@@ -1,0 +1,21 @@
+{
+    "system": {
+        "root": "D:\\test\\microcloudchip",
+        "port": 8000,
+        "host": "127.0.0.1"
+    },
+    "database": {
+        "rdbms": {
+            "type": "mysql",
+            "engine": "django.db.backends.mysql",
+            "name": "micro",
+            "user": "root",
+            "password": "host",
+            "host": "127.0.0.1",
+            "port": 3306
+        }
+    },
+    "admin": {
+        "email": "seokbong60@gmail.com"
+    }
+}

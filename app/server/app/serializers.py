@@ -6,7 +6,7 @@ from app.models import SharedFile
 from module.validator.user_validator import UserValidator
 from datetime import datetime
 
-DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 
 
 class SharedFileSerializer(serializers.Serializer):

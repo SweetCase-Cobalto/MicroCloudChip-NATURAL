@@ -8,6 +8,7 @@ from module.data.shared_storage_data import SharedFileData
 from module.data.storage_data import FileData
 from module.data_builder.shared_storage_builder import SharedFileBuilder
 from module.data_builder.user_builder import UserBuilder
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.specification.System_config import SystemConfig
 
 import app.models as model
@@ -72,6 +73,7 @@ class SharedFileControlUnittest(TestCase):
                             "storage", static_id, "root", root)
 
     @staticmethod
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def __get_user_id_for_test(user_name):
         # 유저 이름에 대한 아이디
         return model.User.objects.get(name=user_name).static_id
@@ -83,7 +85,7 @@ class SharedFileControlUnittest(TestCase):
 
         from module.data_builder.file_builder import FileBuilder
         file_builder = FileBuilder()
-        file_builder.set_system_root(self.SYSTEM_CONFIG.get_system_root()) \
+        file_builder.set_system_root(SystemConfig().get_system_root()) \
             .set_author_static_id(static_id) \
             .set_target_root(file_root) \
             .set_raw_data(text).save()
@@ -93,7 +95,7 @@ class SharedFileControlUnittest(TestCase):
         static_id: str = self.__get_user_id_for_test(target_user)
         from module.data_builder.directory_builder import DirectoryBuilder
         directory_builder: DirectoryBuilder = DirectoryBuilder()
-        directory_builder.set_system_root(self.SYSTEM_CONFIG.get_system_root()) \
+        directory_builder.set_system_root(SystemConfig().get_system_root()) \
             .set_target_root(dir_root) \
             .set_author_static_id(static_id) \
             .set_target_root(dir_root).save()
@@ -162,10 +164,13 @@ class SharedFileControlUnittest(TestCase):
                 self.assertEqual(MicrocloudchipFileSharedButRemovedError.__name__, exception_str)
 
                 # Remove Shared File Database
+
+                InternalDatabaseConcurrencyManager(SystemConfig()).lock_db_process()
                 model.SharedFile.objects \
                     .filter(user_static_id=static_id) \
                     .get(file_root=target_root) \
                     .delete()
+                InternalDatabaseConcurrencyManager(SystemConfig()).unlock_db_process()
             else:
                 self.assertEqual(MicrocloudchipFileNotFoundError.__name__, exception_str)
 

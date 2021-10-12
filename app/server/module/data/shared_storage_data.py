@@ -1,8 +1,10 @@
 import os
+import sqlite3
 import sys
 from abc import abstractmethod
 from typing import Dict, Optional, List
 
+import django.db.utils
 from django.db.models.query import QuerySet
 
 from app.serializers import SharedFileSerializer
@@ -10,6 +12,8 @@ from module.data.microcloudchip_data import MicrocloudchipData
 from datetime import datetime
 from module.MicrocloudchipException.exceptions import *
 import app.models as model
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
+from module.specification.System_config import SystemConfig
 
 
 class SharedStorageData(MicrocloudchipData):
@@ -37,6 +41,7 @@ class SharedFileData(SharedStorageData):
         self.shared_id = shared_id
         self.is_called = False
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def __call__(self):
         try:
             sf: model.SharedFile = None
@@ -63,25 +68,15 @@ class SharedFileData(SharedStorageData):
             self.target_root = raw_data['file_root']
             self.static_id = raw_data['user_static_id']
 
-            # Check is file exist
-            # 데이터 변경 문제로 삭제
-            """
-            real_root: str = os.path.join(self.system_root, "storage", self.static_id, "root", self.target_root)
-            if not os.path.isfile(real_root):
-                # Unshare 처리
-                self.is_called = True
-                self.unshare()
-                raise MicrocloudchipFileNotFoundError("File Is Not Exist")
-            """
-
             self.is_called = True
             return self
 
         except Exception:
             raise MicrocloudchipFileIsNotSharedError("This File is not shared")
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def unshare(self):
-        self.__call__()
+
         if not self.is_called:
             raise MicrocloudchipDataFormatNotCalled("Data is not called yet")
         else:
@@ -98,6 +93,7 @@ class SharedFileData(SharedStorageData):
             model.SharedFile.objects.get(shared_id=self.shared_id).delete()
             self.is_called = False
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def update_root(self, new_root: str):
         # 파일 및 폴더 이름이 변경되었을 경우, 공유 상태를 유지하기 위해 사용
         if not self.is_called:
@@ -127,13 +123,20 @@ class SharedFileData(SharedStorageData):
 
     # Object Query
     @staticmethod
-    def get_shared_file_for_shared_manager_queue(system_root: str, start_date: datetime) -> List:
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
+    def get_shared_file_for_shared_manager_queue(system_root: str, end_date: datetime) -> List:
         r = []
-        for item in model.SharedFile.objects.filter(start_date__lte=start_date):
-            r.append(SharedFileData.init_shared_data_from_database(system_root, item))
-        return r
-
+        try:
+            for item in model.SharedFile.objects.filter(start_date__lte=end_date):
+                r.append(SharedFileData.init_shared_data_from_database(system_root, item))
+        except django.db.utils.OperationalError:
+            return []
+        except Exception as e:
+            raise e
+        else:
+            return r
     @staticmethod
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def change_file_root_by_changed_directory(static_id: str, from_directory_root: str, new_directory_root: str):
         # 디렉토리 변경에 의해 공유된 데이터들의 루트도 같이 변경
         # Model로 직접 접근해서 수정
@@ -148,7 +151,7 @@ class SharedFileData(SharedStorageData):
             full_root = f"{dir_root}/{file_name}"
             return full_root
 
-        changed_list: QuerySet = model.SharedFile.objects.select_for_update() \
+        changed_list: QuerySet = model.SharedFile.objects \
             .filter(user_static_id=static_id, file_root__iregex=rf'^{from_directory_root}/')
 
         for entry in changed_list:

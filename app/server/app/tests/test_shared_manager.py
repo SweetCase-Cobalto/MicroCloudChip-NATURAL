@@ -2,10 +2,11 @@ import datetime
 import app.models as model
 import time
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 
 from app.tests.test_modules.loader import *
 from module.data_builder.user_builder import UserBuilder
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.share_manager import ShareManager
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
@@ -14,7 +15,7 @@ from module.specification.System_config import SystemConfig
 from module.MicrocloudchipException.exceptions import *
 
 
-class SharedFileManagerUnittest(TestCase):
+class SharedFileManagerUnittest(TransactionTestCase):
     """파일 공유 매니저 테스트
         1. 파일 공유 설정
             1.1 존재하지 않은 파일 공유 시도
@@ -50,6 +51,7 @@ class SharedFileManagerUnittest(TestCase):
             .set_static_id() \
             .build().save()
 
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def __change_name_to_id(self, name: str):
         return model.User.objects.get(name=name).static_id
 
@@ -139,9 +141,7 @@ class SharedFileManagerUnittest(TestCase):
     def __cmd_get_shared_data_after_expired(self, target_user: str, file_root: str,
                                             is_succeed: bool, exception_str: str):
         # Test Method: 만료된 Shared Data 뽑아오기
-
-        # 1 microseconds로 줄이기
-        time.sleep(0.2)
+        time.sleep(0.55)
         self.__cmd_get_shared_data(target_user, file_root, is_succeed, exception_str, None)
 
     def __cmd_remove_file(self, target_user: str, file_root: str):
@@ -210,7 +210,7 @@ class SharedFileManagerUnittest(TestCase):
         self.USER_MANAGER = UserManager(self.SYSTEM_CONFIG)
         self.STORAGE_MANAGER = StorageManager(self.SYSTEM_CONFIG)
         self.SHARE_MANAGER = \
-            ShareManager(self.SYSTEM_CONFIG, datetime.timedelta(days=30))
+            ShareManager(self.SYSTEM_CONFIG, datetime.timedelta(milliseconds=500))
 
     @test_flow(f"{TEST_FILE_ROOT}share_file.json")
     def test_share_file(self, test_flow: TestCaseFlow):
@@ -280,4 +280,15 @@ class SharedFileManagerUnittest(TestCase):
             .set_process('get-shared-file', self.__cmd_get_shared_data) \
             .set_process('update-file', self.__cmd_update_file_name) \
             .set_process('update-dir', self.__cmd_update_directory) \
+            .run()
+
+    @test_flow(f"{TEST_FILE_ROOT}/share_data_after_expired.json")
+    def test_share_data_after_expired(self, test_flow: TestCaseFlow):
+
+        # 만료 후, 공유 데이터를 얻으면 안된다
+        TestCaseFlowRunner(test_flow) \
+            .set_process('add-user', self.__cmd_add_user) \
+            .set_process('add-file', self.__cmd_add_file) \
+            .set_process('share-file', self.__cmd_share_file) \
+            .set_process('get-shared-file-after-expired', self.__cmd_get_shared_data_after_expired) \
             .run()

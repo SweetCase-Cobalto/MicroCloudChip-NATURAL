@@ -63,8 +63,6 @@ class TestCaseFlowRunner:
             try:
                 self.test_statements[command](*case)
             except Exception as e:
-                print(self.test_statements[command])
-                print(case)
                 raise e
 
     def is_empty(self):

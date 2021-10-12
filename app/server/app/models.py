@@ -2,6 +2,7 @@ import datetime
 import random
 import string
 from django.db import models
+
 from module.validator.user_validator import UserValidator
 
 

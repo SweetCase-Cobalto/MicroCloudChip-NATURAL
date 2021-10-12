@@ -3,6 +3,7 @@ import time
 from module.MicrocloudchipException.exceptions import *
 from module.data.shared_storage_data import SharedFileData
 from module.data_builder.shared_storage_builder import SharedFileBuilder
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 import datetime
@@ -14,8 +15,15 @@ import threading
 
 class ShareManager(WorkerManager):
     time_limit: datetime.timedelta
-    thread_sleep_long: float = 1 / 1_000_000
+    thread_sleep_long: float = 1 / 1_000
     shared_monitoring_thread: threading.Thread
+
+    def __new__(cls, config: SystemConfig,
+                time_limit: datetime.timedelta = datetime.timedelta(days=30)):
+        # Singletone 방식
+        if not hasattr(cls, 'share_manager_instance'):
+            cls.share_manager_instance = super(ShareManager, cls).__new__(cls)
+        return cls.share_manager_instance
 
     def __init__(self, system_config: SystemConfig,
                  time_limit: datetime.timedelta = datetime.timedelta(days=30)):
@@ -118,7 +126,7 @@ class ShareManager(WorkerManager):
         # 만료 대상 Shared File List (Heap)
         expired_shareds: List[(str, model.SharedFile)] = []
 
-        thread_timers = {"refreshed-time": datetime.datetime.now()}
+        thread_timers = {"refreshed-time": datetime.datetime.now(), "is-first": True}
         if self.time_limit >= datetime.timedelta(days=1):
             # 1일 이상일 경우 1일로 측정
             thread_timers['time-delta'] = datetime.timedelta(days=1)
@@ -142,21 +150,27 @@ class ShareManager(WorkerManager):
             # 다음 리프레시 시간 전에 만료될 Shared File 갖고오기
             self.process_locker.acquire()
             try:
+                end_time = thread_timers['refreshed-time'] + thread_timers['time-delta'] - self.time_limit
+
                 expired_list: List[model.SharedFile] = \
                     SharedFileData.get_shared_file_for_shared_manager_queue(
-                        self.config.get_system_root(), thread_timers['next-refresh-time'] - self.time_limit)
+                        self.config.get_system_root(), end_time)
+
             except Exception as e:
                 self.process_locker.release()
                 raise e
-            self.process_locker.release()
+            else:
+                if self.process_locker.locked():
+                    self.process_locker.release()
             while expired_list:
                 expired_data: model.SharedFile = expired_list.pop()
 
                 # 일찍 만료되는 순으로 정렬
-                heapq.heappush(expired_shareds, (expired_data.start_date + self.time_limit, expired_data))
+                heapq.heappush(expired_shareds, (expired_data.start_date + self.time_limit, expired_data.shared_id))
 
         while True:
             now: datetime.datetime = datetime.datetime.now()
+
             # Refresh 타임 측정 및 진행
             if now >= thread_timers['next-refresh-time']:
                 try:
@@ -168,7 +182,11 @@ class ShareManager(WorkerManager):
                 if expired_shareds:
                     if expired_shareds[-1][0] < now:
                         # 만료되었음
-                        _, shared_data = heapq.heappop(expired_shareds)
-                        shared_data.unshare()
+                        _, shared_id = heapq.heappop(expired_shareds)
+                        try:
+                            shared_data = SharedFileData(shared_id=shared_id, system_root=self.config.system_root)()
+                            shared_data.unshare()
+                        except MicrocloudchipException:
+                            pass
 
             time.sleep(self.thread_sleep_long)

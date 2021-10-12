@@ -139,6 +139,7 @@ cython_debug/
 
 # no config
 server/config.json
+server/config2.json
 app/migrations/*
 
 #no venv

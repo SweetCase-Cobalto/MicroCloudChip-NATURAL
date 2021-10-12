@@ -11,6 +11,7 @@ from module.manager.user_manager import UserManager
 from module.manager.storage_manager import StorageManager
 from module.manager.token_manager import TokenManager
 
+
 SYSTEM_CONFIG: SystemConfig
 USER_MANAGER: UserManager
 STORAGE_MANAGER: StorageManager
@@ -22,6 +23,8 @@ try:
     STORAGE_MANAGER = StorageManager(SYSTEM_CONFIG)
     TOKEN_MANAGER = TokenManager(SYSTEM_CONFIG, 60)
     SHARE_MANAGER = ShareManager(SYSTEM_CONFIG, datetime.timedelta(days=30))
+
+
 except (OperationalError, django.db.utils.ProgrammingError) as e:
     # 정상적인 Migration을 수행하기 위해 일부러  pass
     pass
