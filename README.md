@@ -24,7 +24,7 @@
 * Database도 외부 MySQL같은 Database를 사용할 수 있습니다
 
 # Available Platform
-## Current Available ![](https://img.shields.io/badge/version-0.0.x-blue?style=flat-square)
+## Current Available ![](https://img.shields.io/badge/version-0.1.0.Beta1-blue?style=flat-square)
 |OS|Database|
 |---|---|
 |Debian|Sqlite(Internal Database)|
@@ -53,7 +53,7 @@ sudo docker run -it -d -p [port]:[port] \
                 -e SERVER_PORT=[port] \
                 -e ADMIN_EMAIL=[your email] \
                 -e HOST=[your host] \
-                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.5-internal
+                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.1.0.beta1-internal
 ```
 
 ### Install With External Database (MySQL, MariaDB)
@@ -67,7 +67,7 @@ sudo docker run -it -d -p [port]:[port] \
                 -e DB_PSWD=[database password] \
                 -e DB_HOST=[database host] \
                 -e DB_PORT=[database port] \
-                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.0.5-mysql
+                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.1.0.beta1-mysql
 ```
 ### 외부 저장소 설정
 **_NOTE:_** 외부 저장소를 사용할 경우 아래의 환경변수를 추가합니다.
