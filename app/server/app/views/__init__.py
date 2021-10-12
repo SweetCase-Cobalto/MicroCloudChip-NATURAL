@@ -22,8 +22,8 @@ try:
     SYSTEM_CONFIG = SystemConfig("server/config.json")
     USER_MANAGER = UserManager(SYSTEM_CONFIG)
     STORAGE_MANAGER = StorageManager(SYSTEM_CONFIG)
-    TOKEN_MANAGER = TokenManager(SYSTEM_CONFIG, 60)
-    SHARE_MANAGER = ShareManager(SYSTEM_CONFIG, datetime.timedelta(minutes=1))
+    TOKEN_MANAGER = TokenManager(SYSTEM_CONFIG, 1200)
+    SHARE_MANAGER = ShareManager(SYSTEM_CONFIG, datetime.timedelta(days=7))
 
 
 except (OperationalError, django.db.utils.ProgrammingError) as e:
