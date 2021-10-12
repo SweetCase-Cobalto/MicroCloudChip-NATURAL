@@ -402,6 +402,7 @@ class TestAPIUnittest(TestCase):
     @test_flow("app/tests/test-input-data/test_api/test_shared_file_task.json")
     def test_shared_file_task(self, test_flow: TestCaseFlow):
         token_header: dict = {}
+        shared_name_to_id_map: dict = {}
 
         def __cmd_login(
                 email: str, password: str
@@ -412,6 +413,29 @@ class TestAPIUnittest(TestCase):
             # Send
             res: JsonResponse = self.client.post('/server/user/login', req)
             token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
+
+        def __cmd_logout():
+            res = self.client.get("/server/user/logout", **token_header)
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
+        def __cmd_add_user(
+                name: str, email: str, password: str,
+                volume_type_str: str, img: str
+        ):
+
+            req = dict()
+            # if문 두줄짜리라 줄 없애려고 일부로 dict 씀
+            if name:
+                req['name'] = name
+            if email:
+                req['email'] = email
+            if password:
+                req['password'] = password
+            if volume_type_str:
+                req['volume-type'] = volume_type_str
+            if img:
+                req['img'] = TestAPIUnittest.make_uploaded_file(f"{self.FILES_ROOT}/{img}")
+            res = self.client.post('/server/user', req, **token_header)
 
         def __cmd_upload_file(file_root: str):
             # Test Method: Upload file
@@ -434,8 +458,66 @@ class TestAPIUnittest(TestCase):
             )
             token_header["HTTP_Set-Cookie"] = res.json()['new-token']
 
+        def __cmd_remove_dir(root: str):
+            # Test Method: remove file / directory
+            res = self.client.delete(
+                f"/server/storage/data/dir/{self.admin_static_id}/root/{root}", **token_header)
+            token_header["HTTP_Set-Cookie"] = res.json()['new-token']
+
+        def __cmd_share_file(target: str, is_succeed: bool, exception_str: str):
+            # Test Method: Shared File
+            req = { "file-root": target }
+            res = self.client.post(
+                f"/server/storage/shared/file",
+                data=encode_multipart(self.BOUNDARY_VALUE, req),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
+
+            self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
+            if is_succeed:
+                shared_name_to_id_map[target] = res.json()['data']['shared-id']
+
+        def __cmd_get_shared_file(target: str, is_succeed: bool, exception_str: str):
+            # Test Method: Get Shared File Data
+
+            if not target in shared_name_to_id_map:
+                # id가 없을 경우 임의로 만든다
+                shared_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            else:
+                shared_id = shared_name_to_id_map[target]
+            res = self.client.get(f"/server/storage/shared/file/{shared_id}")
+
+            if res.headers['Content-Type'] == 'application/json':
+                # 다운로드 실패
+                self.check_exception_code(is_succeed, res.json()['code'], exception_str)
+            else:
+                self.assertTrue(is_succeed)
+
+        def __cmd_get_unshare_file(target: str, is_succeed: bool, exception_str: str):
+
+            # Test Method: Unshare file
+
+            # 없는 shared id일 경우 랜덤한 shared id로 설정
+            if not target in shared_name_to_id_map:
+                shared_id = "xxxxxxxxxxxxxxxxxxxxxxxx"
+            else:
+                shared_id = shared_name_to_id_map[target]
+            res = self.client.delete(f"/server/storage/shared/file/{shared_id}", **token_header)
+
+            self.check_exception_code(is_succeed, res.json()["code"], exception_str, target)
+            if is_succeed:
+                del shared_name_to_id_map[target]
+
+        # 테스트 코드 실행
         TestCaseFlowRunner(test_flow) \
             .set_process('login', __cmd_login) \
+            .set_process('logout', __cmd_logout) \
+            .set_process('add-user', __cmd_add_user) \
             .set_process('upload-file', __cmd_upload_file) \
             .set_process('generate-dir', __cmd_generate_dir) \
+            .set_process('remove-directory', __cmd_remove_dir) \
+            .set_process('share-file', __cmd_share_file) \
+            .set_process('get-shared-file', __cmd_get_shared_file) \
+            .set_process('unshare-file', __cmd_get_unshare_file) \
             .run()

@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url
 
+from app.views.shared_file import *
+from app.views.shared_file_control_view import SharedFileControlView
 from app.views.user import *
 from app.views.user_control_view import UserControlView
 from app.views.data_control_view import DataControlView
@@ -48,7 +50,10 @@ urlpatterns = [
     
     # Storage Data 다운로드
     path(r'server/storage/download/single/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object),
-    path(r'server/storage/download/multiple/<str:static_id>/<path:parent_root>', view_download_multiple_object)
+    path(r'server/storage/download/multiple/<str:static_id>/<path:parent_root>', view_download_multiple_object),
 
+    # Shared System
+    path(r'server/storage/shared/file', view_share_file),
+    path(r'server/storage/shared/file/<str:shared_id>', SharedFileControlView.as_view())
 
 ]

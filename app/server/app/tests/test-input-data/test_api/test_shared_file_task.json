@@ -5,6 +5,17 @@
       "email": "seokbong60@gmail.com", "password": "12345678"
     },
     {
+      "type": "add-user",
+
+      "name": "client",
+      "email": "napalosense@gmail.com",
+      "password": "098765432",
+      "volume-type": "TEST",
+      "img": null
+    },
+
+
+    {
       "type": "upload-file",
       "fileroot": "example-text.txt"
     },
@@ -15,6 +26,84 @@
     {
       "type": "upload-file",
       "dir-root": "안녕하세요/텍스트파일.txt"
+    },
+
+    {
+      "type": "share-file",
+      "target": "안녕하세요",
+      "is-succeed": false, "exception": "MicrocloudchipDirectoryAlreadyExistError"
+    },
+    {
+      "type": "share-file",
+      "target": "aaaa",
+      "is-succeed": false, "exception": "MicrocloudchipFileNotFoundError"
+    },
+
+
+    {
+      "type": "share-file",
+      "target": "example-text.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "share-file",
+      "target": "안녕하세요/텍스트파일.txt",
+      "is-succeed": true, "exception": null
+    },
+
+    {
+      "type": "get-shared-file",
+      "target": "안녕하세요/텍스트파일.txt",
+      "is-succeed": true, "exception": null
+    },
+
+
+    {
+      "type":"logout"
+    },
+    {
+      "type": "login",
+      "email": "napalosense@gmail.com", "password": "098765432"
+    },
+    {
+      "type": "unshare-file",
+      "target": "example-text.txt",
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+
+
+    {
+      "type":"logout"
+    },
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678"
+    },
+
+
+    {
+      "type": "unshare-file",
+      "target": "eexxx.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError"
+    },
+    {
+      "type": "unshare-file",
+      "target": "example-text.txt",
+      "is-succeed": true, "exception": null
+    },
+    {
+      "type": "get-shared-file",
+      "target": "example-text.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError"
+    },
+    {
+      "type": "remove-directory",
+      "target": "안녕하세요"
+    },
+    {
+      "type": "get-shared-file",
+      "target": "안녕하세요/텍스트파일.txt",
+      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError"
     }
   ]
 }

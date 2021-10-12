@@ -16,6 +16,7 @@ SYSTEM_CONFIG: SystemConfig
 USER_MANAGER: UserManager
 STORAGE_MANAGER: StorageManager
 TOKEN_MANAGER: TokenManager
+SHARE_MANAGER: ShareManager
 
 try:
     SYSTEM_CONFIG = SystemConfig("server/config.json")

@@ -45,6 +45,14 @@ class ShareManager(WorkerManager):
         except MicrocloudchipException:
             return None
 
+    def get_user_id_by_shared_id(self, shared_id: str) -> str:
+        # Shared ID를 사용하는 유저 아이디 찾기
+        try:
+            sfd: SharedFileData = SharedFileData(self.config.get_system_root(), shared_id=shared_id)()
+            return sfd.static_id
+        except MicrocloudchipException:
+            return None
+
     def share_file(
             self,
             req_static_id: str,
