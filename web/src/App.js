@@ -20,7 +20,7 @@ const App = () => {
                 <Route exact path="/accounts" component={AccountsPage} />
                 <Route exact path="/accounts/account-adder" component={AccountAdderPage} />
                 <Route exact path="/accounts/modify/:staticId" component={AccountModifyPage} />
-                <Route exact path="/share/file/:sharedId" component={SharedFilePage} />
+                <Route exact path="/shared/file/:sharedId" component={SharedFilePage} />
             </Switch>
         </div>
     );
