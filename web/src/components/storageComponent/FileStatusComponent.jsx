@@ -497,7 +497,7 @@ const FileStatusComponent = (props) => {
                                         <p>밑의 url를 사용하면 공유된 파일을 다운받을 수 있습니다.</p>
                                         <Form>
                                             <Form.Control type="text" value={
-                                                `${window.location.protocol}//${window.location.hostname}:${window.location.port}/shared/file/${status['shared-id']}`
+                                                `${window.location.protocol}//${window.location.hostname}:${window.location.port}/share/file/${status['shared-id']}`
                                             } disabled/>
                                         </Form>
                                     </Modal.Body>
