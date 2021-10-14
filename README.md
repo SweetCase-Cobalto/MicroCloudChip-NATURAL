@@ -4,7 +4,7 @@
 <p align="center">
 <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/SweetCase-Cobalto/microcloudchip-natural?style=flat-square">
 <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/SweetCase-Cobalto/microcloudchip-natural?color=orange&include_prereleases&label=pre-release&style=flat-square"><br>
-<a href="https://seokbong60.gitbook.io/microcloudchip-natural/">
+<a href="https://seokbong60.gitbook.io/microcloudchip-natural/v/v0.1.x/">
 <img alt="gitbook site" src="https://img.shields.io/badge/GitBook-7B36ED?style=flat-square&logo=gitbook&logoColor=white">
 </a>
 <a href="https://hub.docker.com/repository/docker/recomadock/microcloudchip-natural">
