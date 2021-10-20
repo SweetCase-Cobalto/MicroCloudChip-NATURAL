@@ -142,6 +142,9 @@ class UserBuilder(MicrocloudchipBuilder):
             raise MicrocloudchipUserUploadFailedError("Email Exist")
         user.save()
 
+        if not os.path.isdir(os.path.join(self.system_root, "storage")):
+            os.mkdir(os.path.join(self.system_root, "storage"))
+
         # ADD Directory
         user_path_root: str = os.path.join(self.system_root, "storage", user.static_id)
         os.mkdir(user_path_root)
