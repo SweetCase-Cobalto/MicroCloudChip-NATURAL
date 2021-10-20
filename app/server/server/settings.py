@@ -40,7 +40,7 @@ chars = ''.join([string.ascii_letters, string.digits, string.punctuation]). \
 SECRET_KEY = ''.join([random.SystemRandom().choice(chars) for i in range(50)])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Application definition
 
@@ -72,8 +72,8 @@ ROOT_URLCONF = 'server.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        #'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,11 +85,11 @@ TEMPLATES = [
         },
     },
 ]
-"""
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'templates', 'static')
 ]
-"""
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 WSGI_APPLICATION = 'server.wsgi.application'
@@ -167,7 +167,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-
+"""
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
@@ -180,7 +180,7 @@ ALLOWED_HOSTS = [
     "0.0.0.0",
     "[::1]"
 ]
-"""
+
 
 CORS_ALLOW_HEADERS = [
     'Set-Cookie'
