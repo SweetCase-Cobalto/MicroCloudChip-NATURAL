@@ -55,7 +55,6 @@ class FileDirControlTestUnittest(TestCase):
     # Test Files Root
     test_file_root: str = "app/tests/test-input-data/example_files"
 
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def setUp(self) -> None:
         # 파일 테스트를 위한 가상 Admin 생성
         user_builder = UserBuilder()
@@ -65,21 +64,15 @@ class FileDirControlTestUnittest(TestCase):
             .set_is_admin(True) \
             .set_volume_type("TEST") \
             .set_static_id() \
-            .build().save()
-
+            .set_system_root(self.system_config.get_system_root()) \
+            .save()
         # User Root 갱신
         self.test_user_root += user_builder.static_id
-        os.mkdir(self.test_user_root)
-
         # 해당 User 에 대한 파일 및 디렉토리 관리는 root 에서 진행한다.
         self.cur_root = f"{self.test_user_root}{self.token}root"
-        os.mkdir(self.cur_root)
-
-        # Check is Directory Exist
         self.assertEqual(os.path.isdir(self.cur_root), True)
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_make_new_directory.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_make_new_directory(self, test_flow: TestCaseFlow):
 
         static_id: str = model.User.objects.get(name="admin").static_id
@@ -120,7 +113,6 @@ class FileDirControlTestUnittest(TestCase):
         return raw
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_upload_file.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_upload_file(self, test_flow: TestCaseFlow):
         # Validate Check 는 Directory 와 동일하기 때문에
         # 업로드 여부, 종복 여부만 체크한다.
@@ -174,7 +166,6 @@ class FileDirControlTestUnittest(TestCase):
             .run()
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_get_information_of_file.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_get_information_of_file(self, test_flow: TestCaseFlow):
 
         author_static_id = model.User.objects.get(name="admin").static_id
@@ -217,7 +208,6 @@ class FileDirControlTestUnittest(TestCase):
                 .run()
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_remove_file.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_remove_file(self, test_flow: TestCaseFlow):
         # 파일 삭제
         author_static_id = model.User.objects.get(name="admin").static_id
@@ -276,7 +266,6 @@ class FileDirControlTestUnittest(TestCase):
             .run()
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_modify_file.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_modify_file(self, test_flow: TestCaseFlow):
         # 파일 수정
         """
@@ -342,7 +331,6 @@ class FileDirControlTestUnittest(TestCase):
             .run()
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_get_directory_info.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_get_directory_info(self, test_flow: TestCase):
 
         # 1. Root 단계에서 데이터 구하기
@@ -396,7 +384,6 @@ class FileDirControlTestUnittest(TestCase):
             .run()
 
     @test_flow("app/tests/test-input-data/test_file_dir_control/test_modify_directory_name.json")
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_modify_directory_name(self, test_flow: TestCase):
 
         author_static_id = model.User.objects.get(name="admin").static_id
@@ -442,7 +429,6 @@ class FileDirControlTestUnittest(TestCase):
             .set_process('update-dir', __cmd_update_directory) \
             .run()
 
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def test_remove_directory_recursive(self):
 
         test_files = os.listdir(self.test_file_root)

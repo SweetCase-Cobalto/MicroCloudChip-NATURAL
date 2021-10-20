@@ -10,19 +10,20 @@ from module.manager.internal_database_concurrency_manager import InternalDatabas
 from module.specification.System_config import SystemConfig
 
 
-def test_set_info_to_user_builder(user_builder: UserBuilder, req: dict):
+def test_add_user(user_builder: UserBuilder, req: dict, system_root: str):
     try:
         user_builder.set_name(req['name']) \
             .set_password(req['pswd']) \
             .set_email(req['email']) \
             .set_volume_type(req['volume-type']) \
             .set_is_admin(req['is-admin']) \
-            .set_static_id()
+            .set_static_id() \
+            .set_system_root(system_root) \
+            .save()
     except KeyError as e:
         raise MicrocloudchipUserInformationValidateError(str(e))
 
 
-@InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
 def test_upload_user_in_step_routinetest(model_user: model.User, system_root: str, user_img_example_root: str = None):
     """ 이 테스트 루틴은 차후 UserManager 에서 활용하게 된다"""
 
@@ -67,7 +68,6 @@ def test_upload_user_in_step_routinetest(model_user: model.User, system_root: st
     raise MicrocloudchipUserUploadFailedError("same email user is exist")
 
 
-@InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
 def test_reset_because_of_failed_upload_failed(static_id_list: list[str], system_root: str):
     # 테스트 실패할 경우 Reset
     for static_id in static_id_list:

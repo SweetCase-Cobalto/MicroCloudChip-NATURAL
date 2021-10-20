@@ -47,7 +47,7 @@ class SharedFileControlView(APIView):
 
             return response
         else:
-            return JsonResponse({"code": 0, "data": { "filename": filename }})
+            return JsonResponse({"code": 0, "data": {"filename": filename}})
 
     @check_token_in_class_view
     def delete(self, request: Request, shared_id: str, req_static_id: str, updated_token: str):

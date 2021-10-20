@@ -1,6 +1,3 @@
-import datetime
-
-from module.manager.manager import Manager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 
@@ -39,7 +36,6 @@ class InternalDatabaseConcurrencyManager(WorkerManager):
         unlock = self.unlock_db_process
 
         def wrapper(instance: object, *args, **kwargs):
-            result = None
             try:
                 lock()
                 result = func(instance, *args, **kwargs)

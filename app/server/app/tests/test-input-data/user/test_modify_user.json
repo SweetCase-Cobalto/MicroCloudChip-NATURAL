@@ -1,0 +1,68 @@
+{
+  "test-flow": [
+    {
+      "type": "add-user",
+      "name": "admin",
+      "pswd": "adminpaswd",
+      "email": "mytest1@gmail.com",
+      "volume-type": "TEST",
+      "is-admin": true
+    },
+    {
+      "type": "add-user",
+      "name": "client",
+      "pswd": "adminpaswd",
+      "email": "mytest2@gmail.com",
+      "volume-type": "TEST",
+      "is-admin": false
+    },
+
+
+    {
+      "type": "modify-username",
+      "target-email": "mytest1@gmail.com",
+      "name": "abc",
+      "is-succeed": false, "exception": "MicrocloudchipUserInformationValidateError"
+    },
+    {
+      "type": "modify-username",
+      "target-email": "mytest1@gmail.com",
+      "name": "admin2",
+      "is-succeed": true, "exception": null
+    },
+
+    {
+      "type": "modify-password",
+      "target-email": "mytest1@gmail.com",
+      "password": "1234",
+      "is-succeed": false, "exception": "MicrocloudchipUserInformationValidateError"
+    },
+    {
+      "type": "modify-password",
+      "target-email": "mytest1@gmail.com",
+      "password": "password1234",
+      "is-succeed": true, "exception": null
+    },
+
+    {
+      "type": "modify-volumetype",
+      "target-email": "mytest2@gmail.com",
+      "volume-type": "zzzz",
+      "is-succeed": false, "exception": "MicrocloudchipUserInformationValidateError"
+    },
+    {
+      "type": "modify-volumetype",
+      "target-email": "mytest2@gmail.com",
+      "volume-type": "GUEST",
+      "is-succeed": true, "exception": null
+    }
+
+    ,
+    {
+      "type": "modify-image",
+      "target-email": "mytest2@gmail.com",
+      "image-name": "example.png",
+      "is-succeed": true, "exception": null
+    }
+  ]
+}

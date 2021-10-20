@@ -1,7 +1,9 @@
 from django.test import TestCase
 import json
 
-from module.specification.System_config import SystemConfig
+from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
+from module.MicrocloudchipException.base_exception import MicrocloudchipException
+from module.data.user_data import UserData
 
 from app.tests.test_modules.testing_user_module import *
 
@@ -54,48 +56,96 @@ class UserUnittest(TestCase):
             req = test_case['request']
             if not test_case["is-passed"]:
                 # 실패 케이스일 경우
-                try:
-                    # Req data validate
-                    """set_info_to_user_builder:
-                            user_builder 의 set 함수를 한꺼번에 사용하기 위한
-                            함수
-                    """
-
-                    # 실패가 목적이므로 특정 단계가 아닌 이상 validate 단계에서 반드시 예외를 내보내야 한다.
-                    self.assertRaises(MicrocloudchipUserInformationValidateError,
-                                      lambda: test_set_info_to_user_builder(user_builder, req))
-                except AssertionError:
-                    # Validator 를 통과했다면
-                    # 업로드 과정에서 실패를 해야 한다.
-                    try:
-                        """test_upload_user_in_step_routinetest
-                            User 등록 루틴 테스트 함수
-                            실제로 User 등록 과정은 UserManager 가 담당하며
-                            Manager 단계 Test 에서 다시 한번 테스트를 거친다.
-                        """
-                        test_set_info_to_user_builder(user_builder, req)
-                        img_root: str = os.path.join(*(self.EXAMPLE_IMAGE_ROOT + ["example.png"]))  # 예제 이미지 루트
-                        self.assertRaises(MicrocloudchipUserUploadFailedError,
-                                          lambda: test_upload_user_in_step_routinetest(user_builder.build(),
-                                                                                       self.config.get_system_root(),
-                                                                                       img_root))
-                    except AssertionError:
-                        # 그래도 통과를 한 경우
-                        print(f"problem number: {idx} is failed.")
-                        # DB의 업로드한 User Data 와 저장한 image 파일을 지운다.
-                        test_reset_because_of_failed_upload_failed(self.static_id_list + [user_builder.static_id],
-                                                                   self.config.get_system_root())
-                        raise
+                self.assertRaises(MicrocloudchipException,
+                                  lambda: test_add_user(user_builder, req, self.config.system_root))
             else:
                 # Success
-                img_root: str = os.path.join(*(self.EXAMPLE_IMAGE_ROOT + ["example.png"]))
-                test_set_info_to_user_builder(user_builder, req)
-                test_upload_user_in_step_routinetest(user_builder.build(),
-                                                     self.config.get_system_root(),
-                                                     img_root)
+                test_add_user(user_builder, req, self.config.system_root)
 
                 # 다음 테스트에 사용할 static_id 추가
                 self.static_id_list.append(user_builder.static_id)
 
         # 디렉토리 초기화
         test_reset_because_of_failed_upload_failed(self.static_id_list, self.config.get_system_root())
+
+    @test_flow("app/tests/test-input-data/user/test_modify_user.json")
+    def test_modify_user(self, test_flow: TestCaseFlow):
+
+        def __cmd_add_user(
+                name: str,
+                pswd: str,
+                email: str,
+                volume_type: str,
+                is_admin: bool
+        ):
+            UserBuilder().set_name(name) \
+                .set_email(email) \
+                .set_password(pswd) \
+                .set_is_admin(is_admin) \
+                .set_volume_type(volume_type) \
+                .set_static_id() \
+                .set_system_root(self.config.system_root) \
+                .save()
+
+        def __cmd_modify_username(target_email: str, n_name: str, is_succeed: bool, exception_str: str):
+            try:
+                d: UserData = UserData(email=target_email, system_root=self.config.system_root)()
+                d.update(new_name=n_name)
+
+            except MicrocloudchipException as e:
+                # Failed
+                self.assertFalse(is_succeed)
+                self.assertEqual(type(e).__name__, exception_str)
+            except Exception as e:
+                print(f"[External Error]: {type(e)}:{e}")
+                print(f"[Req]: {target_email}:{n_name}:{is_succeed}:{exception_str}")
+            else:
+                # Succeed
+                self.assertTrue(is_succeed, msg=n_name)
+
+        def __cmd_modify_password(target_email: str, new_password: str, is_succeed: bool, exception_str: str):
+            try:
+                d: UserData = UserData(email=target_email, system_root=self.config.system_root)()
+                d.update(new_password=new_password)
+            except MicrocloudchipException as e:
+                # Failed
+                self.assertFalse(is_succeed)
+                self.assertEqual(type(e).__name__, exception_str)
+            else:
+                # Succeed
+                self.assertTrue(is_succeed)
+
+        def __cmd_modify_volumetype(target_email: str, volume_type: str, is_succeed: bool, exception_str: str):
+            try:
+                d: UserData = UserData(email=target_email, system_root=self.config.system_root)()
+                d.update(new_volume_type=volume_type)
+            except MicrocloudchipException as e:
+                # Failed
+                self.assertFalse(is_succeed)
+                self.assertEqual(type(e).__name__, exception_str)
+            else:
+                # Succeed
+                self.assertTrue(is_succeed)
+
+        def __cmd_modify_image(target_email: str, img_name: str, is_succeed: bool, exception_str: str):
+
+            img_root: str = os.path.join(*(self.EXAMPLE_IMAGE_ROOT + [img_name]))
+            with open(img_root, 'rb') as _f:
+                img_raw_data = _f.read()
+
+            try:
+                d: UserData = UserData(email=target_email, system_root=self.config.system_root)()
+                d.update(will_change_image=True, img_extension=img_root.split('.')[-1], img_raw_data=img_raw_data)
+            except MicrocloudchipException as e:
+                self.assertFalse(is_succeed)
+                self.assertEqual(type(e).__name__, exception_str)
+            else:
+                self.assertTrue(is_succeed)
+
+        # Run Test Code
+        TestCaseFlowRunner(test_flow).set_process('add-user', __cmd_add_user) \
+            .set_process("modify-username", __cmd_modify_username) \
+            .set_process("modify-password", __cmd_modify_password) \
+            .set_process("modify-volumetype", __cmd_modify_volumetype) \
+            .set_process("modify-image", __cmd_modify_image) \
+            .run()

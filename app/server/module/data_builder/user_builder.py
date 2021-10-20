@@ -1,11 +1,15 @@
 from module.data_builder.builder import MicrocloudchipBuilder
 from module.label.user_volume_type import UserVolumeType
 from django.core.exceptions import ValidationError
-from module.MicrocloudchipException.exceptions import MicrocloudchipUserInformationValidateError
+from module.MicrocloudchipException.exceptions import MicrocloudchipUserInformationValidateError, \
+    MicrocloudchipUserUploadFailedError
+from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
+from module.specification.System_config import SystemConfig
 from module.validator.user_validator import UserValidator
 import app.models as custom_model
 import string
 import random
+import os
 
 
 class UserBuilder(MicrocloudchipBuilder):
@@ -41,6 +45,7 @@ class UserBuilder(MicrocloudchipBuilder):
     password: str = None
     volume_type: UserVolumeType = None
     is_admin: bool = None
+    system_root: str = None
 
     """ Validate Functions 
         if failed, call ValidationError
@@ -53,13 +58,13 @@ class UserBuilder(MicrocloudchipBuilder):
         numbers = '0123456789'
 
         static_id = ""
-        
+
         # 랜덤 생성
         for _ in range(40):
             select = random.randint(0, 1)
             static_id += alphabet[random.randint(0, len(alphabet) - 1)] if select else \
                 numbers[random.randint(0, len(numbers) - 1)]
-            
+
         return static_id
 
     """ set functions 
@@ -71,6 +76,7 @@ class UserBuilder(MicrocloudchipBuilder):
         2. variable 저장
         3. 자기 자신 리턴
     """
+
     def set_name(self, new_name: str):
         try:
             UserValidator.validate_name(new_name)
@@ -114,15 +120,32 @@ class UserBuilder(MicrocloudchipBuilder):
         self.static_id = UserBuilder.generate_static_id()
         return self
 
+    def set_system_root(self, system_root: str):
+        self.system_root = system_root
+        return self
+
     # Build To model.User
-    def build(self) -> custom_model.User:
+    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
+    def save(self) -> custom_model.User:
         """최종적으로 User Model를 생성한다
             하지만 바로 Database에 저장하지 않는다.
         """
         if not self.name or not self.email or not self.password or \
-                self.is_admin is None or not self.static_id or not self.volume_type:
+                self.is_admin is None or not self.static_id or not self.volume_type or not self.system_root:
             raise MicrocloudchipUserInformationValidateError("Model User build Error: some data is empty")
-        return custom_model.User(
+        user = custom_model.User(
             static_id=self.static_id, name=self.name, pswd=self.password,
             email=self.email, volume_type=self.volume_type.name, is_admin=self.is_admin
         )
+        # Same Email Search
+        if len(custom_model.User.objects.filter(email=self.email)) > 0:
+            raise MicrocloudchipUserUploadFailedError("Email Exist")
+        user.save()
+
+        # ADD Directory
+        user_path_root: str = os.path.join(self.system_root, "storage", user.static_id)
+        os.mkdir(user_path_root)
+
+        os.mkdir(os.path.join(user_path_root, "asset"))
+        os.mkdir(os.path.join(user_path_root, "root"))
+        os.mkdir(os.path.join(user_path_root, "tmp"))

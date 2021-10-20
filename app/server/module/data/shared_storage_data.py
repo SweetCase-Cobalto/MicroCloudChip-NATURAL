@@ -135,6 +135,7 @@ class SharedFileData(SharedStorageData):
             raise e
         else:
             return r
+
     @staticmethod
     @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def change_file_root_by_changed_directory(static_id: str, from_directory_root: str, new_directory_root: str):
