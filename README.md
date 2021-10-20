@@ -4,7 +4,7 @@
 <p align="center">
 <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/SweetCase-Cobalto/microcloudchip-natural?style=flat-square">
 <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/SweetCase-Cobalto/microcloudchip-natural?color=orange&include_prereleases&label=pre-release&style=flat-square"><br>
-<a href="https://seokbong60.gitbook.io/microcloudchip-natural/v/v0.1.x/">
+<a href="https://seokbong60.gitbook.io/microcloudchip-natural/">
 <img alt="gitbook site" src="https://img.shields.io/badge/GitBook-7B36ED?style=flat-square&logo=gitbook&logoColor=white">
 </a>
 <a href="https://hub.docker.com/repository/docker/recomadock/microcloudchip-natural">
@@ -54,7 +54,7 @@ sudo docker run -it -d -p [port]:[port] \
                 -e SERVER_PORT=[port] \
                 -e ADMIN_EMAIL=[your email] \
                 -e HOST=[your host] \
-                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.1.0.beta1-internal
+                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.1.0.beta2-internal
 ```
 
 ### Install With External Database (MySQL, MariaDB)
@@ -68,7 +68,7 @@ sudo docker run -it -d -p [port]:[port] \
                 -e DB_PSWD=[database password] \
                 -e DB_HOST=[database host] \
                 -e DB_PORT=[database port] \
-                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.1.0.beta1-mysql
+                --name [container name] ghcr.io/sweetcase-cobalto/microcloudchip-natural:0.1.0.beta2-mysql
 ```
 ### 외부 저장소 설정
 **_NOTE:_** 외부 저장소를 사용할 경우 아래의 환경변수를 추가합니다.
