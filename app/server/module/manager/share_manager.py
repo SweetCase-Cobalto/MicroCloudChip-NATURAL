@@ -3,13 +3,12 @@ import time
 from module.MicrocloudchipException.exceptions import *
 from module.data.shared_storage_data import SharedFileData
 from module.data_builder.shared_storage_builder import SharedFileBuilder
-from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.worker_manager import WorkerManager
 from module.specification.System_config import SystemConfig
 import datetime
 import app.models as model
 import heapq
-from typing import List, Tuple
+from typing import List
 import threading
 
 
@@ -65,19 +64,16 @@ class ShareManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Only One User can shared")
 
         try:
-            self.process_locker.acquire()
             SharedFileBuilder().set_system_root(self.config.get_system_root()) \
                 .set_author_static_id(target_static_id) \
                 .set_target_root(target_root).save()
         except MicrocloudchipException as e:
-            self.process_locker.release()
             raise e
         except Exception as e:
             # MicrocloudchipException이 아닌 내부 에러
-            self.process_locker.release()
             raise MicrocloudchipSystemInternalException(e)
         else:
-            self.process_locker.release()
+            pass
 
     def unshare_file(
             self,
@@ -91,40 +87,32 @@ class ShareManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Only One User can shared")
 
         try:
-            self.process_locker.acquire()
             SharedFileData(shared_id=target_shared_id, system_root=self.config.system_root)().unshare()
         except MicrocloudchipException as e:
-            self.process_locker.release()
             raise e
         else:
-            self.process_locker.release()
+            pass
 
     def download_shared_file(self, target_shared_id: str) -> (str, str):
         # Raw File Root를 반환한다.
         try:
-            self.process_locker.acquire()
             sfd = SharedFileData(system_root=self.config.system_root, shared_id=target_shared_id)()
 
             filename: str = sfd.target_root.split('/')[-1]
             real_root: str = str(sfd)
 
-            self.process_locker.release()
             return filename, real_root
         except MicrocloudchipException as e:
-            self.process_locker.release()
             raise e
 
     def change_shared_file_root(self, target_shared_id: str, new_root: str) -> str:
         # 파일 명 변경 및 루트 변경
         # StorageManager 안에서 작동해야 하며 절대 단독으로 사용하지 말 것
         try:
-            self.process_locker.acquire()
             sf: SharedFileData = SharedFileData(shared_id=target_shared_id, system_root=self.config.system_root)()
             sf.update_root(new_root)
-            self.process_locker.release()
 
         except MicrocloudchipException as e:
-            self.process_locker.release()
             raise e
 
     def change_shared_file_root_by_changed_directory(self, user_static_id: str,
@@ -160,7 +148,6 @@ class ShareManager(WorkerManager):
             thread_timers['next-refresh-time'] = thread_timers['refreshed-time'] + thread_timers['time-delta']
 
             # 다음 리프레시 시간 전에 만료될 Shared File 갖고오기
-            self.process_locker.acquire()
             try:
                 end_time = thread_timers['refreshed-time'] + thread_timers['time-delta'] - self.time_limit
 
@@ -169,11 +156,9 @@ class ShareManager(WorkerManager):
                         self.config.get_system_root(), end_time)
 
             except Exception as e:
-                self.process_locker.release()
                 raise e
             else:
-                if self.process_locker.locked():
-                    self.process_locker.release()
+                pass
             while expired_list:
                 expired_data: model.SharedFile = expired_list.pop()
 

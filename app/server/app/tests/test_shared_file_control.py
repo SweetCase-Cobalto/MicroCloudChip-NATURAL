@@ -50,6 +50,7 @@ class SharedFileControlUnittest(TestCase):
 
     # __methods
     def __add_user(self, is_admin: bool, name: str, email: str) -> str:
+
         # 가상의 User 생성
         u = UserBuilder()
         u \
@@ -59,13 +60,8 @@ class SharedFileControlUnittest(TestCase):
             .set_password("12345678") \
             .set_volume_type("TEST") \
             .set_static_id() \
-            .build().save()
-
-        static_id: str = u.static_id
-
-        user_root = os.path.join(self.STORAGE_ROOT, static_id)
-        os.mkdir(user_root)
-        os.mkdir(os.path.join(user_root, "root"))
+            .set_system_root(self.SYSTEM_CONFIG.get_system_root()) \
+            .save()
 
     def __get_real_root(self, static_id: str, root: str):
         # 실제 루트 생성
@@ -148,7 +144,7 @@ class SharedFileControlUnittest(TestCase):
         # Search Shared File
         try:
             SharedFileData(self.SYSTEM_CONFIG.get_system_root(), static_id, target_root)()
-        except MicrocloudchipFileIsNotSharedError as e:
+        except MicrocloudchipFileIsNotSharedError:
             # 등록되지 않음 -> 실패
             self.assertFalse(is_succeed, msg=f"{[target_user, target_root, exception_str]}")
         else:

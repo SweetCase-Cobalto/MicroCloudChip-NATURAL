@@ -233,8 +233,8 @@ class DataControlView(APIView):
         return JsonResponse({"code": 0, 'new-token': updated_token})
 
     @check_token_in_class_view
-    def delete(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str):
-
+    def delete(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str,
+               updated_token: str):
         root: str = DataControlView.get_real_root(root)
 
         req = {

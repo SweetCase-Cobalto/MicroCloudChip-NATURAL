@@ -1,6 +1,6 @@
 import os
 import sys
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from datetime import datetime
 
 from module.MicrocloudchipException.exceptions import *
@@ -40,12 +40,6 @@ class StorageData(MicrocloudchipData):
         # 그러나 데이터를 미리 불러오지 않았을 경우 데이터가 없으므로 에러가 발생한다
         if not self.is_called:
             raise ValueError("You must get storage data by using __call__()")
-
-    @abstractmethod
-    def __str__(self) -> str:
-        # 데이터 요약 본 출력
-        # 테스트 할 때 만 쓰세요
-        pass
 
     @abstractmethod
     def remove(self):
@@ -109,20 +103,6 @@ class FileData(StorageData):
             return __get_item(self, item)
         except KeyError:
             raise KeyError(f"file data key error: {item}")
-
-    def __str__(self):
-        # 로그 출력용
-        r = ""
-        if not self.is_called:
-            r = f"This Class is not called yet, root: {self.full_root}"
-        else:
-            r += f"filename: {self.name}\n"
-            r += f"filetype: {self.file_type.name}\n"
-            r += f"create date: {self.create_date}\n"
-            r += f"modify date: {self.modify_date}\n"
-            r += f"size: {self.volume} {self.volume_unit.name}\n"
-            r += f"full root: {self.full_root}\n"
-        return r
 
     def remove(self):
         """ 파일 제거 """
@@ -216,18 +196,6 @@ class DirectoryData(StorageData):
             return __get_item(self, item)
         except KeyError:
             raise KeyError(f"file data key error: {item}")
-
-    def __str__(self):
-        r = ""
-        if not self.is_called:
-            r = f"This Class is not called yet, root: {self.full_root}"
-        else:
-            r += f"dir name: {self.name}\n"
-            r += f"create date: {self.create_date}\n"
-            r += f"modify date: {self.modify_date}\n"
-            r += f"files: {self['file-list']}\n"
-            r += f"full root: {self.full_root}\n"
-        return r
 
     def update_name(self, new_name: str):
         # 디렉토리 이름 변경

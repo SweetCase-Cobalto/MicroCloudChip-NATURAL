@@ -140,6 +140,7 @@ class TestAPIUnittest(TestCase):
         ):
             # Test Method: Modify User
             # static id 구하기
+
             target_id: str = self.__get_user_id_for_test(target)
             req = {}
             if new_name:
@@ -330,6 +331,7 @@ class TestAPIUnittest(TestCase):
 
     @test_flow("app/tests/test-input-data/test_api/test_storage_data_download.json")
     def test_storge_data_download(self, test_flow: TestCaseFlow):
+
         # 데이터 다운로드 관련 테스트
         CONTENT_TYPE_ZIP = ["application/x-zip-compressed", "application/zip"]
 
@@ -466,7 +468,7 @@ class TestAPIUnittest(TestCase):
 
         def __cmd_share_file(target: str, is_succeed: bool, exception_str: str):
             # Test Method: Shared File
-            req = { "file-root": target }
+            req = {"file-root": target}
             res = self.client.post(
                 f"/server/storage/shared/file",
                 data=encode_multipart(self.BOUNDARY_VALUE, req),
@@ -481,11 +483,12 @@ class TestAPIUnittest(TestCase):
         def __cmd_get_shared_file(target: str, is_succeed: bool, exception_str: str):
             # Test Method: Get Shared File Data
 
-            if not target in shared_name_to_id_map:
-                # id가 없을 경우 임의로 만든다
+            shared_id_res = self.client.get("/server/storage/shared/file/share-id",
+                                            data={"file-root": target}, **token_header)
+
+            shared_id = shared_id_res.json()["data"]["shared-id"]
+            if shared_id is None:
                 shared_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-            else:
-                shared_id = shared_name_to_id_map[target]
             res = self.client.get(f"/server/storage/shared/file/{shared_id}")
 
             if res.headers['Content-Type'] == 'application/json':
@@ -496,10 +499,8 @@ class TestAPIUnittest(TestCase):
 
         def __cmd_get_unshare_file(target: str, is_succeed: bool, exception_str: str):
 
-            # Test Method: Unshare file
-
             # 없는 shared id일 경우 랜덤한 shared id로 설정
-            if not target in shared_name_to_id_map:
+            if target not in shared_name_to_id_map:
                 shared_id = "xxxxxxxxxxxxxxxxxxxxxxxx"
             else:
                 shared_id = shared_name_to_id_map[target]

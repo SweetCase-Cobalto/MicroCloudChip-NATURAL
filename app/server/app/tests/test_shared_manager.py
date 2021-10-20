@@ -6,7 +6,6 @@ from django.test import TransactionTestCase
 
 from app.tests.test_modules.loader import *
 from module.data_builder.user_builder import UserBuilder
-from module.manager.internal_database_concurrency_manager import InternalDatabaseConcurrencyManager
 from module.manager.share_manager import ShareManager
 from module.manager.storage_manager import StorageManager
 from module.manager.user_manager import UserManager
@@ -51,7 +50,6 @@ class SharedFileManagerUnittest(TransactionTestCase):
             .set_static_id() \
             .build().save()
 
-    @InternalDatabaseConcurrencyManager(SystemConfig()).manage_internal_transaction
     def __change_name_to_id(self, name: str):
         return model.User.objects.get(name=name).static_id
 

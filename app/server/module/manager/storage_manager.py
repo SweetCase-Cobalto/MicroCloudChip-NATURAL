@@ -249,8 +249,8 @@ class StorageManager(WorkerManager):
         d_list: list[DirectoryData] = []
 
         # 실제 루트
-        full_root: str = os.path.join(self.__get_user_root(target_static_id), self.TOKEN.join(target_root.split('/')))
-        # full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+        __root_list = [self.__get_user_root(target_static_id)] + target_root.split('/')
+        full_root: str = os.path.join(*__root_list)
 
         # 디렉토리 확인
         if not os.path.isdir(full_root):
@@ -288,7 +288,8 @@ class StorageManager(WorkerManager):
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
 
         # 삭제 대상 실제 루트
-        full_root: str = os.path.join(self.__get_user_root(target_static_id), target_root)
+        __full_root_list = [self.__get_user_root(target_static_id)] + target_root.split('/')
+        full_root: str = os.path.join(*__full_root_list)
         # 파일 정보 확인하기
         try:
             f_stat: os.stat_result = os.stat(full_root)
@@ -348,8 +349,8 @@ class StorageManager(WorkerManager):
                 r = stack[-1]
 
                 # Full Real Root
-                full_r = os.path.join(self.config.system_root, "storage",
-                                      target_static_id, "root", self.TOKEN.join(r.split('/')))
+                __full_list = [self.config.get_system_root(), "storage", target_static_id, "root"] + r.split('/')
+                full_r = os.path.join(*__full_list)
 
                 f_list, d_list = self.get_dirlist(req_static_id, {
                     "static-id": target_static_id,
@@ -358,9 +359,10 @@ class StorageManager(WorkerManager):
 
                 # 파일 부터 죄다 삭제
                 for f in f_list:
+                    real_root: str = f"{r}/{f.name}" if r != "" else f.name
                     self.delete_file(req_static_id, {
                         'static-id': target_static_id,
-                        'target-root': f"{r}/{f.name}",
+                        'target-root': real_root,
                     }, share_manager)
 
                 # 파일을 전부 삭제하고 디렉토리가 없는 경우
