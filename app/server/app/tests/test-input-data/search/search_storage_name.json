@@ -1,0 +1,40 @@
+{
+  "test-flow": [
+    {
+      "type": "search-storage-names",
+      "regex": "hello",
+      "input": ["hel", "hell", "leksl", "", "hello"],
+      "output": ["hello"]
+    },
+    {
+      "type": "search-storage-names",
+      "regex": "",
+      "input": ["hel", "hell", "leksl", "", "hello"],
+      "output": []
+    },
+    {
+      "type": "search-storage-names",
+      "regex": "h*llo",
+      "input": ["hllo", "hello", "hxcvllo", "hllllllllo", "ldkvsldxk"],
+      "output": ["hllo", "hello", "hxcvllo", "hllllllllo"]
+    },
+    {
+      "type": "search-storage-names",
+      "regex": "h*ll*",
+      "input": ["hllo", "hll", "hello", "hxcvllo", "hllll", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf", "hdfasdfefdlxcvcxzvcxv"],
+      "output": ["hllo", "hello", "hxcvllo", "hllllllllo", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf"]
+    },
+    {
+      "type": "search-storage-names",
+      "regex": "h**ll***",
+      "input": ["hllo", "hll", "hello", "hxcvllo", "hllll", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf", "hdfasdfefdlxcvcxzvcxv"],
+      "output": ["hllo", "hello", "hxcvllo", "hllllllllo", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf"]
+    },
+    {
+      "type": "search-storage-names",
+      "regex": "*",
+      "input": ["hllo", "hll", "hello", "hxcvllo", "hllll", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf", "hdfasdfefdlxcvcxzvcxv", ""],
+      "output": ["hllo", "hll", "hello", "hxcvllo", "hllll", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf", "hdfasdfefdlxcvcxzvcxv"]
+    }
+  ]
+}
