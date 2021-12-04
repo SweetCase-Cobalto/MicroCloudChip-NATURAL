@@ -4,6 +4,7 @@ import os
 import glob
 import app.models as model
 from app.tests.test_modules.loader import test_flow, TestCaseFlow, TestCaseFlowRunner
+from typing import List
 
 from module.MicrocloudchipException.exceptions import *
 from module.manager.share_manager import ShareManager
@@ -673,7 +674,88 @@ class ManagerOperationUnittest(TestCase):
             .set_process('remove', __cmd_remove) \
             .run()
 
+    @test_flow("app/tests/test-input-data/manager_operation/test_search_datas.json")
+    def test_search_datas(self, test_flow: TestCaseFlow):
+        # 파일 및 디렉토리 탐색
+        def __cmd_upload_file(
+                target_user: str, request_user: str,
+                file_root: str
+        ):
+            # Test Method: Upload File
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
+
+            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
+
+            # 적용 대상 계정, 요청한 계정
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            req = {
+                # 요청 데이터
+                "static-id": target_id,
+                'target-root': file_root,
+                'raw-data': read_test_file(real_file_root)
+            }
+            self.storage_manager.upload_file(request_id, req, self.user_manager)
+
+        def __cmd_generate_directory(
+                target_user: str, request_user: str,
+                dir_root: str,
+        ):
+            # Test Method: Generate Directory
+            # 해당 모듈 테스트는 이미 위에서 진행했으므로 생략
+
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+            req = {
+                'static-id': target_id,
+                'target-root': dir_root
+            }
+            self.storage_manager.generate_directory(request_id, req)
+
+        def __cmd_search_data(
+                target_user: str, request_user: str,
+                regex: str, answer: List[str]
+        ):
+            target_id, request_id = \
+                self.change_str_to_static_id(target_user), \
+                self.change_str_to_static_id(request_user)
+
+            # 탐색
+            dir_result, file_result = \
+                self.storage_manager.search_datas(request_id, target_id, regex)
+
+            output = []
+            for d in dir_result:
+                full_root = d["full-root"].split(os.sep)
+
+                # root부분에서 잘라내기
+                name = '/'.join(full_root[full_root.index("root") + 1:])
+                output.append(f"dir-{name}")
+
+            for f in file_result:
+                full_root = f["full-root"].split(os.sep)
+
+                # root부분에서 잘라내기
+                name = '/'.join(full_root[full_root.index("root") + 1:])
+                output.append(f"file-{name}")
+
+            answer.sort()
+            output.sort()
+            
+            # 정답이 맞는 지 아닌 지 확인
+            self.assertListEqual(answer, output, msg=f"regex: {regex}")
+
+        TestCaseFlowRunner(test_flow) \
+            .set_process("upload-file", __cmd_upload_file) \
+            .set_process("generate-dir", __cmd_generate_directory) \
+            .set_process("search-datas", __cmd_search_data) \
+            .run()
+    
     def test_delete_user(self):
+        # TODO test Class 사용을 통한 Code Refectoring 필요
         # 데이터 생성
         # 상위 디렉토리 생성
         dir_format: dict = {

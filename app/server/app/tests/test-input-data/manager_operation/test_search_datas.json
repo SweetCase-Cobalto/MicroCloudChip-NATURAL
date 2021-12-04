@@ -1,0 +1,55 @@
+{
+  "test-flow": [
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "텍스트파일.txt"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "example-text.txt"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir"
+    },
+    {
+      "type": "generate-dir",
+      "target": "admin", "request": "admin",
+      "dir-root": "test-dir/test"
+    },
+    {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": "test-dir/test/텍스트파일.txt"
+    },
+
+    {
+      "type": "search-datas",
+      "target": "admin", "request": "admin",
+      "regex": "test-dir",
+      "answer": ["dir-test-dir"]
+    },
+    {
+      "type": "search-datas",
+      "target": "admin", "request": "admin",
+      "regex": "test*",
+      "answer": ["dir-test-dir", "dir-test-dir/test"]
+    },
+    {
+      "type": "search-datas",
+      "target": "admin", "request": "admin",
+      "regex": "*텍*",
+      "answer": ["file-텍스트파일.txt", "file-test-dir/test/텍스트파일.txt"]
+    },
+    {
+      "type": "search-datas",
+      "target": "admin", "request": "admin",
+      "regex": "*",
+      "answer": []
+    }
+
+  ]
+}

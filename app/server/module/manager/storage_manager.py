@@ -10,8 +10,10 @@ from module.specification.System_config import SystemConfig
 import os
 import stat
 import datetime
+from typing import List
 
 import module.tools.zip as custom_zip
+from module.tools.search import StorageNameSearcher
 
 
 class StorageManager(WorkerManager):
@@ -276,6 +278,58 @@ class StorageManager(WorkerManager):
 
         return f_list, d_list
 
+    def search_datas(self, target_static_id: str, req_static_id: str, regex: str) -> \
+            (List[DirectoryData], List[FileData]):
+        # 검색어(regex)로 파일 및 디렉토리 찾기
+
+        # 권한 체크
+        if target_static_id != req_static_id:
+            raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
+
+        # 저장될 파일과 디렉토리 리스트
+        f_list: list[FileData] = []
+        d_list: list[DirectoryData] = []
+
+        # REGEX Setting
+        searcher: StorageNameSearcher = StorageNameSearcher(regex)
+
+        # 전부 조회하는 *는 쓰지 않음
+        if regex == "*":
+            return [], []
+
+        # DFS 방식으로 순회
+        try:
+
+            stack = [""]
+            # 맨 위에부터 시작한다
+            while stack:
+                r = stack.pop()
+
+                # 현재 위치의 파일과 디렉토리 찾기
+                f_list_in_location, d_list_in_location = \
+                    self.get_dirlist(req_static_id, {
+                        "static-id": target_static_id,
+                        "target-root": r
+                    })
+
+                # 파일과 디렉토리의 가 검색하고자 하는 문자열과 맞는 지 확인하기
+                for f in f_list_in_location:
+                    if searcher(f["file-name"]):
+                        f_list.append(f)
+                for d in d_list_in_location:
+                    # 해당 디렉토리에 들어가야 하므로 스택에 추가
+
+                    next_r = f"{r}/{d['dir-name']}"
+                    stack.append(next_r)
+
+                    if searcher(d["dir-name"]):
+                        # 문자열 검색
+                        d_list.append(d)
+            return d_list, f_list
+
+        except Exception:
+            raise MicrocloudchipSystemInternalException("System Error")
+
     def delete_file(self, req_static_id: str, req: dict, shared_manager: ShareManager):
         # 파일 삭제
         try:
@@ -381,8 +435,8 @@ class StorageManager(WorkerManager):
                         next_r = f"{r}/{d.name}"
                         stack.append(next_r)
 
-        except Exception as e:
-            raise e
+        except Exception:
+            raise MicrocloudchipSystemInternalException("System Error")
 
     def download_objects(self, req_static_id: str, req: dict) -> tuple:
         # return: (결과 파일 루트, zip파일 여부)
