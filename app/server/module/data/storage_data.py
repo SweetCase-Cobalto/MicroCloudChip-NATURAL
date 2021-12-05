@@ -89,6 +89,11 @@ class FileData(StorageData):
         super().__getitem__(item)
 
         def __get_item(this, key):
+
+            def __get_directory_root(this) -> str:
+                f_root_list = this.full_root.split(os.sep)
+                return '/'.join(f_root_list[f_root_list.index('root') + 1:])
+
             return {
                 'create-date': this.create_date,
                 'modify-date': this.modify_date,
@@ -96,7 +101,8 @@ class FileData(StorageData):
                 'file-type': this.file_type,
                 'size': (this.volume_unit, this.volume),
                 'size-raw': this.raw_volume,
-                'full-root': this.full_root
+                'full-root': this.full_root,
+                'root-with-dir': __get_directory_root(this)
             }[key]
 
         try:
@@ -183,13 +189,19 @@ class DirectoryData(StorageData):
         super().__getitem__(item)
 
         def __get_item(this, key):
+
+            def __get_directory_root(this) -> str:
+                f_root_list = this.full_root.split(os.sep)
+                return '/'.join(f_root_list[f_root_list.index('root') + 1:])
+
             return {
                 'create-date': this.create_date,
                 'modify-date': this.modify_date,
                 'dir-name': this.name,
                 'file-list': this.file_list,
                 'file-size': len(this.file_list),
-                'full-root': this.full_root
+                'full-root': this.full_root,
+                "root-with-dir": __get_directory_root(this)
             }[key]
 
         try:

@@ -1,0 +1,48 @@
+{
+  "test-flow": [
+    {
+      "type": "login",
+      "email": "seokbong60@gmail.com", "password": "12345678"
+    },
+    {
+      "type": "upload-file",
+      "fileroot": "example-text.txt"
+    },
+    {
+      "type": "upload-file",
+      "fileroot": "example-jpg.jpg"
+    },
+    {
+      "type": "generate-dir",
+      "dir-root": "test"
+    },
+    {
+      "type": "upload-file",
+      "dir-root": "test/EX3.jpg"
+    },
+    {
+      "type": "search-datas",
+      "regex": "test",
+      "is-succeed": true, "exception": null,
+      "answer": ["dir-test"]
+    },
+    {
+      "type": "search-datas",
+      "regex": "EX3.jpg",
+      "is-succeed": true, "exception": null,
+      "answer": ["file-test/EX3.jpg"]
+    },
+    {
+      "type": "search-datas",
+      "regex": "*te*",
+      "is-succeed": true, "exception": null,
+      "answer": ["dir-test", "file-example-text.txt"]
+    },
+    {
+      "type": "search-datas",
+      "regex": "*",
+      "is-succeed": true, "exception": null,
+      "answer": []
+    }
+  ]
+}

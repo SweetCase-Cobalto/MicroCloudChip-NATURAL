@@ -1,5 +1,6 @@
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import QueryDict
+from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from module.MicrocloudchipException.exceptions import *
 from module.data.storage_data import FileData, DirectoryData
@@ -91,16 +92,17 @@ class DataControlView(APIView):
                 # 디렉토리 생성
                 STORAGE_MANAGER.generate_directory(req_static_id, req)
             except MicrocloudchipException as e:
-                return JsonResponse({"code": e.errorCode,'new-token': updated_token})
+                return JsonResponse({"code": e.errorCode, 'new-token': updated_token})
 
         else:
             # 접근 에러
             err = MicrocloudchipSystemAbnormalAccessError("Access Error")
             return JsonResponse({'code': err.errorCode})
-        return JsonResponse({"code": 0,'new-token': updated_token})
+        return JsonResponse({"code": 0, 'new-token': updated_token})
 
     @check_token_in_class_view
-    def get(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str) -> JsonResponse:
+    def get(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str,
+            updated_token: str) -> JsonResponse:
         # 데이터[정보] 갖고오기
         try:
             root: str = DataControlView.get_real_root(root)
@@ -167,7 +169,8 @@ class DataControlView(APIView):
             return JsonResponse({'code': err.errorCode})
 
     @check_token_in_class_view
-    def patch(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str, updated_token: str):
+    def patch(self, request: Request, data_type: str, static_id: str, root: str, req_static_id: str,
+              updated_token: str):
         # 파일 및 디렉토리 수정
 
         root: str = DataControlView.get_real_root(root)
@@ -251,7 +254,47 @@ class DataControlView(APIView):
                 err = MicrocloudchipSystemAbnormalAccessError("Access Error")
                 return JsonResponse({'code': err.errorCode})
         except MicrocloudchipException as e:
-            return JsonResponse({'code': e.errorCode,'new-token': updated_token})
+            return JsonResponse({'code': e.errorCode, 'new-token': updated_token})
 
         # 성공 시
-        return JsonResponse({"code": 0,'new-token': updated_token})
+        return JsonResponse({"code": 0, 'new-token': updated_token})
+
+
+# DataControlView에 포함되지 않는 API
+@check_token
+@api_view(['GET'])
+def search_storage_datas(
+        request: Request, search_type: str, regex: str, req_static_id: str, updated_token: str) -> JsonResponse:
+
+    try:
+        if search_type == "name":
+            # 이름으로 검색
+            d_list, f_list = STORAGE_MANAGER.search_datas(req_static_id, req_static_id, regex)
+        else:
+            # Type Error
+            raise MicrocloudchipAuthAccessError("File Type is invalid")
+    except MicrocloudchipException as e:
+        return JsonResponse({
+            "code": e.errorCode
+        })
+    except Exception:
+        return JsonResponse({
+            "code": MicrocloudchipSystemInternalException("").errorCode
+        })
+
+    # Formating
+    f_list_arr = [{'name': _f['root-with-dir'], 'type': _f['file-type'].name} for _f in f_list]
+    d_list_arr = [_d['root-with-dir'] for _d in d_list]
+
+    # sorting
+    f_list_arr.sort(key=lambda f: f["name"].split('/')[-1])
+    d_list_arr.sort()
+
+    return JsonResponse({
+        'code': 0,
+        'new-token': updated_token,
+        'data': {
+            'file': f_list_arr,
+            'dir': d_list_arr
+        }
+    })

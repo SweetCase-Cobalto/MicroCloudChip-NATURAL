@@ -729,18 +729,10 @@ class ManagerOperationUnittest(TestCase):
 
             output = []
             for d in dir_result:
-                full_root = d["full-root"].split(os.sep)
-
-                # root부분에서 잘라내기
-                name = '/'.join(full_root[full_root.index("root") + 1:])
-                output.append(f"dir-{name}")
+                output.append(f"dir-{d['root-with-dir']}")
 
             for f in file_result:
-                full_root = f["full-root"].split(os.sep)
-
-                # root부분에서 잘라내기
-                name = '/'.join(full_root[full_root.index("root") + 1:])
-                output.append(f"file-{name}")
+                output.append(f"file-{f['root-with-dir']}")
 
             answer.sort()
             output.sort()

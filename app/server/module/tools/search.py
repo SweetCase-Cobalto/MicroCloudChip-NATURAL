@@ -64,7 +64,7 @@ class StorageNameSearcher:
         node_stack = []
 
         # 소문자 처리
-        target_str.lower()
+        target_str = target_str.lower()
 
         cur: StorageNameSearchNode = self.node_head
         for i in range(len(target_str)):

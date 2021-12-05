@@ -32,6 +32,12 @@
     },
     {
       "type": "search-storage-names",
+      "regex": "EX3.jpg",
+      "input": ["EX3.jpg", "eX3.jpg", "EX"],
+      "output": ["EX3.jpg", "eX3.jpg"]
+    },
+    {
+      "type": "search-storage-names",
       "regex": "*",
       "input": ["hllo", "hll", "hello", "hxcvllo", "hllll", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf", "hdfasdfefdlxcvcxzvcxv", ""],
       "output": ["hllo", "hll", "hello", "hxcvllo", "hllll", "hcvdskdlkjsdfskdslldkjfhuidiufhsduf", "hdfasdfefdlxcvcxzvcxv"]

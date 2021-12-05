@@ -21,7 +21,7 @@ from app.views.shared_file import *
 from app.views.shared_file_control_view import SharedFileControlView
 from app.views.user import *
 from app.views.user_control_view import UserControlView
-from app.views.data_control_view import DataControlView
+from app.views.data_control_view import DataControlView, search_storage_datas
 from app.views.downloaders import *
 
 from django.views.generic import TemplateView
@@ -47,6 +47,9 @@ urlpatterns = [
 
     # Storage Data 관리
     path(r'server/storage/data/<str:data_type>/<str:static_id>/<path:root>', DataControlView.as_view()),
+
+    # Storage 검색
+    path(r'server/storage/search/<str:search_type>/<str:regex>', search_storage_datas),
     
     # Storage Data 다운로드
     path(r'server/storage/download/single/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object),

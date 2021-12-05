@@ -401,6 +401,69 @@ class TestAPIUnittest(TestCase):
             .set_process('download-multiple', __cmd_download_multiple) \
             .run()
 
+    @test_flow("app/tests/test-input-data/test_api/test_search_storage.json")
+    def test_search_storage_data(self, test_flow: TestCaseFlow):
+
+        token_header: dict = {}
+
+        def __cmd_login(
+                email: str, password: str
+        ):
+            # Test Method: Login
+            # Make Req
+            req = {"email": email, "pswd": password}
+            # Send
+            res: JsonResponse = self.client.post('/server/user/login', req)
+            token_header["HTTP_Set-Cookie"] = res.json()["data"]['token']
+
+        def __cmd_upload_file(file_root: str):
+            # Test Method: Upload file
+            f: SimpleUploadedFile = \
+                self.make_uploaded_file(f"{self.FILES_ROOT}/{file_root.split('/')[-1]}")
+            # Run
+            self.client.post(
+                f'/server/storage/data/file/{self.admin_static_id}/root/{file_root}',
+                data=encode_multipart(self.BOUNDARY_VALUE, {"file": f}),
+                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
+                **token_header
+            )
+
+        def __cmd_generate_dir(dir_root: str):
+            # Test Method: generate directory
+            self.client.post(
+                f"/server/storage/data/dir/{self.admin_static_id}/root/{dir_root}",
+                **token_header
+            )
+
+        def __cmd_search_datas(regex: str, is_succeed: bool, exception_str: str, answer: list[str]):
+            # 데이터 탐색
+
+            uri: str = f"/server/storage/search/name/{regex}"
+            res = self.client.get(uri, **token_header)
+
+            # Check Error Message
+            self.check_exception_code(is_succeed, res.json()['code'], exception_str, regex)
+
+            # Check Is Equal
+            file_arr: list[str] = [f["name"] for f in res.json()["data"]["file"]]
+            dir_arr: list[str] = res.json()["data"]["dir"]
+
+            output = []
+            for d in dir_arr:
+                output.append(f"dir-{d}")
+            for f in file_arr:
+                output.append(f"file-{f}")
+
+            answer.sort()
+            self.assertListEqual(output, answer, msg=f"regex: {regex}")
+
+        TestCaseFlowRunner(test_flow) \
+            .set_process("login", __cmd_login) \
+            .set_process("upload-file", __cmd_upload_file) \
+            .set_process("generate-dir", __cmd_generate_dir) \
+            .set_process("search-datas", __cmd_search_datas) \
+            .run()
+
     @test_flow("app/tests/test-input-data/test_api/test_shared_file_task.json")
     def test_shared_file_task(self, test_flow: TestCaseFlow):
         token_header: dict = {}
