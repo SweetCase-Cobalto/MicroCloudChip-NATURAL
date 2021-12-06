@@ -14,7 +14,6 @@
       "img": null
     },
 
-
     {
       "type": "upload-file",
       "fileroot": "example-text.txt"
@@ -103,7 +102,14 @@
     {
       "type": "get-shared-file",
       "target": "안녕하세요/텍스트파일.txt",
-      "is-succeed": false, "exception": "MicrocloudchipFileIsNotSharedError"
+      "is-succeed": false,
+      "exception": "MicrocloudchipFileIsNotSharedError"
+    },
+    {
+      "type": "try-share-with-wrong"
+    },
+    {
+      "type": "try-share-id-with-wrong"
     }
   ]
 }

@@ -21,6 +21,9 @@
       "dir-root": "test/EX3.jpg"
     },
     {
+      "type": "send-wrong-type"
+    },
+    {
       "type": "search-datas",
       "regex": "test",
       "is-succeed": true, "exception": null,

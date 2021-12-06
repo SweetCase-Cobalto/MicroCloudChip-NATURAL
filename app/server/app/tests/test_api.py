@@ -457,11 +457,19 @@ class TestAPIUnittest(TestCase):
             answer.sort()
             self.assertListEqual(output, answer, msg=f"regex: {regex}")
 
+        def __cmd_send_wrong_type():
+            # 틀린 타입의 uri 전송
+            uri: str = f"/server/storage/search/xxxxxxxxx"
+            res = self.client.get(uri, **token_header, data={"regex": "regex"})
+            # 반드시 에러가 발생해야 한다
+            self.check_exception_code(False, res.json()['code'], "MicrocloudchipAuthAccessError", "why passed?")
+
         TestCaseFlowRunner(test_flow) \
             .set_process("login", __cmd_login) \
             .set_process("upload-file", __cmd_upload_file) \
             .set_process("generate-dir", __cmd_generate_dir) \
             .set_process("search-datas", __cmd_search_datas) \
+            .set_process("send-wrong-type", __cmd_send_wrong_type) \
             .run()
 
     @test_flow("app/tests/test-input-data/test_api/test_shared_file_task.json")
@@ -532,16 +540,17 @@ class TestAPIUnittest(TestCase):
         def __cmd_share_file(target: str, is_succeed: bool, exception_str: str):
             # Test Method: Shared File
             req = {"file-root": target}
-            res = self.client.post(
-                f"/server/storage/shared/file",
-                data=encode_multipart(self.BOUNDARY_VALUE, req),
-                content_type=f'multipart/form-data; boundary={self.BOUNDARY_VALUE}',
-                **token_header
-            )
+            res = self.client.post(f"/server/storage/shared/file", data=req, **token_header)
 
             self.check_exception_code(is_succeed, res.json()["code"], exception_str, req)
             if is_succeed:
                 shared_name_to_id_map[target] = res.json()['data']['shared-id']
+
+        def __cmd_try_share_with_wrong_data():
+            # 틀린 데이터로 공유 설정 시도하기 (되면 안됨)
+            req = {"xxxx": "xxxx"}
+            res = self.client.post(f"/server/storage/shared/file", data=req, **token_header)
+            self.check_exception_code(False, res.json()["code"], "MicrocloudchipSystemAbnormalAccessError", "why pass?")
 
         def __cmd_get_shared_file(target: str, is_succeed: bool, exception_str: str):
             # Test Method: Get Shared File Data
@@ -573,6 +582,12 @@ class TestAPIUnittest(TestCase):
             if is_succeed:
                 del shared_name_to_id_map[target]
 
+        def __cmd_try_share_id_with_wrong():
+            # 틀린 데이터로 shared id 요청했을 절 대 통과가 되어서는 안된다
+            res = self.client.get("/server/storage/shared/file/share-id",
+                                  data={"xxx": "xxx"}, **token_header)
+            self.check_exception_code(False, res.json()['code'], "MicrocloudchipSystemAbnormalAccessError", "why pass?")
+
         # 테스트 코드 실행
         TestCaseFlowRunner(test_flow) \
             .set_process('login', __cmd_login) \
@@ -582,6 +597,8 @@ class TestAPIUnittest(TestCase):
             .set_process('generate-dir', __cmd_generate_dir) \
             .set_process('remove-directory', __cmd_remove_dir) \
             .set_process('share-file', __cmd_share_file) \
+            .set_process('try-share-with-wrong', __cmd_try_share_with_wrong_data) \
             .set_process('get-shared-file', __cmd_get_shared_file) \
             .set_process('unshare-file', __cmd_get_unshare_file) \
+            .set_process("try-share-id-with-wrong", __cmd_try_share_id_with_wrong) \
             .run()
