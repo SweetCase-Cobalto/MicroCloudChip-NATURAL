@@ -43,8 +43,8 @@ class StorageManager(WorkerManager):
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
             raw_data: bytes = req['raw-data']
-        except IndexError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if req_static_id != target_static_id:
@@ -82,8 +82,8 @@ class StorageManager(WorkerManager):
             # req 데이터 추출
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if req_static_id != target_static_id:
@@ -113,8 +113,8 @@ class StorageManager(WorkerManager):
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
             change_elements: dict = req['change']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if req_static_id != target_static_id:
@@ -154,8 +154,8 @@ class StorageManager(WorkerManager):
         try:
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
-        except IndexError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if req_static_id != target_static_id:
@@ -181,8 +181,8 @@ class StorageManager(WorkerManager):
             target_static_id: str = req['static-id']
             target_root: str = req['target-root']
             change_elements: dict = req['change']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if target_static_id != req_static_id:
@@ -216,8 +216,8 @@ class StorageManager(WorkerManager):
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if target_static_id != req_static_id:
@@ -239,8 +239,8 @@ class StorageManager(WorkerManager):
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if target_static_id != req_static_id:
@@ -335,8 +335,8 @@ class StorageManager(WorkerManager):
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
         # 권한 체크
         if target_static_id != req_static_id:
             raise MicrocloudchipAuthAccessError("Auth failed to access generate directory")
@@ -377,8 +377,8 @@ class StorageManager(WorkerManager):
         try:
             target_static_id = req['static-id']
             target_root = req['target-root']
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if target_static_id != req_static_id:
@@ -452,8 +452,8 @@ class StorageManager(WorkerManager):
                 }
             """
 
-        except KeyError as e:
-            raise e
+        except KeyError:
+            raise MicrocloudchipAuthAccessError("Key Is invalid")
 
         # 권한 체크
         if target_static_id != req_static_id:

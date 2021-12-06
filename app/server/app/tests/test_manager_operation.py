@@ -215,19 +215,24 @@ class ManagerOperationUnittest(TestCase):
         ):
             # Test Method: Upload File
 
-            real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
+            if file_root:
+                real_file_root: str = self.EXAMPLE_FILES_ROOT + file_root.split('/')[-1]
 
             # 적용 대상 계정, 요청한 계정
             target_id, request_id = \
                 self.change_str_to_static_id(target_user), \
                 self.change_str_to_static_id(request_user)
 
-            req = {
-                # 요청 데이터
-                "static-id": target_id,
-                'target-root': file_root,
-                'raw-data': read_test_file(real_file_root)
-            }
+            if file_root:
+                req = {
+                    # 요청 데이터
+                    "static-id": target_id,
+                    'target-root': file_root,
+                    'raw-data': read_test_file(real_file_root)
+                }
+            else:
+                # 틀린 데이터 요청
+                req = {"xxx": "xxx"}
 
             if is_succeed:
                 # 성공 케이스

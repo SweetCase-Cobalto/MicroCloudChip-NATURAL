@@ -7,6 +7,12 @@
       "is-succeed": true, "exception": null
     },
     {
+      "type": "upload-file",
+      "target": "admin", "request": "admin",
+      "file-root": null,
+      "is-succeed": false, "exception": "MicrocloudchipAuthAccessError"
+    },
+    {
       "type": "generate-dir",
       "target": "admin", "request": "admin",
       "dir-root": "test-dir",
