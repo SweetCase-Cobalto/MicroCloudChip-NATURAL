@@ -438,8 +438,8 @@ class TestAPIUnittest(TestCase):
         def __cmd_search_datas(regex: str, is_succeed: bool, exception_str: str, answer: list[str]):
             # 데이터 탐색
 
-            uri: str = f"/server/storage/search/name/{regex}"
-            res = self.client.get(uri, **token_header)
+            uri: str = f"/server/storage/search/name"
+            res = self.client.get(uri, **token_header, data={"regex": regex})
 
             # Check Error Message
             self.check_exception_code(is_succeed, res.json()['code'], exception_str, regex)

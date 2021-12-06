@@ -49,7 +49,7 @@ urlpatterns = [
     path(r'server/storage/data/<str:data_type>/<str:static_id>/<path:root>', DataControlView.as_view()),
 
     # Storage 검색
-    path(r'server/storage/search/<str:search_type>/<str:regex>', search_storage_datas),
+    path(r'server/storage/search/<str:search_type>', search_storage_datas),
     
     # Storage Data 다운로드
     path(r'server/storage/download/single/<str:data_type>/<str:static_id>/<path:root>', view_download_single_object),

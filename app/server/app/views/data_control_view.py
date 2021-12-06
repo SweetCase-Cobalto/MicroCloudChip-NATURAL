@@ -264,9 +264,10 @@ class DataControlView(APIView):
 @check_token
 @api_view(['GET'])
 def search_storage_datas(
-        request: Request, search_type: str, regex: str, req_static_id: str, updated_token: str) -> JsonResponse:
+        request: Request, search_type: str, req_static_id: str, updated_token: str) -> JsonResponse:
 
     try:
+        regex = request.GET.get("regex")
         if search_type == "name":
             # 이름으로 검색
             d_list, f_list = STORAGE_MANAGER.search_datas(req_static_id, req_static_id, regex)
