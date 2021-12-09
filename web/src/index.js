@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import reportWebVitals from './reportWebVitals';
+import App from './App';
 
 ReactDOM.render(
   <div>
-    <h1>Hellod World</h1>
+    <App />
   </div>,
   document.getElementById('root')
 );
