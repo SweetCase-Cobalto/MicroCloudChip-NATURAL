@@ -1,23 +1,24 @@
 import styled from 'styled-components';
-import { Colors } from '../variables/color';
-
 import LoginForm from '../components/LoginForm';
 
 const LoginPage = (props) => {
 
     return (
-        <div>
+        <Layout>
             <center>
-                <Layout>
+                <LoginLayout>
                     <LoginForm />
-                </Layout>
+                </LoginLayout>
             </center>
-        </div>
+        </Layout>
     );
 }
 
 const Layout = styled.div`
-    width: 500px;
+    height: 70vh;
+`
+const LoginLayout = styled.div`
+    margin-top: 200px;
 `
 
 export default LoginPage;
