@@ -1,5 +1,6 @@
 import MicrocloudchipNavbar from "../components/Navbar";
 import LeftMenuBar from "../components/LeftMenuBar";
+import StorageLayout from "../components/storage/StorageLayout";
 
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
@@ -11,8 +12,9 @@ const StoragePage = () => {
     return (
         <div>
             <MicrocloudchipNavbar />
-            <div style={{ display: "flexs" }}>
+            <div style={{ display: "flex" }}>
                 {isPC && <LeftMenuBar />}
+                <StorageLayout />
             </div>
         </div>
     );

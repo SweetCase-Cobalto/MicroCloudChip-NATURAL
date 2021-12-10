@@ -1,7 +1,6 @@
 import { Navbar, Container, Nav, Button, InputGroup, FormControl, Image, Tooltip, OverlayTrigger, Offcanvas } from "react-bootstrap";
 import { Colors } from "../variables/color";
 
-// img import
 import NavbarLogImg from '../asset/img/navbar-logo.svg';
 import DefaultUserLogoImg from '../asset/img/user-icon.svg'
 
@@ -42,6 +41,7 @@ const MicrocloudchipNavbar = () => {
     }
 
     if(isPC && showMenu) {
+        // PC판으로 바꼈는데 메뉴가 열려있으면 닫는다.
         setShowMenu(false);
     }
     const closeMenuHandler = () => setShowMenu(false);
@@ -65,12 +65,9 @@ const MicrocloudchipNavbar = () => {
                             style={{ marginRight: "10px", cursor: "pointer" }}
                             onClick={showMenuHandler}
                         />
-
-
                     </OverlayTrigger>
-                    {isPC && "MICROCLOUDCHIP"}
-
                     
+                    {isPC && "MICROCLOUDCHIP"}
                     <Offcanvas show={showMenu} onHide={closeMenuHandler} style={{ width: "240px" }}>
                         <LeftMenuBar />    
                     </Offcanvas>
