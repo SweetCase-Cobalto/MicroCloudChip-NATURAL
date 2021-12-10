@@ -2,10 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import reportWebVitals from './reportWebVitals';
 import App from './App';
+import {BrowserRouter} from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './asset/css/customButton.css';
 
 ReactDOM.render(
   <div>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </div>,
   document.getElementById('root')
 );

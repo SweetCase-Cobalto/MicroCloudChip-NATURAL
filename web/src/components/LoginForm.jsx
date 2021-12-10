@@ -3,13 +3,9 @@ import { Colors } from '../variables/color';
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { Form, Button } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Image Import
 import LogoImg from '../asset/img/logo.svg';
-
-// import custom Module
-import '../asset/css/customButton.css';
 
 const loginBtnEvent = (e) => {
     // 로그인 이벤트

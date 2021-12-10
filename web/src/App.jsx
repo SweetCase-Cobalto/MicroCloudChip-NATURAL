@@ -1,13 +1,15 @@
-import {Routes, Route, BrowserRouter} from 'react-router-dom';
+import {Routes, Route} from 'react-router-dom';
 import LoginPage from './page/LoginPage';
+import StoragePage from './page/StoragePage';
 
 const App = () => {
     return (
-        <BrowserRouter>
+        <div>
             <Routes>
                 <Route exact path='/' element={<LoginPage />} />
+                <Route path = '/storage/' element={<StoragePage />} />
             </Routes>
-        </BrowserRouter>
+        </div>
     );
 }
 export default App;
