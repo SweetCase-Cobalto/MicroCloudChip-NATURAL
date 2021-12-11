@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Colors } from '../variables/color';
+import { Link } from  'react-router-dom';
 
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
@@ -21,10 +22,11 @@ const LeftMenuBar = () => {
     const isPC = useMediaQuery(ResponsiveQuery.PC);
     const isMobile = useMediaQuery(ResponsiveQuery.MOBILE);
     const isTablet = useMediaQuery(ResponsiveQuery.TABLET);
+
     const ContentsComponent = () => (
         <div>
-            <Item name="My Storage" />
-            <Item name="Accounts" />
+            <Link to="/storage" style={{ textDecoration: "none", color: `${Colors.ACCESS_COLOR}` }}><Item name="My Storage" /></Link>
+            <Link to="/account" style={{ textDecoration: "none", color: `${Colors.ACCESS_COLOR}` }}><Item name="Accounts" /></Link>
             <Item name="Settings" />
         </div>
     );
@@ -50,7 +52,7 @@ const MobileLayout = styled.div`
     width: 240px;
     height: 100vh;
     background-color: ${Colors.LEFT_MENU_BAR_COLOR};
-    color: ${Colors.ACCESS_COLOR};
+    color: ${(Colors.ACCESS_COLOR)};
 
     padding-top: 40px;
     padding-left: 20px;

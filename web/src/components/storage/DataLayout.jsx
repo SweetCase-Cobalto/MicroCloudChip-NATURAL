@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 import { ResponsiveQuery } from '../../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
-import {Table} from 'react-bootstrap';
 
 // icons
 import IconDirectory from '../../asset/img/icon-directory.svg';
 import IconNormalFile from '../../asset/img/icon-normalfile.svg';
+import { Colors } from '../../variables/color';
 
 import '../../asset/css/customButton.css';
 
@@ -51,11 +51,17 @@ const DataLayout = () => {
             const SharedBtn = () => {
                 // 공유 상태에 따른 다른 버튼 생성
                 if(d['shared'] == 'shared') {
-                    return <button className='custombutton-access' style={{ fontSize: "0.9em" }}>Shared</button>
+                    return <button className='custombutton-access' style={{ 
+                        fontSize: "0.7em"
+                    }}>Shared</button>
                 } else if(d['shared'] == 'not-shared') {
-                    return <button className="custombutton-danger" style={{ fontSize: "0.9em" }}>Not Shared</button>
+                    return <button className="custombutton-danger" style={{ 
+                        fontSize: "0.7em"
+                    }}>Not Shared</button>
                 } else {
-                    return <button className="custombutton-unable" style={{ fontSize: "0.9em" }} disabled>Unable</button>
+                    return <button className="custombutton-unable" style={{ 
+                        fontSize: "0.7em"
+                    }} disabled>Unable</button>
                 }
             }
             
@@ -67,19 +73,33 @@ const DataLayout = () => {
                     return <img src={IconNormalFile} height="20px" alt="dir" style={{ marginRight: "5px" }} />
                 }
             }
+            
+            // 마우스 올려놓으면 색깔 변함
+            const TableRawComponent = styled.tr`
+                &:hover {
+                    background-color: ${Colors.ITEM_SELECTED_COLOR};
+                }
+            `
 
-            return (<tr key={idx}>
-                <th scope="row" style={{ display: "flex", flexWrap: "wrap" }}><FileImgComponent /> {d['name']}</th>
-                <td>{d['create-date']}</td>
+            return (<TableRawComponent key={idx}>
+                <th scope="row" style={{ 
+                    display: "flex", flexWrap: "wrap", 
+                    marginTop: "10px", marginBottom: "10px"}}><FileImgComponent /> {d['name']}</th>
+                <td >{d['create-date']}</td>
                 <td>{d['size']}</td>
                 <td><SharedBtn /></td>
-            </tr>);
+            </TableRawComponent>);
         })
 
         return (
-            <Table style={{ marginTop: "20px" }} responsive>
-                <thead>
-                    <th scope="col">Name</th>
+            <table style={{ 
+                    margin: "20px 20px 20px 20px", 
+                    width: "100%",
+                }}>
+                <thead style={{
+                    borderBottom: "1px solid gray",
+                }}>
+                    <th scope="col" style={{ paddingBottom: "10px" }}>Name</th>
                     <th scope="col">Create Date</th>
                     <th scope="col">Size</th>
                     <th scope="col">Shared</th>
@@ -87,13 +107,18 @@ const DataLayout = () => {
                 <tbody>
                     {DataComponent}
                 </tbody>
-            </Table>
+            </table>
         )
     }
 
+    const paddingRightValue = () => {
+        if(isPC) return "200px";
+        else if(isTablet) return "60px";
+        else return "30px";
+    }
 
     return (
-        <div>
+        <div style={{ paddingRight: `${paddingRightValue()}` }}>
             <ConsoleControlComponent />
             <DataTable />
         </div>

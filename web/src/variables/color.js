@@ -9,4 +9,5 @@ export const Colors = {
     ROOT_TAG_COLOR: "#177301",          // 루트 태그 색깔
 
     COLORED_BOLD_COLOR: "#0C3B01",      // 진한 폰트 표현할 때 상용되는 색깔
+    ITEM_SELECTED_COLOR: "#E6F3E3",     // 아이템 선택했을 때 색깔
 };
