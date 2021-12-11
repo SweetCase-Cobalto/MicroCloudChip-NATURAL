@@ -3,6 +3,7 @@ import { ResponsiveQuery } from '../../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { Colors } from '../../variables/color';
 import RootTag from './RootTag';
+import DataLayout from './DataLayout';
 
 const StorageLayout = () => {
     
@@ -44,6 +45,11 @@ const StorageLayout = () => {
             </div>
             
             <div style={{ width: "100%", height: "1px", background: "gray" }} />
+            
+            { isPC &&  <div style={{ padding: "20px 30px 100px 80px" }}><DataLayout /></div> }
+            { isTablet && <div style={{ padding: "20px 30px 100px 60px" }}><DataLayout /></div> }
+            { isMobile && <div style={{ padding: "15px 30px 100px 30px" }}><DataLayout /></div> }
+
         </Layout>
     );
 }
@@ -51,6 +57,7 @@ const StorageLayout = () => {
 const Layout = styled.div`
     width: 100%;
 `
+
 const TitleLayoutPC = styled.div`
     padding: 80px 20px 20px 60px;
 `
@@ -60,6 +67,7 @@ const TitleLayoutTablet = styled.div`
 const TitleLayoutMobile = styled.div`
     padding: 30px 30px 20px 40px;
 `
+
 const TagLayout = styled.div`
     display: flex;
     flex-wrap: wrap;

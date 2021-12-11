@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { Colors } from '../variables/color';
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
-import { Form, Button } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 
 // Image Import
 import LogoImg from '../asset/img/logo.svg';
@@ -27,7 +27,7 @@ const LoginForm = () => {
                     <Form.Group className="mb-3" style={{ marginTop: "20px" }}>
                         <Form.Control type="password" placeholder="Enter Password" id="pswd" />
                     </Form.Group>
-                    <Button type="submit" className="custombutton-access" style={{ width: "100%", marginTop: "40px" }}>Login</Button>
+                    <button type="submit" className="custombutton-access" style={{ width: "100%", marginTop: "40px" }}>Login</button>
                 </Form>
             </InputFormLayout>
         );

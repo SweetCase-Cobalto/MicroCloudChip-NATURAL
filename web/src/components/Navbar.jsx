@@ -1,4 +1,4 @@
-import { Navbar, Container, Nav, Button, InputGroup, FormControl, Image, Tooltip, OverlayTrigger, Offcanvas } from "react-bootstrap";
+import { Navbar, Container, Nav, InputGroup, FormControl, Image, Tooltip, OverlayTrigger, Offcanvas } from "react-bootstrap";
 import { Colors } from "../variables/color";
 
 import NavbarLogImg from '../asset/img/navbar-logo.svg';
@@ -79,9 +79,9 @@ const MicrocloudchipNavbar = () => {
                         <FormControl
                             placeholder="Search.."
                         />
-                        <Button className="custombutton-access-out" >
+                        <button className="custombutton-access-out" >
                           Search
-                        </Button>
+                        </button>
                     </InputGroup>
                 </Nav>}
 

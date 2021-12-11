@@ -1,13 +1,54 @@
 .custombutton-access {
     background-color: #125E00;
+    color: white;
+    text-decoration: none;
+    outline: 0;
+    border: 0;
+    padding: 5px 20px 5px 20px;
+}
+.custombutton-access:hover {
+    background-color: #0d4600;
 }
 .custombutton-access-out {
     border-radius: 2px;
     background-color: white;
     color: #125E00;
     border: 1px solid #125E00;
+    padding: 5px 20px 5px 20px;
 }
 .custombutton-access-out:hover {
     background-color: #125E00;
     color: white;
+}
+
+.custombutton-danger {
+    background-color: #DC0025;
+    color: white;
+    text-decoration: none;
+    outline: 0;
+    border: 0;
+    padding: 5px 20px 5px 20px;
+}
+.custombutton-danger:hover {
+    background-color: #8d0018;
+}
+.custombutton-danger-out {
+    border-radius: 2px;
+    background-color: white;
+    color: #DC0025;
+    border: 1px solid #DC0025;
+    padding: 5px 20px 5px 20px;
+}
+.custombutton-danger-out:hover {
+    background-color: #DC0025;
+    color: white;
+}
+
+.custombutton-unable {
+    background-color: #7E7E7E;
+    color: white;
+    text-decoration: none;
+    outline: 0;
+    border: 0;
+    padding: 5px 20px 5px 20px;
 }
