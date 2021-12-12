@@ -4,6 +4,7 @@ import LeftMenuBar from "../components/LeftMenuBar";
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import AccountSettingLayout from "../components/AccountSetting/AccountSettingLayout";
+import React from 'react';
 
 const AccountPage = () => {
 

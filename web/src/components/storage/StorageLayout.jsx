@@ -4,6 +4,7 @@ import { useMediaQuery } from 'react-responsive';
 import { Colors } from '../../variables/color';
 import RootTag from './RootTag';
 import DataLayout from './DataLayout';
+import React from 'react';
 
 const StorageLayout = () => {
     

@@ -4,6 +4,7 @@ import { Colors } from "../../variables/color";
 
 import { ResponsiveQuery } from '../../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
+import React from 'react';
 
 // Storage에서 root 표시할 때 사용
 const RootTag = (props) => {

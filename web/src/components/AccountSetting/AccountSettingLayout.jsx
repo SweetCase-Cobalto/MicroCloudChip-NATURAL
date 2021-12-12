@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { ResponsiveQuery } from '../../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { Colors } from '../../variables/color';
+import React from 'react';
 
 const AccountTable = () => {
 
@@ -14,14 +15,6 @@ const AccountTable = () => {
 
 
     const AccountComponent = accountData.map((a, idx) => {
-
-        
-        // 마우스 올려놓으면 색깔 변함
-        const TableRawComponent = styled.tr`
-            &:hover {
-                background-color: #E6F3E3;
-            }
-        `
         
         // 테이블 레코드 렌더링
         return (
@@ -45,9 +38,11 @@ const AccountTable = () => {
             <thead style={{
                     borderBottom: "1px solid gray",
                 }}>
-                <th scope="col" style={{ paddingBottom: "10px" }}>Name</th>
-                <th scope="col">Email</th>
-                <th scope="col">Password</th>
+                <tr>
+                    <th scope="col" style={{ paddingBottom: "10px" }}>Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Password</th>
+                </tr>
             </thead>
             <tbody>
                 {AccountComponent}
@@ -135,4 +130,11 @@ const TitleLayoutMobile = styled.div`
 const TagLayout = styled.div`
     display: flex;
     flex-wrap: wrap;
+`
+        
+// 마우스 올려놓으면 색깔 변함
+const TableRawComponent = styled.tr`
+    &:hover {
+        background-color: #E6F3E3;
+    }
 `

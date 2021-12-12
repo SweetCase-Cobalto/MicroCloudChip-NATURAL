@@ -8,6 +8,7 @@ import IconNormalFile from '../../asset/img/icon-normalfile.svg';
 import { Colors } from '../../variables/color';
 
 import '../../asset/css/customButton.css';
+import React from 'react';
 
 const DataLayout = () => {
     // Storage에서 파일 및 디렉토리 내역 볼 때 사용
@@ -74,12 +75,6 @@ const DataLayout = () => {
                 }
             }
             
-            // 마우스 올려놓으면 색깔 변함
-            const TableRawComponent = styled.tr`
-                &:hover {
-                    background-color: ${Colors.ITEM_SELECTED_COLOR};
-                }
-            `
 
             return (<TableRawComponent key={idx}>
                 <th scope="row" style={{ 
@@ -99,10 +94,12 @@ const DataLayout = () => {
                 <thead style={{
                     borderBottom: "1px solid gray",
                 }}>
-                    <th scope="col" style={{ paddingBottom: "10px" }}>Name</th>
-                    <th scope="col">Create Date</th>
-                    <th scope="col">Size</th>
-                    <th scope="col">Shared</th>
+                    <tr>
+                        <th scope="col" style={{ paddingBottom: "10px" }}>Name</th>
+                        <th scope="col">Create Date</th>
+                        <th scope="col">Size</th>
+                        <th scope="col">Shared</th>
+                    </tr>
                 </thead>
                 <tbody>
                     {DataComponent}
@@ -125,4 +122,10 @@ const DataLayout = () => {
     );
 }
 
+// 마우스 올려놓으면 색깔 변함
+const TableRawComponent = styled.tr`
+    &:hover {
+        background-color: ${Colors.ITEM_SELECTED_COLOR};
+    }
+`
 export default DataLayout;

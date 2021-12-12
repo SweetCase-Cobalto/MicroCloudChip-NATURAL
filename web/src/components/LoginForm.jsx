@@ -3,6 +3,7 @@ import { Colors } from '../variables/color';
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { Form } from 'react-bootstrap';
+import React from 'react';
 
 // Image Import
 import LogoImg from '../asset/img/logo.svg';

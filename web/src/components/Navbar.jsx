@@ -10,6 +10,7 @@ import { useMediaQuery } from 'react-responsive';
 import { useState } from "react";
 
 import LeftMenuBar from './LeftMenuBar';
+import React from 'react';
 
 const MicrocloudchipNavbar = () => {
     // 네비바

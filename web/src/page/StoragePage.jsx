@@ -4,6 +4,7 @@ import StorageLayout from "../components/storage/StorageLayout";
 
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
+import React from 'react';
 
 const StoragePage = () => {
 
