@@ -2,8 +2,7 @@ import styled from 'styled-components';
 import LoginForm from '../components/LoginForm';
 import React from 'react';
 
-const LoginPage = (props) => {
-
+const LoginPage = () => {
     return (
         <Layout>
             <center>

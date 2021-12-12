@@ -1,6 +1,6 @@
 // ACTIONS
-export const UPDATE  = "TOKEN_REDUCER_UPDATE";
-export const RESET = "TOKEN_REDUCER_RESET";
+const UPDATE  = "TOKEN_REDUCER_UPDATE";
+const RESET = "TOKEN_REDUCER_RESET";
 
 const initialState = {
     // id: 고유 static id
@@ -8,18 +8,21 @@ const initialState = {
     id: null, token: null,
 }
 
-
+export const updateTokenInReducer = (_id, _token) => {
+    return {
+    "type": UPDATE,
+    "data": {id: _id, token: _token}
+}}
+export const resetTokenReducer = () => ({
+    "type": RESET
+})
 
 export const TokenReducer = (state = initialState, action) => {
     switch(action.type) {
         case UPDATE:
-            return {
-                ...state
-            };
+            return { ...state, id: action.data['id'], token: action.data['token'] };
         case RESET:
-            return {
-                ...state
-            };
+            return { ...state, id: null, token: null };
         default:
             return state;
     }

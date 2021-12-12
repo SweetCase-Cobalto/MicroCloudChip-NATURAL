@@ -4,7 +4,7 @@ import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import LeftMenuBar from "../components/LeftMenuBar";
 import { Colors } from "../variables/color";
-import { Image, Form, Row, Col, Button } from "react-bootstrap";
+import { Image, Form, Row, Col } from "react-bootstrap";
 import React from 'react';
 
 import DefaultAccountIcon from '../asset/img/user-icon.svg';

@@ -1,15 +1,17 @@
 import MicrocloudchipNavbar from "../components/Navbar";
 import LeftMenuBar from "../components/LeftMenuBar";
 import StorageLayout from "../components/storage/StorageLayout";
+import {connect} from 'react-redux';
 
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import React from 'react';
 
-const StoragePage = () => {
+const StoragePage = (props) => {
 
     const isPC = useMediaQuery(ResponsiveQuery.PC);
 
+    console.log(props);
     return (
         <div>
             <MicrocloudchipNavbar />
@@ -21,4 +23,8 @@ const StoragePage = () => {
     );
 }
 
-export default StoragePage;
+const mapStateToProps = (state) => (
+    {loginStatus: state.TokenReducer }
+)
+// export default StoragePage;
+export default connect(mapStateToProps)(StoragePage);

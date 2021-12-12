@@ -1,21 +1,47 @@
+import React from 'react';
 import styled from 'styled-components';
 import { Colors } from '../variables/color';
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { Form } from 'react-bootstrap';
-import React from 'react';
+import { connect } from 'react-redux';
+import { updateTokenInReducer, resetTokenReducer } from '../reducers/TokenReducer';
+import { loginToServer } from '../connection/user';
+import URL from '../asset/config.json';
 
 // Image Import
 import LogoImg from '../asset/img/logo.svg';
+import { ViewErrorCodes } from '../variables/errors';
 
-const loginBtnEvent = (e) => {
-    // 로그인 이벤트
-    e.preventDefault();
-    alert(e.target.pswd.value);
-}
-
-const LoginForm = () => {
+const LoginForm = (props) => {
     // 로그인 폼
+    
+    const loginBtnEvent = async (e) => {
+
+        // 로그인 이벤트
+        e.preventDefault();     // 디버깅을 위한 상태유지
+
+        const pswd = e.target.pswd.value;
+        const email = e.target.email.value;
+
+        // 로그인
+        const result = await loginToServer(URL.URL, email, pswd);
+
+        // 실패여부 확인
+        if(result.err == ViewErrorCodes.CLIENT_FAILED) {
+            alert("Login Failed");
+            props.resetTokenReducer();
+        } else if(result.err == ViewErrorCodes.SERVER_FAILED) {
+            alert("Failed from server");
+            props.resetTokenReducer();
+        } else {
+            // Success
+            props.updateTokenInReducer(result.id, result.token);
+            window.location.href = "/storage/root";
+        }
+    }
+
+
 
     const InputForm = () => {
         // 로그인 입력 폼
@@ -62,6 +88,11 @@ const LoginForm = () => {
         )
     }
 
+    // 이미 데이터가 저장되어 있으면 바로 storage로 넘김
+    if(props.loginStatus.id != null && props.loginStatus.token)
+        window.location.href = "/storage/root";
+
+
     // 최종 렌더링
     return (
         <div>
@@ -70,6 +101,12 @@ const LoginForm = () => {
         </div>
     );
 }
+// 리덕스 돌리기용
+const mapStateToProps = (state) => (
+    {loginStatus: state.TokenReducer }
+)
+export default connect(mapStateToProps, { updateTokenInReducer, resetTokenReducer })(LoginForm);
+
 // PC 버전 레이아웃
 const PCLayout = styled.div`
     padding: 40px 80px 40px 80px;
@@ -88,4 +125,3 @@ const MobileLayout = styled.div`
 // 로그인 폼 레이아웃
 const InputFormLayout = styled.div`
 `
-export default LoginForm;

@@ -12,7 +12,7 @@ const App = () => {
                 <Route exact path='/' element={<LoginPage />} />
                 <Route exact path='/account' element={<AccountPage />} />
                 <Route exact path='/settings' element={<SettingPage />} />
-                <Route path = '/storage/' element={<StoragePage />} />
+                <Route path = '/storage/*' element={<StoragePage />} />
             </Routes>
         </div>
     );

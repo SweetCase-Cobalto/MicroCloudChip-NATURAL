@@ -126,11 +126,6 @@ const TitleLayoutTablet = styled.div`
 const TitleLayoutMobile = styled.div`
     padding: 30px 30px 20px 40px;
 `
-
-const TagLayout = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-`
         
 // 마우스 올려놓으면 색깔 변함
 const TableRawComponent = styled.tr`

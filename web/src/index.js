@@ -5,13 +5,25 @@ import App from './App';
 import {BrowserRouter} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './asset/css/customButton.css';
+import { createStore } from 'redux';
+import rootReducer from './reducers';
+import { Provider } from 'react-redux';
+import { persistStore } from 'redux-persist';
+import { PersistGate } from 'redux-persist/integration/react';
 
+// Redux Store
+const store = createStore(rootReducer);
+const persistor = persistStore(store);
+
+// Rendering
 ReactDOM.render(
-  <div>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </div>,
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </PersistGate>
+  </Provider>,
   document.getElementById('root')
 );
 
