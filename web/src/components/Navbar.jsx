@@ -10,6 +10,7 @@ import { useMediaQuery } from 'react-responsive';
 import { useState } from "react";
 
 import LeftMenuBar from './LeftMenuBar';
+import UserMenuBar from "./UserMenuBar";
 import React from 'react';
 
 const MicrocloudchipNavbar = () => {
@@ -32,20 +33,23 @@ const MicrocloudchipNavbar = () => {
 
     // 태블릿 모바일일 경우 로고버튼 누르면 메뉴가 나타나게 하는 컨트롤
     const [showMenu, setShowMenu] = useState(false);
-
-
     const showMenuHandler = () => {
         // PC에서는 작동하지 않는다
         if(!isPC) {
             setShowMenu(true);
         }
     }
-
     if(isPC && showMenu) {
         // PC판으로 바꼈는데 메뉴가 열려있으면 닫는다.
         setShowMenu(false);
     }
     const closeMenuHandler = () => setShowMenu(false);
+
+    // 오른쪽 유저 부분
+    const [userShowMenu, setUserShowMenu] = useState(false);
+    const openUserShowMenu = () => setUserShowMenu(true);
+    const closeUserShowMenu = () => setUserShowMenu(false);
+
 
     return (
         <Navbar variant="dark" style={{
@@ -90,8 +94,15 @@ const MicrocloudchipNavbar = () => {
                     <Image
                         src={DefaultUserLogoImg}
                         height="30"
+                        style={{
+                            cursor: "pointer"
+                        }}
+                        onClick={openUserShowMenu}
                         roundedCircle 
                     />
+                    <Offcanvas show={userShowMenu} onHide={closeUserShowMenu} style={{ width: "300px", height: "420px" }} placement="end">
+                        <UserMenuBar />
+                    </Offcanvas>
                 </Nav>
             </Container>
         </Navbar>
