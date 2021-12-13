@@ -9,15 +9,15 @@ import React from 'react';
 
 import DefaultAccountIcon from '../asset/img/user-icon.svg';
 
-const AccountSettingComponent = () => {
-
-    const emailValue = "seokbong60@gmail.com";
+const AccountSettingComponent = (props) => {
+    // props.userInfo -> 유저 정보
 
     const storageSelectedItems = ["1KB", "5GB", "20GB", "500GB"];
-    
     const StorageSelectedComponents = storageSelectedItems.map((item, idx) => 
         <option value={item} key={idx}>{item}</option>
     )
+
+    const userInfo = props.userInfo;
 
     return (
         <div style={{
@@ -33,12 +33,12 @@ const AccountSettingComponent = () => {
             
             <Form style={{ width: "100%" }}>
                 <Form.Group className="mb-3" controlId="formNickName">
-                    <Form.Label>Nickname</Form.Label>
-                    <Form.Control type="text" placeholder="Only 6 Alphabets to 12 Alphabets" />
+                    <Form.Label>Nickname (Not Modified)</Form.Label>
+                    <Form.Control type="text" placeholder="Only 6 Alphabets to 12 Alphabets" defaultValue={userInfo.userName} disabled />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formEmail">
                     <Form.Label>Email (Not Modified)</Form.Label>
-                    <Form.Control type="email" placeholder="example@example.com" defaultValue={emailValue} disabled/>
+                    <Form.Control type="email" placeholder="example@example.com" defaultValue={userInfo.email} disabled/>
                 </Form.Group>
                 
                 <Row>
@@ -72,7 +72,7 @@ const AccountSettingComponent = () => {
     )
 }
 
-const AdminLayout = () => {
+const AdminLayout = (props) => {
     // 관리자 레이아웃
 
     const isPC = useMediaQuery(ResponsiveQuery.PC);
@@ -93,7 +93,7 @@ const AdminLayout = () => {
             <div>
                 { isPC && 
                     <TitleLayoutPC>
-                        <h1 style={ titleFontQuery  }><strong>Settings</strong></h1>
+                        <h1 style={ titleFontQuery }><strong>Settings</strong></h1>
                     </TitleLayoutPC>
                 }
                 { isTablet &&
@@ -110,7 +110,7 @@ const AdminLayout = () => {
             
                 <AccountSettingLayout style={{ padding: `${paddingQuery()}` }}>
                     <h2 style={titleFontQuery}><strong>Account Setting</strong></h2>
-                    <AccountSettingComponent />
+                    <AccountSettingComponent userInfo={props.userInfo}/>
                 </AccountSettingLayout>
             </div>
 
@@ -118,7 +118,7 @@ const AdminLayout = () => {
     )
 }
 
-const AdminSettingPage = () => {
+const AdminSettingPage = (props) => {
     // 관리자용 세팅 페이지
 
     const isPC = useMediaQuery(ResponsiveQuery.PC);
@@ -128,7 +128,7 @@ const AdminSettingPage = () => {
             <MicrocloudchipNavbar />
             <div style={{ display: "flex" }}>
                 {isPC && <LeftMenuBar />}
-                <AdminLayout />
+                <AdminLayout userInfo={props.userInfo} />
             </div>
         </div>
     )

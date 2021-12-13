@@ -83,6 +83,15 @@
 
       "is-succeed": true,
       "exception": null
+    },
+    {
+      "type": "update-user",
+      "target": "admin", "request": "admin",
+      "name": "admin2",
+      "password": null, "volume-type": null, "img-changeable": false,
+      "img-file": null,
+      "is-succeed": false,
+      "exception": "MicrocloudchipAuthAccessError"
     }
   ]
 }

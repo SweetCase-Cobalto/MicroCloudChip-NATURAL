@@ -13,7 +13,7 @@ import LeftMenuBar from './LeftMenuBar';
 import UserMenuBar from "./UserMenuBar";
 import React from 'react';
 
-const MicrocloudchipNavbar = () => {
+const MicrocloudchipNavbar = (props) => {
     // 네비바
 
     // 화면 너비 상태
@@ -101,7 +101,7 @@ const MicrocloudchipNavbar = () => {
                         roundedCircle 
                     />
                     <Offcanvas show={userShowMenu} onHide={closeUserShowMenu} style={{ width: "300px", height: "420px" }} placement="end">
-                        <UserMenuBar />
+                        <UserMenuBar userInfo={props.userInfo} />
                     </Offcanvas>
                 </Nav>
             </Container>

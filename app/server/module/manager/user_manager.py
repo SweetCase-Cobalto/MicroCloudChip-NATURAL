@@ -302,14 +302,23 @@ class UserManager(WorkerManager):
             # data format 에 요구되는 key 없는 경우
             raise MicrocloudchipAuthAccessError("Omit key for update user failed")
 
+        # 데이터 갖고오기
         user_data: UserData = UserData(static_id=data_format['static-id'], system_root=self.config.system_root)()
 
+        # admin일 경우 email과 name이 변경되어선 안된다
+        if user_data.is_admin:
+            if data_format['name'] or data_format['email']:
+                raise MicrocloudchipAuthAccessError("In Admin, It can't change email and name")
+
+        # request data parsing
         new_name = data_format['name'] if 'name' in data_format else None
         pswd = data_format['password'] if 'password' in data_format else None
         volume_type = data_format['volume-type'] if 'volume-type' in data_format else None
         img_changeable: bool = False
         img_extension: str = None
         img_raw_data: bytes = None
+
+
         if 'img-changeable' in data_format and data_format['img-changeable']:
             img_changeable = True
             img_extension = data_format['img-extension'] if 'img-extension' in data_format else None
