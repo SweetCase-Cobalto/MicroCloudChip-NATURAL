@@ -6,7 +6,7 @@ import LeftMenuBar from "../components/LeftMenuBar";
 import StorageLayout from "../components/storage/StorageLayout";
 import {connect} from 'react-redux';
 
-import { resetTokenReducer } from '../reducers/TokenReducer';
+import { resetUserInfoReducer, updateUserInfoReducer } from '../reducers/UserInfoReducer';
 import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { getUserInformation } from '../connection/user';
@@ -18,7 +18,7 @@ import { ViewErrorCodes } from '../variables/errors';
 
 const StoragePage = (props) => {
 
-    const [userInfo, setUserInfo] = useState(null);
+    const [oldToken, _] = useState(props.loginStatus.token); // 서버 연결 확인(토큰 갱신)
     const isPC = useMediaQuery(ResponsiveQuery.PC);
 
     const checkIsLogined = async () => {
@@ -34,26 +34,29 @@ const StoragePage = (props) => {
         // 유저 데이터를 갖고옴으로써 토큰이 유효한지 확인
         let data = await getUserInformation(URL.URL, props.loginStatus.token, props.loginStatus.id);
         if(data.err == ViewErrorCodes.SUCCESS) {
-            setUserInfo(data.data);
+            // token update
+            props.updateUserInfoReducer(
+                data.data.staticId, data.data.newToken, data.data.email,
+                data.data.isAdmin, data.data.userName, data.data.volumeType,
+                data.data.maximumVolume, data.data.usedVolume
+            )
         } else {
             // Failed
             alert(data.msg);
-            props.resetTokenReducer();
+            props.resetUserInfoReducer();
+            window.location.hreaf = "/";
         }
 
     }
-
-    if(userInfo == null)
+    if(oldToken == props.loginStatus.token) {
         checkIsLogined();
-    
-    if(userInfo == null) {
         return <div>
             <h1>Loading</h1>
         </div>
     } else {
         return (
             <div>
-                <MicrocloudchipNavbar userInfo={userInfo} />
+                <MicrocloudchipNavbar />
                 <div style={{ display: "flex" }}>
                     {isPC && <LeftMenuBar />}
                     <StorageLayout />
@@ -64,7 +67,7 @@ const StoragePage = (props) => {
 }
 
 const mapStateToProps = (state) => (
-    {loginStatus: state.TokenReducer }
+    {loginStatus: state.UserInfoReducer }
 )
 // export default StoragePage;
-export default connect(mapStateToProps, { resetTokenReducer })(StoragePage);
+export default connect(mapStateToProps, { resetUserInfoReducer, updateUserInfoReducer })(StoragePage);

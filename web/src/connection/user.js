@@ -88,6 +88,9 @@ export const getUserInformation = async(serverUri, token, staticId) => {
                     isAdmin: data['user-info']['is-admin'],
                     maximumVolume: capacityVolume,
                     usedVolume: usedVolume,
+                    staticId: data['user-info']['static-id'],
+                    newToken: data['new-token'],
+                    volumeType: data['user-info']['volume-type'],
                 }
             }
         }

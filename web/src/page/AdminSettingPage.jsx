@@ -8,15 +8,18 @@ import { Image, Form, Row, Col } from "react-bootstrap";
 import React from 'react';
 
 import DefaultAccountIcon from '../asset/img/user-icon.svg';
+import { connect } from "react-redux";
 
 const AccountSettingComponent = (props) => {
-    // props.userInfo -> 유저 정보
 
     const storageSelectedItems = ["1KB", "5GB", "20GB", "500GB"];
     const StorageSelectedComponents = storageSelectedItems.map((item, idx) => 
         <option value={item} key={idx}>{item}</option>
     )
 
+    const onSubmitHandler = (e) => {
+        console.log(e.target);
+    }
     const userInfo = props.userInfo;
 
     return (
@@ -34,7 +37,7 @@ const AccountSettingComponent = (props) => {
             <Form style={{ width: "100%" }}>
                 <Form.Group className="mb-3" controlId="formNickName">
                     <Form.Label>Nickname (Not Modified)</Form.Label>
-                    <Form.Control type="text" placeholder="Only 6 Alphabets to 12 Alphabets" defaultValue={userInfo.userName} disabled />
+                    <Form.Control type="text" placeholder="Only 6 Alphabets to 12 Alphabets" defaultValue={userInfo.name} disabled />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formEmail">
                     <Form.Label>Email (Not Modified)</Form.Label>
@@ -110,7 +113,7 @@ const AdminLayout = (props) => {
             
                 <AccountSettingLayout style={{ padding: `${paddingQuery()}` }}>
                     <h2 style={titleFontQuery}><strong>Account Setting</strong></h2>
-                    <AccountSettingComponent userInfo={props.userInfo}/>
+                    <AccountSettingComponent userInfo={props.userInfo} />
                 </AccountSettingLayout>
             </div>
 
@@ -120,7 +123,6 @@ const AdminLayout = (props) => {
 
 const AdminSettingPage = (props) => {
     // 관리자용 세팅 페이지
-
     const isPC = useMediaQuery(ResponsiveQuery.PC);
 
     return (
@@ -128,13 +130,15 @@ const AdminSettingPage = (props) => {
             <MicrocloudchipNavbar />
             <div style={{ display: "flex" }}>
                 {isPC && <LeftMenuBar />}
-                <AdminLayout userInfo={props.userInfo} />
+                <AdminLayout userInfo={props.loginStatus} />
             </div>
         </div>
     )
 }
-
-export default AdminSettingPage;
+const mapStateToProps = (state) => (
+    {loginStatus: state.UserInfoReducer }
+)
+export default connect(mapStateToProps)(AdminSettingPage);
 
 const Layout = styled.div`
     width: 100%;

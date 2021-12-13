@@ -9,21 +9,21 @@ import { Link } from 'react-router-dom';
 
 // redux
 import { connect } from 'react-redux';
-import { resetTokenReducer } from '../reducers/TokenReducer';
+import { resetUserInfoReducer } from '../reducers/UserInfoReducer';
 
 const UserMenuBar = (props) => {
 
     const logoutEvent = () => {
-        props.resetTokenReducer();
+        props.resetUserInfoReducer();
         window.location.href = "/";
     }
-    
-    let volumeUsageGage = (props.userInfo.usedVolume / props.userInfo.maximumVolume) * 100;
+    const userInfo = props.loginStatus;
+    let volumeUsageGage = (userInfo.usedVolume / userInfo.capacityVolume) * 100;
 
     return (
         <Layout>
-            <center><h5>Signed as <strong>{props.userInfo.userName}</strong></h5></center>
-            <center><h6>{props.userInfo.isAdmin ? "admin" : "client"}</h6></center>
+            <center><h5>Signed as <strong>{userInfo.name}</strong></h5></center>
+            <center><h6>{userInfo.isAdmin ? "admin" : "client"}</h6></center>
             <center><Image src={DefaultUserImage} width="100px" style={{ marginTop: "20px" }} roundedCircle /></center>
             <center><div style={{ marginTop: "20px", marginBottom: "20px", width: "80%", height: "1px", backgroundColor: "gray" }} /></center>
 
@@ -37,7 +37,7 @@ const UserMenuBar = (props) => {
             </center>
             <center><div style={{ marginTop: "20px", marginBottom: "20px", width: "80%", height: "1px", backgroundColor: "gray" }} /></center>
             <UsageLayer>
-                <p style={{ fontSize: "0.8em" }}>{convertRawVolumeToString(props.userInfo.usedVolume)}/{convertRawVolumeToString(props.userInfo.maximumVolume)}</p>
+                <p style={{ fontSize: "0.8em" }}>{convertRawVolumeToString(userInfo.usedVolume)}/{convertRawVolumeToString(userInfo.capacityVolume)}</p>
                 <div style={{display: "flex", marginTop: "-10px"}}>
                     <UsageLine style={{width: `${volumeUsageGage}%`}} />
                     <NoneUsageLine style={{width: `${100 - volumeUsageGage}%`}} />
@@ -48,9 +48,9 @@ const UserMenuBar = (props) => {
 }
 // 리덕스 돌리기용
 const mapStateToProps = (state) => (
-    {loginStatus: state.TokenReducer }
+    {loginStatus: state.UserInfoReducer }
 )
-export default connect(mapStateToProps, {resetTokenReducer})(UserMenuBar);
+export default connect(mapStateToProps, {resetUserInfoReducer})(UserMenuBar);
 const Layout = styled.div`
     width: 100%;
     padding: 30px 5px 10px 5px;

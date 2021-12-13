@@ -5,7 +5,7 @@ import { ResponsiveQuery } from '../variables/responsive';
 import { useMediaQuery } from 'react-responsive';
 import { Form } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { updateTokenInReducer, resetTokenReducer } from '../reducers/TokenReducer';
+import { updateUserInfoReducer, resetUserInfoReducer } from '../reducers/UserInfoReducer';
 import { loginToServer } from '../connection/user';
 import URL from '../asset/config.json';
 
@@ -29,14 +29,19 @@ const LoginForm = (props) => {
 
         // 실패여부 확인
         if(result.err == ViewErrorCodes.CLIENT_FAILED) {
+            props.resetUserInfoReducer();
             alert("Login Failed");
-            props.resetTokenReducer();
         } else if(result.err == ViewErrorCodes.SERVER_FAILED) {
+            props.resetUserInfoReducer();
             alert("Failed from server");
-            props.resetTokenReducer();
         } else {
             // Success
-            props.updateTokenInReducer(result.id, result.token);
+            // 로그인 할 때는 아이디와 토큰만 갱신한다
+            // 유저 정보 업데이트는 각 메인 페이지에서 진행한다.
+            props.updateUserInfoReducer(
+                result.id, result.token,
+                null, null, null, null, null
+            );
             window.location.href = "/storage/root";
         }
     }
@@ -89,7 +94,7 @@ const LoginForm = (props) => {
     }
 
     // 이미 데이터가 저장되어 있으면 바로 storage로 넘김
-    if(props.loginStatus.id != null && props.loginStatus.token)
+    if(props.loginStatus.id != null && props.loginStatus.token != null)
         window.location.href = "/storage/root";
 
 
@@ -103,9 +108,9 @@ const LoginForm = (props) => {
 }
 // 리덕스 돌리기용
 const mapStateToProps = (state) => (
-    {loginStatus: state.TokenReducer }
+    {loginStatus: state.UserInfoReducer }
 )
-export default connect(mapStateToProps, { updateTokenInReducer, resetTokenReducer })(LoginForm);
+export default connect(mapStateToProps, { updateUserInfoReducer, resetUserInfoReducer })(LoginForm);
 
 // PC 버전 레이아웃
 const PCLayout = styled.div`

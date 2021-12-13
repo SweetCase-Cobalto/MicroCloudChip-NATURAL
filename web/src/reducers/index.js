@@ -2,17 +2,17 @@
 import { persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
-import { TokenReducer } from './TokenReducer';
+import { UserInfoReducer } from './UserInfoReducer';
 
 
 // Redux Local Storage
 const persistConfig = {
     key: "root",
     storage,
-    whitelist: ["TokenReducer"]
+    whitelist: ["UserInfoReducer"]
 }
 
 const rootReducer = combineReducers({
-    TokenReducer
+    UserInfoReducer
 });
 export default persistReducer(persistConfig, rootReducer);
