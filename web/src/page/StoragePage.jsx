@@ -44,9 +44,8 @@ const StoragePage = (props) => {
             // Failed
             alert(data.msg);
             props.resetUserInfoReducer();
-            window.location.hreaf = "/";
+            window.location.href = "/";
         }
-
     }
     if(oldToken == props.loginStatus.token) {
         checkIsLogined();

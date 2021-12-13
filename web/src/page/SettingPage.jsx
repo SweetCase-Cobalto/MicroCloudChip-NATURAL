@@ -38,7 +38,7 @@ const SettingPage = (props) => {
             // Failed
             alert(data.msg);
             props.resetUserInfoReducer();
-            window.location.hreaf = "/";
+            window.location.href = "/";
         }
 
     }
