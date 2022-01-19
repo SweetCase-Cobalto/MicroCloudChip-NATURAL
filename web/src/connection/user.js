@@ -98,3 +98,25 @@ export const getUserInformation = async(serverUri, token, staticId) => {
         return {"err": ViewErrorCodes.SERVER_FAILED, "msg": "Server Error"};
     })
 }
+export const updateUserInfo = async(serverUri, token, data) => {
+    // 유저 데이터 업데이트
+    const uri = `${serverUri}${BackendUris.USER_URI}/${data['static-id']}`
+
+    const formData = new FormData();
+}
+export const updateAdminUserInfo = async(serverUri, token, data) => {
+    // 관리자 정보 업데이트
+    // 일반 유저와는 다르게 userName을 업데이트하지 않는다.
+
+    /*
+        data = {
+            "staticId": xxxx,
+            "newPswd": xxxx, "repeatedNewPswd": xxxx,
+        }
+    */
+    const uri = `${serverUri}${BackendUris.USER_URI}/${data.staticId}`
+    const formData = new FormData();
+    
+    // Checking pswd
+    
+}

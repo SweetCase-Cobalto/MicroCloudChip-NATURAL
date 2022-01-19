@@ -14,8 +14,6 @@ import { getUserInformation } from '../connection/user';
 import { useState } from 'react';
 import { ViewErrorCodes } from '../variables/errors';
 
-
-
 const StoragePage = (props) => {
 
     const [oldToken, _] = useState(props.loginStatus.token); // 서버 연결 확인(토큰 갱신)

@@ -37,7 +37,7 @@ const AccountSettingComponent = (props) => {
             <Form style={{ width: "100%" }}>
                 <Form.Group className="mb-3" controlId="formNickName">
                     <Form.Label>Nickname (Not Modified)</Form.Label>
-                    <Form.Control type="text" placeholder="Only 6 Alphabets to 12 Alphabets" defaultValue={userInfo.name} disabled />
+                    <Form.Control type="text" placeholder="Only 4 Alphabets to 16 Alphabets" defaultValue={userInfo.name} disabled />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formEmail">
                     <Form.Label>Email (Not Modified)</Form.Label>
@@ -48,32 +48,33 @@ const AccountSettingComponent = (props) => {
                     <Col md>
                         <Form.Group className="mb-3" controlId="formPassword">
                             <Form.Label>New Password</Form.Label>
-                            <Form.Control type="text" placeholder="8 ~ 16" />
+                            <Form.Control type="text" placeholder="8 ~ 128 length" />
                         </Form.Group>
                     </Col>
                     <Col md>
                         <Form.Group className="mb-3" controlId="formPassword">
-                            <Form.Label>Password Repeat</Form.Label>
-                            <Form.Control type="text" placeholder="8 ~ 16" />
+                            <Form.Label>Repeat New Password</Form.Label>
+                            <Form.Control type="text" placeholder="8 ~ 128 length" />
                         </Form.Group>
                     </Col>
                 </Row>
-
-                <Form.Label>Select Storage Type</Form.Label>
-                <Form.Select aria-label="Default select example">
-                    <option>Select Storage Type</option>
-                    {StorageSelectedComponents}
-                </Form.Select>
-
+            
                 <div style={{ display: "flex", marginTop: "20px" }}>
                     <button className="custombutton-access" style={{ marginRight: "10px" }}>Apply</button>
-                    <button className="custombutton-unable">Cancel</button>
                 </div>
             </Form>
             
         </div>
     )
 }
+
+/* TODO 용량 사이즈 수정하는 폼 (아직 용량 수정에 대한 서버 대응 기능을 구현하지 않아 보류)
+    <Form.Label>Select Storage Type</Form.Label>
+    <Form.Select aria-label="Default select example">
+        <option>Select Storage Type</option>
+        {StorageSelectedComponents}
+    </Form.Select>
+*/
 
 const AdminLayout = (props) => {
     // 관리자 레이아웃
