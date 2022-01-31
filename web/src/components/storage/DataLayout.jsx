@@ -51,7 +51,7 @@ const DataLayout = () => {
         const DataComponent = storageDataForTest.map((d, idx) => {
             return <TableRawComponent 
                 fileName={d['name']} fileType={d['file-type']}
-                createDate={d['create-date']} fileSize={d['size']}
+                createDate={d['create-date']} fileSize={d['size']} key={idx}
             /> 
         })
 

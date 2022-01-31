@@ -17,6 +17,7 @@ import { ViewErrorCodes } from '../variables/errors';
 const StoragePage = (props) => {
 
     const [oldToken, _] = useState(props.loginStatus.token); // 서버 연결 확인(토큰 갱신)
+    const [isConnected, setIsConnected] = useState(false);
     const isPC = useMediaQuery(ResponsiveQuery.PC);
 
     const checkIsLogined = async () => {
@@ -38,6 +39,7 @@ const StoragePage = (props) => {
                 data.data.isAdmin, data.data.userName, data.data.volumeType,
                 data.data.maximumVolume, data.data.usedVolume
             )
+            setIsConnected(true);
         } else {
             // Failed
             alert(data.msg);
@@ -45,7 +47,7 @@ const StoragePage = (props) => {
             window.location.href = "/";
         }
     }
-    if(oldToken == props.loginStatus.token) {
+    if(!isConnected) {
         checkIsLogined();
         return <div>
             <h1>Loading</h1>

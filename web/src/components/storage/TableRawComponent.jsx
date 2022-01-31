@@ -2,8 +2,8 @@ import styled from 'styled-components';
 import IconDirectory from '../../asset/img/icon-directory.svg';
 import IconNormalFile from '../../asset/img/icon-normalfile.svg';
 import { Colors } from '../../variables/color';
-import React from 'react';
 
+import React from 'react';
 
 const TableRawComponent = (props) => {
 
@@ -11,7 +11,6 @@ const TableRawComponent = (props) => {
     const fileType = props.fileType;
     const fileName = props.fileName;
     const fileSize = props.fileSize;
-
     
     const FileImgComponent = () => {
         // 파일/디렉토리 아이콘
@@ -21,7 +20,6 @@ const TableRawComponent = (props) => {
             return <img src={IconNormalFile} height="20px" alt="dir" style={{ marginRight: "5px" }} />
         }
     }
-
     return (
         <Layer>
             <th scope="row" style={{ 
@@ -36,9 +34,10 @@ const TableRawComponent = (props) => {
 }
 
 const Layer = styled.tr`
-    &:hover {
+        &:hover {
         background-color: ${Colors.ITEM_SELECTED_COLOR};
     }
-`
+`;
+
 
 export default TableRawComponent;
